@@ -487,6 +487,11 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
   padding: 2px 6px; border-radius: 4px; line-height: 1; opacity: 0.5; transition: opacity 0.2s;
 }
 .btn-delete-contact:hover { opacity: 1; background: rgba(239,68,68,0.1); }
+.btn-edit-contact {
+  background: none; border: none; color: #1DA1F2; font-size: 16px; cursor: pointer;
+  padding: 2px 6px; border-radius: 4px; line-height: 1; opacity: 0.5; transition: opacity 0.2s; margin-right: 4px;
+}
+.btn-edit-contact:hover { opacity: 1; background: rgba(29,161,242,0.1); }
 
 /* ========== CONTACTO MODAL (New Contact) ========== */
 .contacto-modal-overlay {
@@ -1240,6 +1245,7 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
   .nueva-venta-modal-overlay { display: none !important; }
   .pipeline-toast { display: none !important; }
   .login-overlay { display: none !important; }
+  #edit-contact-modal-overlay { display: none !important; }
   .preview-panel { margin: 0; padding: 0; width: 100%; background: white; overflow: visible; height: auto; }
   .main-content { display: block; overflow: visible; height: auto; }
   .page { box-shadow: none; margin: 0; page-break-after: always; width: 210mm; height: 297mm; }
@@ -1752,6 +1758,48 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
 </div>
 
 <!-- ==================== NUEVA VENTA MODAL ==================== -->
+<!-- Edit Contact Modal -->
+<div class="contacto-modal-overlay" id="edit-contact-modal-overlay" onclick="if(event.target===this)closeEditContactModal()">
+  <div class="contacto-modal" id="edit-contact-modal">
+    <button class="modal-close" onclick="closeEditContactModal()">&times;</button>
+    <h2>Editar contacto</h2>
+    <input type="hidden" id="ec-row-index">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div><label>Nombre</label><input type="text" id="ec-nombre"></div>
+      <div><label>WhatsApp</label><input type="text" id="ec-whatsapp"></div>
+      <div><label>Ciudad</label><input type="text" id="ec-ciudad"></div>
+      <div><label>Estado</label>
+        <select id="ec-estado">
+          <option value="Nuevo Lead">Nuevo Lead</option>
+          <option value="Presupuesto Enviado">Presupuesto Enviado</option>
+          <option value="En Seguimiento">En Seguimiento</option>
+          <option value="Cerrado Ganado">Cerrado Ganado</option>
+          <option value="Cerrado Perdido">Cerrado Perdido</option>
+        </select>
+      </div>
+      <div><label>Sistema</label>
+        <select id="ec-sistema">
+          <option value="">-</option>
+          <option value="Guillotina">Guillotina</option>
+          <option value="Levadizo">Levadizo</option>
+        </select>
+      </div>
+      <div><label>Material</label>
+        <select id="ec-material">
+          <option value="">-</option>
+          <option value="Epoxi">Epoxi</option>
+          <option value="Acero Inoxidable">Acero Inoxidable</option>
+        </select>
+      </div>
+      <div><label>Ancho total (cm)</label><input type="text" id="ec-ancho"></div>
+      <div><label>Alto total (cm)</label><input type="text" id="ec-alto"></div>
+      <div><label>Ancho boca (cm)</label><input type="text" id="ec-boca"></div>
+      <div><label>Adicionales</label><input type="text" id="ec-adicionales"></div>
+    </div>
+    <button onclick="saveEditContact()" style="width:100%;padding:12px;background:#1DA1F2;color:#fff;border:none;border-radius:6px;font-size:15px;font-weight:700;cursor:pointer;margin-top:16px;">Guardar cambios</button>
+  </div>
+</div>
+
 <div class="nueva-venta-modal-overlay" id="nueva-venta-modal-overlay" onclick="if(event.target===this)closeNuevaVentaModal()">
   <div class="nueva-venta-modal" id="nueva-venta-modal">
     <button class="modal-close" onclick="closeNuevaVentaModal()">&times;</button>
@@ -3020,13 +3068,25 @@ function renderContactos() {
       '<td>' + escapeHtml(lead.material || '-') + '</td>' +
       '<td>' + escapeHtml(medidas || '-') + '</td>' +
       '<td>' + escapeHtml(lead.adicionales || '-') + '</td>' +
-      '<td style="text-align:center;"><button class="btn-delete-contact" data-row="' + lead.rowIndex + '" title="Eliminar contacto">&times;</button></td>';
+      '<td style="text-align:center; white-space:nowrap;">' +
+        '<button class="btn-edit-contact" data-row="' + lead.rowIndex + '" title="Editar contacto">&#9998;</button>' +
+        '<button class="btn-delete-contact" data-row="' + lead.rowIndex + '" title="Eliminar contacto">&times;</button>' +
+      '</td>';
 
-    /* Click row to open detail modal (but not if clicking the select or delete button) */
+    /* Click row to open detail modal (but not if clicking the select, delete or edit button) */
     tr.addEventListener('click', function(e) {
-      if (e.target.tagName === 'SELECT' || e.target.tagName === 'A' || e.target.classList.contains('btn-delete-contact')) return;
+      if (e.target.tagName === 'SELECT' || e.target.tagName === 'A' || e.target.classList.contains('btn-delete-contact') || e.target.classList.contains('btn-edit-contact')) return;
       openLeadModal(lead);
     });
+
+    /* Edit button */
+    var editBtn = tr.querySelector('.btn-edit-contact');
+    if (editBtn) {
+      editBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        openEditContactModal(lead);
+      });
+    }
 
     /* Delete button */
     var delBtn = tr.querySelector('.btn-delete-contact');
@@ -3082,6 +3142,75 @@ function onInlineEstadoChange(selectEl) {
   if (!lead) return;
 
   updateLeadStage(lead, newStage);
+}
+
+function openEditContactModal(lead) {
+  document.getElementById('ec-row-index').value = lead.rowIndex;
+  document.getElementById('ec-nombre').value = lead.nombre || '';
+  document.getElementById('ec-whatsapp').value = lead.whatsapp || '';
+  document.getElementById('ec-ciudad').value = lead.ciudad || '';
+  document.getElementById('ec-estado').value = lead.stage || 'Nuevo Lead';
+  document.getElementById('ec-sistema').value = lead.sistema || '';
+  document.getElementById('ec-material').value = lead.material || '';
+  document.getElementById('ec-ancho').value = lead.ancho || '';
+  document.getElementById('ec-alto').value = lead.alto || '';
+  document.getElementById('ec-boca').value = lead.boca || '';
+  document.getElementById('ec-adicionales').value = lead.adicionales || '';
+  document.getElementById('edit-contact-modal-overlay').classList.add('active');
+}
+
+function closeEditContactModal() {
+  document.getElementById('edit-contact-modal-overlay').classList.remove('active');
+}
+
+function saveEditContact() {
+  var rowIndex = parseInt(document.getElementById('ec-row-index').value);
+  var rowIdx = rowIndex - 2;
+  var fields = [
+    { col: 0, val: document.getElementById('ec-nombre').value },
+    { col: 1, val: document.getElementById('ec-whatsapp').value },
+    { col: 3, val: document.getElementById('ec-ciudad').value },
+    { col: 4, val: document.getElementById('ec-estado').value },
+    { col: 5, val: document.getElementById('ec-ancho').value },
+    { col: 6, val: document.getElementById('ec-alto').value },
+    { col: 7, val: document.getElementById('ec-boca').value },
+    { col: 9, val: document.getElementById('ec-sistema').value },
+    { col: 10, val: document.getElementById('ec-material').value },
+    { col: 11, val: document.getElementById('ec-adicionales').value }
+  ];
+
+  /* Send all updates */
+  var promises = fields.map(function(f) {
+    return fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'update', row: rowIdx, col: f.col, value: f.val })
+    });
+  });
+
+  Promise.all(promises).then(function() {
+    /* Update local data */
+    var lead = allLeadsData.find(function(l) { return l.rowIndex === rowIndex; });
+    if (lead) {
+      lead.nombre = fields[0].val;
+      lead.whatsapp = fields[1].val;
+      lead.ciudad = fields[2].val;
+      lead.estado = fields[3].val;
+      lead.stage = mapEstadoToStage(fields[3].val);
+      lead.ancho = fields[4].val;
+      lead.alto = fields[5].val;
+      lead.boca = fields[6].val;
+      lead.sistema = fields[7].val;
+      lead.material = fields[8].val;
+      lead.adicionales = fields[9].val;
+      lead.hasMeasures = lead.ancho && lead.ancho !== '--' && lead.alto && lead.alto !== '--';
+    }
+    closeEditContactModal();
+    renderContactos();
+    showToast('Contacto actualizado');
+  }).catch(function() {
+    showToast('Error al guardar', 'error');
+  });
 }
 
 function deleteContact(lead) {
