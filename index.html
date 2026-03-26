@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quality Deco - Generador de Presupuestos</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+/* ========== RESET & BASE ========== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: 'Source Sans 3', 'Segoe UI', Arial, sans-serif; }
+body { display: flex; background: #111; color: #ccc; overflow: hidden; }
+
+/* ========== FORM PANEL ========== */
+.form-panel {
+  width: 400px; min-width: 400px; background: #1a1a1a; height: 100vh;
+  overflow-y: auto; padding: 20px 18px; border-right: 1px solid #333;
+  scrollbar-width: thin; scrollbar-color: #444 #1a1a1a;
+}
+.form-panel::-webkit-scrollbar { width: 6px; }
+.form-panel::-webkit-scrollbar-track { background: #1a1a1a; }
+.form-panel::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+
+.form-panel h2 { color: #1DA1F2; font-size: 15px; text-transform: uppercase; letter-spacing: 1.5px; margin: 22px 0 10px; border-bottom: 1px solid #333; padding-bottom: 6px; }
+.form-panel h2:first-of-type { margin-top: 10px; }
+.form-panel label { display: block; font-size: 12px; color: #999; margin-bottom: 3px; margin-top: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+.form-panel input[type="text"],
+.form-panel input[type="date"],
+.form-panel input[type="number"],
+.form-panel select,
+.form-panel textarea {
+  width: 100%; padding: 8px 10px; background: #2a2a2a; border: 1px solid #444;
+  border-radius: 4px; color: #eee; font-size: 14px; font-family: inherit;
+  outline: none; transition: border-color 0.2s;
+}
+.form-panel input:focus, .form-panel select:focus, .form-panel textarea:focus { border-color: #1DA1F2; }
+.form-panel textarea { resize: vertical; min-height: 60px; line-height: 1.4; }
+.form-panel .row2 { display: flex; gap: 10px; }
+.form-panel .row2 > div { flex: 1; }
+.form-panel .row3 { display: flex; gap: 10px; }
+.form-panel .row3 > div { flex: 1; }
+
+/* Checkboxes */
+.cb-group { margin-top: 10px; }
+.cb-group label.cb-label-item { display: flex; align-items: center; gap: 8px; color: #ccc; font-size: 13px; text-transform: none; letter-spacing: 0; cursor: pointer; margin-top: 6px; }
+.cb-group input[type="checkbox"] { accent-color: #1DA1F2; width: 16px; height: 16px; }
+.cb-sub { margin-left: 28px; margin-top: 4px; }
+.cb-sub select { width: auto; padding: 4px 8px; font-size: 12px; }
+
+/* Line items table in form */
+.line-items-table { width: 100%; margin-top: 8px; border-collapse: collapse; }
+.line-items-table th { font-size: 11px; color: #777; text-transform: uppercase; text-align: left; padding: 4px 6px; border-bottom: 1px solid #333; }
+.line-items-table td { padding: 4px 4px; vertical-align: middle; }
+.line-items-table input[type="text"] { font-size: 13px; padding: 6px 8px; }
+.line-items-table .price-input { text-align: right; }
+.btn-delete { background: none; border: none; color: #e55; font-size: 18px; cursor: pointer; padding: 2px 6px; border-radius: 3px; line-height: 1; }
+.btn-delete:hover { background: rgba(238,85,85,0.15); }
+.btn-add { background: #1DA1F2; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600; margin-top: 8px; width: 100%; }
+.btn-add:hover { background: #0d8de0; }
+
+/* Photo preview */
+.photo-preview { width: 100%; max-height: 120px; object-fit: cover; border-radius: 4px; margin-top: 6px; border: 1px solid #444; }
+
+/* Generate button */
+.btn-generate { background: #1DA1F2; color: #fff; border: none; padding: 14px 20px; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: 700; margin-top: 24px; width: 100%; text-transform: uppercase; letter-spacing: 1px; }
+.btn-generate:hover { background: #0d8de0; }
+
+.form-brand { text-align: center; padding: 10px 0 6px; }
+.form-brand span { color: #1DA1F2; font-weight: 700; font-size: 18px; letter-spacing: 2px; }
+.form-brand small { display: block; color: #666; font-size: 11px; letter-spacing: 1px; }
+
+/* ========== PREVIEW PANEL ========== */
+.preview-panel {
+  flex: 1; height: 100vh; overflow-y: auto; background: #333;
+  display: flex; flex-direction: column; align-items: center; padding: 30px 20px;
+}
+
+/* ========== PAGE (A4) ========== */
+.page {
+  width: 210mm; min-height: 297mm; height: 297mm; background: #fff; color: #2a2a2a;
+  box-shadow: 0 4px 30px rgba(0,0,0,0.5); margin-bottom: 30px; position: relative;
+  overflow: hidden; flex-shrink: 0; font-size: 10.5pt; line-height: 1.4;
+}
+
+/* ===== PAGE 1 - COVER ===== */
+.p1-hero { width: 100%; height: 130mm; position: relative; overflow: hidden; background: #222; }
+.p1-hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.p1-hero-overlay {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 55%;
+  background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);
+}
+.p1-hero-text { position: absolute; bottom: 22px; left: 28px; color: #fff; }
+.p1-hero-text .h-pre { font-size: 11pt; font-weight: 300; letter-spacing: 4px; text-transform: uppercase; opacity: 0.85; margin-bottom: 2px; }
+.p1-hero-text .h-main { font-size: 24pt; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; }
+.p1-hero-text .h-sub { font-size: 11pt; font-weight: 400; opacity: 0.9; margin-top: 4px; }
+.p1-hero-caption { position: absolute; bottom: 8px; left: 28px; color: rgba(255,255,255,0.5); font-size: 7.5pt; }
+.p1-logo-badge {
+  position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.95);
+  border-radius: 8px; padding: 10px 16px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+.p1-logo-badge .lb-name { color: #1DA1F2; font-weight: 900; font-size: 13pt; letter-spacing: 2px; }
+.p1-logo-badge .lb-sub { color: #888; font-size: 6.5pt; letter-spacing: 1.5px; text-transform: uppercase; }
+
+/* Client bar */
+.p1-client-bar {
+  display: flex; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd;
+  margin: 14px 28px 0; padding: 0;
+}
+.p1-client-bar .cb-item {
+  flex: 1; padding: 6px 12px; border-right: 1px solid #eee;
+}
+.p1-client-bar .cb-item:last-child { border-right: none; }
+.p1-client-bar .cb-label { font-size: 7pt; color: #1DA1F2; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
+.p1-client-bar .cb-value { font-size: 9.5pt; color: #2a2a2a; font-weight: 600; margin-top: 1px; }
+
+/* Greeting */
+.p1-greeting { margin: 10px 28px 4px; font-size: 9.5pt; color: #444; line-height: 1.5; }
+.p1-greeting .greeting-name { font-size: 12pt; font-weight: 700; color: #2a2a2a; display: block; margin-bottom: 3px; }
+
+/* Pills */
+.p1-pills { display: flex; gap: 8px; margin: 4px 28px 6px; }
+.p1-pill { background: #e8f5fd; color: #1DA1F2; font-size: 7.5pt; font-weight: 700; padding: 3px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* Summary row */
+.p1-summary { display: flex; margin: 0 28px; gap: 16px; align-items: flex-start; }
+.p1-specs { flex: 1; font-size: 9pt; }
+.p1-specs table { border-collapse: collapse; }
+.p1-specs td { padding: 2px 0; vertical-align: top; }
+.p1-specs .sk { color: #888; font-weight: 600; padding-right: 10px; white-space: nowrap; font-size: 8pt; text-transform: uppercase; }
+.p1-specs .sv { color: #2a2a2a; font-weight: 600; }
+.p1-total-box {
+  background: #1DA1F2; color: #fff; border-radius: 10px; padding: 14px 22px;
+  text-align: center; min-width: 180px; flex-shrink: 0;
+}
+.p1-total-box .tb-label { font-size: 7pt; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; opacity: 0.9; }
+.p1-total-box .tb-price { font-size: 20pt; font-weight: 900; margin: 4px 0 2px; }
+.p1-total-box .tb-note { font-size: 7pt; opacity: 0.8; }
+
+/* Footer note */
+.p1-footer { position: absolute; bottom: 8px; right: 28px; font-size: 7.5pt; color: #999; }
+
+/* ===== PAGE 2 - DETAIL ===== */
+.mini-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 28px 6px; }
+.mini-header .mh-brand { color: #1DA1F2; font-weight: 900; font-size: 11pt; letter-spacing: 2px; }
+.mini-header .mh-page { color: #999; font-size: 8pt; text-transform: uppercase; letter-spacing: 1px; }
+.accent-line { height: 3px; margin: 0 28px; background: linear-gradient(to right, #1DA1F2 25%, #ddd 25%); border-radius: 2px; }
+
+.detail-header { margin: 10px 28px 0; background: #e8f5fd; padding: 8px 16px; border-bottom: 2px solid #1DA1F2; border-radius: 4px 4px 0 0; }
+.detail-header span { color: #1DA1F2; font-weight: 700; font-size: 10pt; text-transform: uppercase; letter-spacing: 1px; }
+
+.detail-table { width: calc(100% - 56px); margin: 0 28px; border-collapse: collapse; }
+.detail-table thead th {
+  font-size: 7pt; color: #888; text-transform: uppercase; letter-spacing: 1px;
+  padding: 8px 10px; background: #fafafa; text-align: left; font-weight: 700;
+}
+.detail-table thead th:last-child { text-align: right; }
+.detail-table tbody td { padding: 9px 10px; border-bottom: 1px solid #f0f0f0; font-size: 9pt; vertical-align: top; }
+.detail-table tbody td:last-child { text-align: right; white-space: nowrap; }
+.detail-table .dt-code { color: #1DA1F2; font-family: 'Source Sans 3', monospace; font-weight: 700; font-size: 8.5pt; }
+.detail-table .dt-measure { color: #666; font-size: 8.5pt; }
+.detail-table .dt-desc-name { font-weight: 700; color: #2a2a2a; }
+.detail-table .dt-desc-sub { font-size: 8pt; color: #888; margin-top: 1px; }
+.detail-table .dt-free { color: #4a9e5c; font-weight: 700; }
+.detail-table .dt-price { font-weight: 700; color: #2a2a2a; }
+
+.totals-box { margin: 10px 28px 0; display: flex; justify-content: flex-end; }
+.totals-inner { background: #f7f7f7; border-radius: 8px; padding: 12px 18px; min-width: 260px; }
+.totals-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 9pt; }
+.totals-row .tr-label { color: #666; }
+.totals-row .tr-value { font-weight: 600; color: #2a2a2a; }
+.totals-row .tr-green { color: #4a9e5c; font-weight: 700; }
+.totals-row.tr-total { background: #1DA1F2; color: #fff; border-radius: 6px; padding: 8px 12px; margin-top: 6px; font-size: 11pt; }
+.totals-row.tr-total .tr-label, .totals-row.tr-total .tr-value { color: #fff; font-weight: 900; }
+
+.p2-footer { position: absolute; bottom: 12px; left: 28px; right: 28px; font-size: 7pt; color: #999; text-align: center; }
+
+/* ===== PAGE 3 - PAYMENT ===== */
+.section-label { font-size: 12pt; color: #1DA1F2; font-weight: 700; border-bottom: 2px solid #1DA1F2; padding-bottom: 4px; display: inline-block; }
+.section-label-wrap { margin: 10px 28px 8px; }
+
+.pay-cards { display: flex; gap: 12px; margin: 0 28px; }
+.pay-card { flex: 1; border: 1.5px solid #ddd; border-radius: 8px; overflow: hidden; position: relative; }
+.pay-card.recommended { border-color: #1DA1F2; }
+.pay-card .pc-badge { position: absolute; top: 8px; right: 8px; background: #1DA1F2; color: #fff; font-size: 6.5pt; font-weight: 700; padding: 2px 8px; border-radius: 10px; text-transform: uppercase; }
+.pay-card .pc-header { background: #f7f7f7; padding: 8px 12px; font-size: 8pt; font-weight: 700; text-transform: uppercase; color: #555; letter-spacing: 0.5px; }
+.pay-card.recommended .pc-header { background: #e8f5fd; color: #1DA1F2; }
+.pay-card .pc-body { padding: 10px 12px; }
+.pay-card .pc-price { font-size: 16pt; font-weight: 900; color: #2a2a2a; }
+.pay-card .pc-detail { font-size: 8pt; color: #777; margin-top: 4px; line-height: 1.4; }
+.pay-card .pc-tag-green { display: inline-block; background: #e8f5e9; color: #4a9e5c; font-size: 7pt; font-weight: 700; padding: 2px 8px; border-radius: 10px; margin-top: 6px; }
+.pay-card .pc-tag-amber { display: inline-block; background: #fef3e2; color: #a07830; font-size: 7pt; font-weight: 700; padding: 2px 8px; border-radius: 10px; margin-top: 6px; }
+
+.info-section-label { margin: 10px 28px 6px; }
+
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 28px; }
+.info-card { border: 1px solid #eee; border-radius: 6px; overflow: hidden; }
+.info-card .ic-header { background: #e8f5fd; padding: 6px 12px; display: flex; align-items: center; gap: 6px; }
+.info-card .ic-dot { width: 6px; height: 6px; border-radius: 50%; background: #1DA1F2; flex-shrink: 0; }
+.info-card .ic-title { font-size: 7.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #1DA1F2; }
+.info-card .ic-body { padding: 8px 12px; font-size: 8pt; color: #555; line-height: 1.5; }
+.info-card .ic-body .ic-item { display: flex; gap: 6px; margin-bottom: 3px; }
+.info-card .ic-body .ic-dash { color: #1DA1F2; font-weight: 700; flex-shrink: 0; }
+
+.legal-box { margin: 8px 28px; background: #f7f7f7; border-left: 3px solid #1DA1F2; padding: 10px 14px; font-size: 7pt; color: #777; line-height: 1.5; border-radius: 0 4px 4px 0; }
+
+.cta-box { margin: 6px 28px; border: 1.5px solid #1DA1F2; border-radius: 8px; padding: 12px 18px; font-size: 9pt; color: #2a2a2a; line-height: 1.5; text-align: center; }
+
+.p3-footer {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  border-top: 2px solid #1DA1F2; padding: 10px 28px;
+  display: flex; justify-content: space-between; align-items: center; font-size: 7.5pt; color: #888;
+}
+.p3-footer .pf-brand { font-weight: 700; color: #2a2a2a; }
+.p3-footer .pf-contact { text-align: center; }
+
+/* ========== PRINT ========== */
+@media print {
+  .form-panel { display: none !important; }
+  .preview-panel { margin: 0; padding: 0; width: 100%; background: white; overflow: visible; }
+  .page { box-shadow: none; margin: 0; page-break-after: always; width: 210mm; height: 297mm; }
+  body { background: white; display: block; }
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+}
+
+@page { size: A4; margin: 0; }
+</style>
+</head>
+<body>
+
+<!-- ==================== FORM PANEL ==================== -->
+<div class="form-panel">
+  <div class="form-brand">
+    <span>QUALITY DECO</span>
+    <small>GENERADOR DE PRESUPUESTOS</small>
+  </div>
+
+  <h2>Cargar lead del bot</h2>
+  <select id="f-lead-select" style="margin-bottom:8px;">
+    <option value="">-- Seleccionar lead --</option>
+  </select>
+  <div style="display:flex; gap:8px;">
+    <button class="btn-add" id="btn-load-leads" style="margin-top:0; margin-bottom:10px; background:#333; border:1px solid #555; flex:1;">Actualizar leads</button>
+    <button class="btn-add" id="btn-new-blank" style="margin-top:0; margin-bottom:10px; background:#2a2a2a; border:1px solid #1DA1F2; color:#1DA1F2; flex:1;">Nuevo en blanco</button>
+  </div>
+
+  <h2>Datos del cliente</h2>
+  <div class="row2">
+    <div><label>N&#176; presupuesto</label><input type="text" id="f-nro" value="0001"></div>
+    <div><label>Fecha</label><input type="date" id="f-fecha"></div>
+  </div>
+  <label>Cliente</label><input type="text" id="f-cliente" value="" placeholder="Nombre del cliente">
+  <div class="row2">
+    <div><label>Telefono</label><input type="text" id="f-telefono" placeholder="341-..."></div>
+    <div><label>Localidad</label><input type="text" id="f-localidad" value="Rosario"></div>
+  </div>
+
+  <h2>Producto</h2>
+  <label>Sistema</label>
+  <select id="f-sistema">
+    <option value="Guillotina contrapesado">Guillotina contrapesado</option>
+    <option value="Levadizo con pistones">Levadizo con pistones</option>
+  </select>
+  <label>Material</label>
+  <select id="f-material">
+    <option value="Acero inoxidable esmerilado">Acero inoxidable esmerilado</option>
+    <option value="Chapa pintada epoxi negro">Chapa pintada epoxi negro</option>
+  </select>
+  <div class="row3">
+    <div><label>Ancho total (mm)</label><input type="number" id="f-ancho" value="1200"></div>
+    <div><label>Alto total (mm)</label><input type="number" id="f-alto" value="2400"></div>
+    <div><label>Boca parrilla (mm)</label><input type="number" id="f-boca" value="800"></div>
+  </div>
+
+  <div class="cb-group">
+    <label class="cb-label-item"><input type="checkbox" id="f-cb-bajo"> Bajo parrilla</label>
+    <div class="cb-sub" id="bajo-sub" style="display:none;">
+      <select id="f-bajo-puertas">
+        <option value="2">2 puertas</option>
+        <option value="3">3 puertas</option>
+        <option value="4">4 puertas</option>
+      </select>
+    </div>
+    <label class="cb-label-item"><input type="checkbox" id="f-cb-mesada"> Bajo mesada con puerta y cajonera</label>
+    <label class="cb-label-item"><input type="checkbox" id="f-cb-tapa"> Tapa superior horno</label>
+    <label class="cb-label-item"><input type="checkbox" id="f-cb-lateral"> Lateral piso a techo</label>
+  </div>
+
+  <h2>Productos y precios</h2>
+  <table class="line-items-table">
+    <thead><tr><th>Descripcion</th><th style="width:130px;">Precio</th><th style="width:30px;"></th></tr></thead>
+    <tbody id="line-items-body"></tbody>
+  </table>
+  <button class="btn-add" id="btn-add-item">+ Agregar producto</button>
+
+  <h2>Formas de pago</h2>
+  <div class="row3">
+    <div><label>Descuento anticipado %</label><input type="number" id="f-descuento" value="5" min="0" max="100"></div>
+    <div><label>Recargo cuotas %</label><input type="number" id="f-recargo" value="15" min="0" max="100"></div>
+    <div><label>Cant. cuotas</label><input type="number" id="f-cuotas" value="3" min="2" max="24"></div>
+  </div>
+
+  <h2>Textos</h2>
+  <label>Saludo</label>
+  <textarea id="f-saludo" rows="4">&#161;Hola [cliente]! Gracias por contactarte con Quality Deco &#x1f44b; En base a las medidas y preferencias que nos compartiste, te armamos este presupuesto para tu frente de parrilla. Cualquier consulta, no dudes en escribirnos &#x1f4ac;</textarea>
+  <label>CTA final</label>
+  <textarea id="f-cta" rows="2">Te interesa avanzar? Contactanos por WhatsApp y coordinamos la visita de medicion en tu obra.</textarea>
+  <label>Condiciones legales</label>
+  <textarea id="f-legal" rows="5">Los precios expresados son en pesos argentinos y no incluyen IVA. El presupuesto tiene una validez especificada a partir de la fecha de emision. Las medidas definitivas se confirman en la visita tecnica. Los plazos de fabricacion se acuerdan al momento de la sena. Quality Deco no se responsabiliza por modificaciones en obra no comunicadas previamente. La garantia cubre defectos de fabricacion, no el desgaste por uso normal.</textarea>
+  <label>Validez</label>
+  <input type="text" id="f-validez" value="10 dias">
+
+  <h2>Foto de portada</h2>
+  <input type="file" id="f-foto-upload" accept="image/*">
+  <img id="photo-preview-thumb" class="photo-preview" src="foto-inox-frente.jpg" alt="Preview">
+
+  <button class="btn-generate" id="btn-generate">Generar PDF</button>
+</div>
+
+<!-- ==================== PREVIEW PANEL ==================== -->
+<div class="preview-panel" id="preview-panel">
+
+  <!-- PAGE 1 - COVER -->
+  <div class="page" id="page1">
+    <div class="p1-hero">
+      <img id="pv-hero-img" src="foto-inox-frente.jpg" alt="Cover">
+      <div class="p1-hero-overlay"></div>
+      <div class="p1-hero-text">
+        <div class="h-pre">PRESUPUESTO</div>
+        <div class="h-main" id="pv-hero-title">FRENTE DE PARRILLA</div>
+        <div class="h-sub" id="pv-hero-sub">Guillotina contrapesado &middot; Acero inoxidable esmerilado</div>
+      </div>
+      <div class="p1-hero-caption">Trabajo realizado por Quality Deco &middot; Rosario</div>
+      <div class="p1-logo-badge">
+        <div class="lb-name">QUALITY DECO</div>
+        <div class="lb-sub">FRENTES DE PARRILLAS</div>
+      </div>
+    </div>
+    <div class="p1-client-bar" id="pv-client-bar">
+      <div class="cb-item"><div class="cb-label">Cliente</div><div class="cb-value" id="pv-cli-nombre">-</div></div>
+      <div class="cb-item"><div class="cb-label">Localidad</div><div class="cb-value" id="pv-cli-loc">Rosario</div></div>
+      <div class="cb-item"><div class="cb-label">Fecha</div><div class="cb-value" id="pv-cli-fecha">-</div></div>
+      <div class="cb-item"><div class="cb-label">N&#176; Presupuesto</div><div class="cb-value" id="pv-cli-nro">0001</div></div>
+    </div>
+    <div class="p1-greeting" id="pv-saludo"></div>
+    <div class="p1-pills">
+      <span class="p1-pill">Fabricacion propia</span>
+      <span class="p1-pill">Instalacion incluida</span>
+      <span class="p1-pill">Garantia</span>
+    </div>
+    <div class="p1-summary">
+      <div class="p1-specs" id="pv-specs"></div>
+      <div class="p1-total-box">
+        <div class="tb-label">INVERSION TOTAL</div>
+        <div class="tb-price" id="pv-total-price">$ 0</div>
+        <div class="tb-note">IVA incluido &middot; Instalacion incluida</div>
+      </div>
+    </div>
+    <div class="p1-footer" id="pv-validez-1">Validez: 10 dias</div>
+  </div>
+
+  <!-- PAGE 2 - DETAIL -->
+  <div class="page" id="page2" style="position:relative;">
+    <div class="mini-header">
+      <div class="mh-brand">QUALITY DECO</div>
+      <div class="mh-page">PRESUPUESTO N&#176; <span id="pv-p2-nro">0001</span> &mdash; PAG 2/3</div>
+    </div>
+    <div class="accent-line"></div>
+    <div class="detail-header"><span>DETALLE DEL PRESUPUESTO</span></div>
+    <table class="detail-table">
+      <thead>
+        <tr><th>Codigo</th><th>Medida</th><th>Descripcion</th><th>Precio</th></tr>
+      </thead>
+      <tbody id="pv-detail-tbody"></tbody>
+    </table>
+    <div class="totals-box" id="pv-totals-box"></div>
+    <div class="p2-footer" id="pv-p2-footer">Precios en pesos argentinos &middot; Sin IVA &middot; Validez: 10 dias</div>
+  </div>
+
+  <!-- PAGE 3 - PAYMENT -->
+  <div class="page" id="page3" style="position:relative;">
+    <div class="mini-header">
+      <div class="mh-brand">QUALITY DECO</div>
+      <div class="mh-page">PRESUPUESTO N&#176; <span id="pv-p3-nro">0001</span> &mdash; PAG 3/3</div>
+    </div>
+    <div class="accent-line"></div>
+    <div class="section-label-wrap"><div class="section-label">Formas de pago</div></div>
+    <div class="pay-cards" id="pv-pay-cards"></div>
+    <div class="info-section-label"><div class="section-label">Informacion del servicio</div></div>
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="ic-header"><div class="ic-dot"></div><div class="ic-title">Fabricacion y entrega</div></div>
+        <div class="ic-body">
+          <div class="ic-item"><span class="ic-dash">--</span><span>Fabricacion 100% propia en nuestro taller</span></div>
+          <div class="ic-item"><span class="ic-dash">--</span><span>Plazo estimado: 15 a 20 dias habiles</span></div>
+          <div class="ic-item"><span class="ic-dash">--</span><span>Entrega e instalacion en obra</span></div>
+        </div>
+      </div>
+      <div class="info-card">
+        <div class="ic-header"><div class="ic-dot"></div><div class="ic-title">El frente incluye</div></div>
+        <div class="ic-body">
+          <div class="ic-item"><span class="ic-dash">--</span><span>Frente completo segun configuracion</span></div>
+          <div class="ic-item"><span class="ic-dash">--</span><span>Palita y atizador de regalo</span></div>
+          <div class="ic-item"><span class="ic-dash">--</span><span>Instalacion profesional en obra</span></div>
+        </div>
+      </div>
+      <div class="info-card">
+        <div class="ic-header"><div class="ic-dot"></div><div class="ic-title">Garantia</div></div>
+        <div class="ic-body">
+          <div class="ic-item"><span class="ic-dash">--</span><span>Garantia por defectos de fabricacion</span></div>
+          <div class="ic-item"><span class="ic-dash">--</span><span>Soporte post-venta permanente</span></div>
+          <div class="ic-item"><span class="ic-dash">--</span><span>Materiales de primera calidad</span></div>
+        </div>
+      </div>
+      <div class="info-card">
+        <div class="ic-header"><div class="ic-dot"></div><div class="ic-title">Proceso</div></div>
+        <div class="ic-body">
+          <div class="ic-item"><span class="ic-dash">--</span><span>Visita tecnica para medicion</span></div>
+          <div class="ic-item"><span class="ic-dash">--</span><span>Confirmacion con sena del 50%</span></div>
+          <div class="ic-item"><span class="ic-dash">--</span><span>Fabricacion, entrega e instalacion</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="legal-box" id="pv-legal"></div>
+    <div class="cta-box" id="pv-cta"></div>
+    <div class="p3-footer">
+      <div class="pf-brand">QUALITY DECO | Frentes de parrillas</div>
+      <div class="pf-contact">Campbell 1505 A &middot; Rosario &middot; Santa Fe &middot; 0341-3664952 &middot; @qualitydeco.ok</div>
+      <div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============ UTILS ============ */
+function formatPrice(num) {
+  if (num === null || num === undefined || isNaN(num) || num === 0) return '$ 0';
+  var s = Math.round(Math.abs(num)).toString();
+  var result = '';
+  for (var i = s.length - 1, c = 0; i >= 0; i--, c++) {
+    if (c > 0 && c % 3 === 0) result = '.' + result;
+    result = s[i] + result;
+  }
+  return '$ ' + result;
+}
+
+function parsePriceInput(str) {
+  var digits = str.replace(/\D/g, '');
+  return digits === '' ? 0 : parseInt(digits, 10);
+}
+
+function formatDateAR(dateStr) {
+  if (!dateStr) return '-';
+  var parts = dateStr.split('-');
+  if (parts.length !== 3) return dateStr;
+  return parts[2] + '/' + parts[1] + '/' + parts[0];
+}
+
+function escapeHtml(s) {
+  var d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function escapeAttr(s) {
+  return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ============ LINE ITEMS STATE ============ */
+var lineItems = [];
+var nextItemId = 1;
+
+function createItem(name, subtitle, price, isFree, isFixed, code) {
+  return {
+    id: nextItemId++,
+    name: name,
+    subtitle: subtitle || '',
+    price: price || 0,
+    isFree: isFree || false,
+    isFixed: isFixed || false,
+    code: code || ('QD-' + String(nextItemId).padStart(3, '0'))
+  };
+}
+
+function getProductCode(tipo, sistema, material, puertas) {
+  var matCode = (material || '').toLowerCase().indexOf('inox') >= 0 ? 'INOX' : 'CHP';
+  var sisCode = (sistema || '').toLowerCase().indexOf('guillotina') >= 0 ? 'FGL' : 'FLV';
+  if (tipo === 'frente') return sisCode + '-' + matCode;
+  if (tipo === 'bajo') return 'BP-' + puertas + 'P';
+  if (tipo === 'mesada') return 'BM-PC';
+  if (tipo === 'tapa') return 'TSH';
+  if (tipo === 'lateral') return 'LAT';
+  return 'QD-' + String(nextItemId).padStart(3, '0');
+}
+
+function rebuildItemsFromConfig() {
+  /* Preserve any custom items (not auto-generated from config) and fixed items */
+  var customItems = lineItems.filter(function(it) { return it._custom === true; });
+  var sistema = document.getElementById('f-sistema').value;
+  var material = document.getElementById('f-material').value;
+
+  lineItems = [];
+
+  lineItems.push(createItem(
+    'Frente de parrilla ' + sistema.toLowerCase(),
+    material, 0, false, false, getProductCode('frente', sistema, material)
+  ));
+
+  if (document.getElementById('f-cb-bajo').checked) {
+    var puertas = document.getElementById('f-bajo-puertas').value;
+    lineItems.push(createItem(
+      'Bajo parrilla ' + puertas + ' puertas',
+      material, 0, false, false, getProductCode('bajo', sistema, material, puertas)
+    ));
+  }
+  if (document.getElementById('f-cb-mesada').checked) {
+    lineItems.push(createItem(
+      'Bajo mesada con puerta y cajonera',
+      material, 0, false, false, getProductCode('mesada')
+    ));
+  }
+  if (document.getElementById('f-cb-tapa').checked) {
+    lineItems.push(createItem(
+      'Tapa superior horno',
+      material, 0, false, false, getProductCode('tapa')
+    ));
+  }
+  if (document.getElementById('f-cb-lateral').checked) {
+    lineItems.push(createItem(
+      'Lateral piso a techo',
+      material, 0, false, false, getProductCode('lateral')
+    ));
+  }
+
+  /* Re-add custom items */
+  customItems.forEach(function(ci) {
+    ci.id = nextItemId++;
+    lineItems.push(ci);
+  });
+
+  /* Fixed items always at end */
+  lineItems.push(createItem('Palita y atizador', 'Accesorios de regalo', 0, true, true, 'ACC'));
+  lineItems.push(createItem('Colocacion en obra', 'Instalacion profesional', 0, true, true, 'INST'));
+
+  renderLineItemsForm();
+  render();
+}
+
+function renderLineItemsForm() {
+  var tbody = document.getElementById('line-items-body');
+  tbody.innerHTML = '';
+  lineItems.forEach(function(item) {
+    var tr = document.createElement('tr');
+    var displayPrice = item.isFree ? 'Sin cargo' : (item.price > 0 ? formatPrice(item.price) : '');
+
+    var tdName = document.createElement('td');
+    var inpName = document.createElement('input');
+    inpName.type = 'text';
+    inpName.value = item.name;
+    inpName.setAttribute('data-id', item.id);
+    inpName.addEventListener('input', function() {
+      var id = parseInt(this.getAttribute('data-id'));
+      var found = lineItems.find(function(i) { return i.id === id; });
+      if (found) { found.name = this.value; render(); }
+    });
+    tdName.appendChild(inpName);
+
+    var tdPrice = document.createElement('td');
+    var inpPrice = document.createElement('input');
+    inpPrice.type = 'text';
+    inpPrice.className = 'price-input';
+    inpPrice.value = displayPrice;
+    inpPrice.setAttribute('data-id', item.id);
+    if (item.isFree) {
+      inpPrice.readOnly = true;
+      inpPrice.style.color = '#4a9e5c';
+      inpPrice.style.background = '#1e2e1e';
+    }
+    inpPrice.addEventListener('focus', function() {
+      var id = parseInt(this.getAttribute('data-id'));
+      var found = lineItems.find(function(i) { return i.id === id; });
+      if (found && found.isFree) return;
+      if (found && found.price > 0) {
+        this.value = found.price.toString();
+      } else {
+        this.value = '';
+      }
+    });
+    inpPrice.addEventListener('input', function() {
+      var id = parseInt(this.getAttribute('data-id'));
+      var found = lineItems.find(function(i) { return i.id === id; });
+      if (!found || found.isFree) return;
+      var raw = this.value.replace(/\D/g, '');
+      found.price = raw === '' ? 0 : parseInt(raw, 10);
+      render();
+    });
+    inpPrice.addEventListener('blur', function() {
+      var id = parseInt(this.getAttribute('data-id'));
+      var found = lineItems.find(function(i) { return i.id === id; });
+      if (!found || found.isFree) return;
+      this.value = found.price > 0 ? formatPrice(found.price) : '';
+    });
+    tdPrice.appendChild(inpPrice);
+
+    var tdDel = document.createElement('td');
+    if (!item.isFixed) {
+      var btnDel = document.createElement('button');
+      btnDel.className = 'btn-delete';
+      btnDel.innerHTML = '&times;';
+      btnDel.setAttribute('data-id', item.id);
+      btnDel.addEventListener('click', function() {
+        var id = parseInt(this.getAttribute('data-id'));
+        lineItems = lineItems.filter(function(i) { return i.id !== id; });
+        renderLineItemsForm();
+        render();
+      });
+      tdDel.appendChild(btnDel);
+    }
+
+    tr.appendChild(tdName);
+    tr.appendChild(tdPrice);
+    tr.appendChild(tdDel);
+    tbody.appendChild(tr);
+  });
+}
+
+function addCustomItem() {
+  var code = 'QD-C' + String(nextItemId).padStart(2, '0');
+  var newItem = createItem('Nuevo producto', '', 0, false, false, code);
+  newItem._custom = true;
+  /* Insert before fixed items */
+  var fixedStart = -1;
+  for (var i = 0; i < lineItems.length; i++) {
+    if (lineItems[i].isFixed) { fixedStart = i; break; }
+  }
+  if (fixedStart >= 0) {
+    lineItems.splice(fixedStart, 0, newItem);
+  } else {
+    lineItems.push(newItem);
+  }
+  renderLineItemsForm();
+  render();
+}
+
+/* ============ CONFIG HANDLERS ============ */
+function onConfigChange() {
+  document.getElementById('bajo-sub').style.display =
+    document.getElementById('f-cb-bajo').checked ? 'block' : 'none';
+  rebuildItemsFromConfig();
+}
+
+function onSystemChange() {
+  updatePhoto();
+  rebuildItemsFromConfig();
+}
+
+function onMaterialChange() {
+  updatePhoto();
+  rebuildItemsFromConfig();
+}
+
+function updatePhoto() {
+  /* No auto-select — user uploads manually */
+}
+
+function onPhotoUpload(ev) {
+  var file = ev.target.files[0];
+  if (!file) return;
+  var url = URL.createObjectURL(file);
+  document.getElementById('photo-preview-thumb').src = url;
+  document.getElementById('pv-hero-img').src = url;
+}
+
+/* ============ MAIN RENDER ============ */
+function render() {
+  var nro = document.getElementById('f-nro').value;
+  var cliente = document.getElementById('f-cliente').value || '-';
+  var fecha = document.getElementById('f-fecha').value;
+  var localidad = document.getElementById('f-localidad').value || '-';
+  var sistema = document.getElementById('f-sistema').value;
+  var material = document.getElementById('f-material').value;
+  var ancho = document.getElementById('f-ancho').value;
+  var alto = document.getElementById('f-alto').value;
+  var boca = document.getElementById('f-boca').value;
+  var validez = document.getElementById('f-validez').value;
+  var descuento = parseFloat(document.getElementById('f-descuento').value) || 0;
+  var recargo = parseFloat(document.getElementById('f-recargo').value) || 0;
+  var cuotas = parseInt(document.getElementById('f-cuotas').value) || 3;
+
+  var saludoRaw = document.getElementById('f-saludo').value;
+  var saludo = saludoRaw.replace(/\[cliente\]/gi, cliente);
+  /* Split first sentence for bigger greeting name */
+  var greetingParts = saludo.match(/^([^.!?]+[.!?])\s*([\s\S]*)$/);
+  var greetingLine1 = greetingParts ? greetingParts[1] : saludo;
+  var greetingRest = greetingParts ? greetingParts[2] : '';
+
+  var config = [];
+  if (document.getElementById('f-cb-bajo').checked) config.push('Bajo parrilla ' + document.getElementById('f-bajo-puertas').value + ' puertas');
+  if (document.getElementById('f-cb-mesada').checked) config.push('Bajo mesada');
+  if (document.getElementById('f-cb-tapa').checked) config.push('Tapa horno');
+  if (document.getElementById('f-cb-lateral').checked) config.push('Lateral piso a techo');
+
+  var total = 0;
+  lineItems.forEach(function(item) { if (!item.isFree) total += item.price; });
+
+  /* ---- PAGE 1 ---- */
+  document.getElementById('pv-hero-title').textContent = 'FRENTE DE PARRILLA';
+  document.getElementById('pv-hero-sub').innerHTML = escapeHtml(sistema) + ' &middot; ' + escapeHtml(material);
+  document.getElementById('pv-cli-nombre').textContent = cliente;
+  document.getElementById('pv-cli-loc').textContent = localidad;
+  document.getElementById('pv-cli-fecha').textContent = formatDateAR(fecha);
+  document.getElementById('pv-cli-nro').textContent = nro;
+  document.getElementById('pv-saludo').innerHTML = '<span class="greeting-name">' + escapeHtml(greetingLine1) + '</span>' + escapeHtml(greetingRest);
+  var ivaP1 = Math.round(total * 0.21);
+  document.getElementById('pv-total-price').textContent = formatPrice(total + ivaP1);
+  document.getElementById('pv-validez-1').textContent = 'Validez: ' + validez;
+
+  var specsHtml = '<table>';
+  specsHtml += '<tr><td class="sk">Sistema</td><td class="sv">' + escapeHtml(sistema) + '</td></tr>';
+  specsHtml += '<tr><td class="sk">Material</td><td class="sv">' + escapeHtml(material) + '</td></tr>';
+  specsHtml += '<tr><td class="sk">Medidas</td><td class="sv">' + escapeHtml(ancho) + ' x ' + escapeHtml(alto) + ' mm</td></tr>';
+  specsHtml += '<tr><td class="sk">Boca parrilla</td><td class="sv">' + escapeHtml(boca) + ' mm</td></tr>';
+  if (config.length > 0) specsHtml += '<tr><td class="sk">Configuracion</td><td class="sv">' + escapeHtml(config.join(', ')) + '</td></tr>';
+  specsHtml += '</table>';
+  document.getElementById('pv-specs').innerHTML = specsHtml;
+
+  /* ---- PAGE 2 ---- */
+  document.getElementById('pv-p2-nro').textContent = nro;
+  var dtbody = document.getElementById('pv-detail-tbody');
+  dtbody.innerHTML = '';
+  var mainMeasure = ancho + ' x ' + alto;
+  var isFirstItem = true;
+  lineItems.forEach(function(item) {
+    var tr = document.createElement('tr');
+    var priceCell = item.isFree
+      ? '<span class="dt-free">Sin cargo</span>'
+      : '<span class="dt-price">' + (item.price > 0 ? formatPrice(item.price) : '-') + '</span>';
+    /* Only first non-free item gets client measures, rest get dash */
+    var itemMeasure = '—';
+    if (isFirstItem && !item.isFree) {
+      itemMeasure = mainMeasure;
+      isFirstItem = false;
+    }
+    tr.innerHTML =
+      '<td><span class="dt-code">' + escapeHtml(item.code) + '</span></td>' +
+      '<td><span class="dt-measure">' + escapeHtml(itemMeasure) + '</span></td>' +
+      '<td><div class="dt-desc-name">' + escapeHtml(item.name) + '</div>' +
+      (item.subtitle ? '<div class="dt-desc-sub">' + escapeHtml(item.subtitle) + '</div>' : '') + '</td>' +
+      '<td>' + priceCell + '</td>';
+    dtbody.appendChild(tr);
+  });
+
+  var iva = Math.round(total * 0.21);
+  var totalConIva = total + iva;
+  var totalsHtml = '<div class="totals-inner">';
+  totalsHtml += '<div class="totals-row"><span class="tr-label">Subtotal</span><span class="tr-value">' + formatPrice(total) + '</span></div>';
+  totalsHtml += '<div class="totals-row"><span class="tr-label">Colocacion + accesorios</span><span class="tr-green">Bonificado</span></div>';
+  totalsHtml += '<div class="totals-row"><span class="tr-label">IVA (21%)</span><span class="tr-value">' + formatPrice(iva) + '</span></div>';
+  totalsHtml += '<div class="totals-row tr-total"><span class="tr-label">TOTAL</span><span class="tr-value">' + formatPrice(totalConIva) + '</span></div>';
+  totalsHtml += '</div>';
+  document.getElementById('pv-totals-box').innerHTML = totalsHtml;
+
+  document.getElementById('pv-p2-footer').textContent = 'Precios en pesos argentinos \u00B7 IVA incluido en total \u00B7 Validez: ' + validez;
+
+  /* ---- PAGE 3 ---- */
+  document.getElementById('pv-p3-nro').textContent = nro;
+
+  var iva3 = Math.round(total * 0.21);
+  var totalConIva3 = total + iva3;
+  var anticipado = Math.round(totalConIva3 * (1 - descuento / 100));
+  var ahorro = totalConIva3 - anticipado;
+  var conRecargo = Math.round(totalConIva3 * (1 + recargo / 100));
+  var cuotaVal = cuotas > 0 ? Math.round(conRecargo / cuotas) : 0;
+  var mitad = Math.round(totalConIva3 / 2);
+
+  var payHtml = '';
+
+  /* Card 1: 100% anticipado (left) */
+  payHtml += '<div class="pay-card">';
+  payHtml += '<div class="pc-header">100% anticipado</div>';
+  payHtml += '<div class="pc-body">';
+  payHtml += '<div class="pc-price">' + formatPrice(anticipado) + '</div>';
+  payHtml += '<div class="pc-detail">Transferencia bancaria<br>Pago unico antes de fabricar</div>';
+  if (descuento > 0) {
+    payHtml += '<div class="pc-tag-green">Ahorras ' + formatPrice(ahorro) + ' (' + descuento + '% off)</div>';
+  }
+  payHtml += '</div></div>';
+
+  /* Card 2: 50/50 RECOMMENDED (center) */
+  payHtml += '<div class="pay-card recommended">';
+  payHtml += '<span class="pc-badge">Recomendado</span>';
+  payHtml += '<div class="pc-header">50% anticipo + entrega</div>';
+  payHtml += '<div class="pc-body">';
+  payHtml += '<div class="pc-price">' + formatPrice(totalConIva3) + '</div>';
+  payHtml += '<div class="pc-detail">Sena al contratar: <strong>' + formatPrice(mitad) + '</strong><br>Saldo contra entrega: <strong>' + formatPrice(totalConIva3 - mitad) + '</strong></div>';
+  payHtml += '</div></div>';
+
+  /* Card 3: Cuotas (right) */
+  payHtml += '<div class="pay-card">';
+  payHtml += '<div class="pc-header">' + cuotas + ' cuotas</div>';
+  payHtml += '<div class="pc-body">';
+  payHtml += '<div class="pc-price">' + formatPrice(conRecargo) + '</div>';
+  payHtml += '<div class="pc-detail">' + cuotas + ' pagos de ' + formatPrice(cuotaVal) + '</div>';
+  if (recargo > 0) {
+    payHtml += '<div class="pc-tag-amber">Recargo ' + recargo + '%</div>';
+  } else {
+    payHtml += '<div class="pc-tag-green">Sin interes</div>';
+  }
+  payHtml += '</div></div>';
+
+  document.getElementById('pv-pay-cards').innerHTML = payHtml;
+
+  document.getElementById('pv-legal').textContent = document.getElementById('f-legal').value;
+  document.getElementById('pv-cta').textContent = document.getElementById('f-cta').value;
+}
+
+/* ============ EVENT BINDING ============ */
+function bindEvents() {
+  /* All form inputs trigger render */
+  var formInputs = document.querySelectorAll('.form-panel input[type="text"], .form-panel input[type="date"], .form-panel input[type="number"], .form-panel select, .form-panel textarea');
+  formInputs.forEach(function(el) {
+    /* Skip line-items-table inputs (handled separately) */
+    if (el.closest('.line-items-table')) return;
+
+    el.addEventListener('input', render);
+    el.addEventListener('change', render);
+  });
+
+  /* System and material also rebuild items */
+  document.getElementById('f-sistema').addEventListener('change', onSystemChange);
+  document.getElementById('f-material').addEventListener('change', onMaterialChange);
+
+  /* Checkboxes */
+  document.getElementById('f-cb-bajo').addEventListener('change', onConfigChange);
+  document.getElementById('f-cb-mesada').addEventListener('change', onConfigChange);
+  document.getElementById('f-cb-tapa').addEventListener('change', onConfigChange);
+  document.getElementById('f-cb-lateral').addEventListener('change', onConfigChange);
+  document.getElementById('f-bajo-puertas').addEventListener('change', onConfigChange);
+
+  /* Photo */
+  document.getElementById('f-foto-upload').addEventListener('change', onPhotoUpload);
+
+  /* Add item button */
+  document.getElementById('btn-add-item').addEventListener('click', addCustomItem);
+
+  /* Generate PDF */
+  document.getElementById('btn-generate').addEventListener('click', function() {
+    alert('IMPORTANTE: En el dialogo de impresion, activa "Graficos en segundo plano" (Background graphics) en Opciones para que se vean los colores correctamente. Margenes: Ninguno.');
+    window.print();
+  });
+}
+
+/* ============ GOOGLE SHEETS INTEGRATION ============ */
+var SHEET_ID = '19SEgflKP6oQY0zQmUqArbhQaQPf57oX0x4GGrfwmjYg';
+var SHEET_GID = '1476153618';
+var leadsData = [];
+
+function loadLeadsFromSheet() {
+  var url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:json&gid=' + SHEET_GID;
+  fetch(url)
+    .then(function(r) { return r.text(); })
+    .then(function(text) {
+      /* Strip the google wrapper: google.visualization.Query.setResponse({...}); */
+      var jsonStr = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);?/);
+      if (!jsonStr) { alert('No se pudo leer el Sheet. Verifica que este compartido como publico.'); return; }
+      var data = JSON.parse(jsonStr[1]);
+      var rows = data.table.rows;
+      leadsData = [];
+      rows.forEach(function(row, idx) {
+        var cells = row.c;
+        if (!cells || !cells[0] || !cells[0].v) return;
+        /* Skip leads without measurements */
+        var anchoVal = (cells[5] && cells[5].v) || '';
+        var altoVal = (cells[6] && cells[6].v) || '';
+        if (!anchoVal || anchoVal === '--' || anchoVal === '-' || !altoVal || altoVal === '--' || altoVal === '-') return;
+        if (isNaN(parseFloat(anchoVal)) || isNaN(parseFloat(altoVal))) return;
+        leadsData.push({
+          index: idx,
+          nombre: (cells[0] && cells[0].v) || '',
+          whatsapp: (cells[1] && cells[1].v) || '',
+          fecha: (cells[2] && cells[2].v) || '',
+          ciudad: (cells[3] && cells[3].v) || '',
+          estado: (cells[4] && cells[4].v) || '',
+          ancho: (cells[5] && cells[5].v) || '',
+          alto: (cells[6] && cells[6].v) || '',
+          boca: (cells[7] && cells[7].v) || '',
+          foto: (cells[8] && cells[8].v) || '',
+          sistema: (cells[9] && cells[9].v) || '',
+          material: (cells[10] && cells[10].v) || '',
+          adicionales: (cells[11] && cells[11].v) || '',
+          medidasPend: (cells[12] && cells[12].v) || ''
+        });
+      });
+      populateLeadSelect();
+    })
+    .catch(function(err) {
+      alert('Error al cargar leads: ' + err.message);
+    });
+}
+
+function populateLeadSelect() {
+  var sel = document.getElementById('f-lead-select');
+  sel.innerHTML = '<option value="">-- Seleccionar lead (' + leadsData.length + ' encontrados) --</option>';
+  leadsData.forEach(function(lead, i) {
+    var opt = document.createElement('option');
+    opt.value = i;
+    var label = lead.nombre;
+    if (lead.ciudad) label += ' - ' + lead.ciudad;
+    if (lead.sistema) label += ' (' + lead.sistema + ')';
+    opt.textContent = label;
+    sel.appendChild(opt);
+  });
+}
+
+function onLeadSelect() {
+  var idx = document.getElementById('f-lead-select').value;
+  if (idx === '') return;
+  var lead = leadsData[parseInt(idx)];
+  if (!lead) return;
+
+  /* Fill client info */
+  document.getElementById('f-cliente').value = lead.nombre;
+  document.getElementById('f-localidad').value = lead.ciudad || 'Rosario';
+
+  /* Format WhatsApp: strip 549 prefix, add 0 */
+  var phone = lead.whatsapp.toString().replace(/\D/g, '');
+  if (phone.startsWith('549')) phone = '0' + phone.substring(3);
+  else if (phone.startsWith('54')) phone = '0' + phone.substring(2);
+  document.getElementById('f-telefono').value = phone;
+
+  /* System */
+  var sistemaMap = {
+    'levadizo': 'Levadizo con pistones',
+    'guillotina': 'Guillotina contrapesado'
+  };
+  var sistemaLower = (lead.sistema || '').toLowerCase().trim();
+  if (sistemaLower && sistemaMap[sistemaLower]) {
+    document.getElementById('f-sistema').value = sistemaMap[sistemaLower];
+  }
+
+  /* Material */
+  var matLower = (lead.material || '').toLowerCase().trim();
+  if (matLower.indexOf('inox') >= 0 || matLower.indexOf('acero') >= 0) {
+    document.getElementById('f-material').value = 'Acero inoxidable esmerilado';
+  } else if (matLower.indexOf('epoxi') >= 0 || matLower.indexOf('chapa') >= 0) {
+    document.getElementById('f-material').value = 'Chapa pintada epoxi negro';
+  }
+
+  /* Measurements — cm to mm (×10) */
+  var anchoCm = parseFloat(lead.ancho);
+  var altoCm = parseFloat(lead.alto);
+  var bocaCm = parseFloat(lead.boca);
+  document.getElementById('f-ancho').value = !isNaN(anchoCm) && anchoCm > 0 ? Math.round(anchoCm * 10) : '';
+  document.getElementById('f-alto').value = !isNaN(altoCm) && altoCm > 0 ? Math.round(altoCm * 10) : '';
+  document.getElementById('f-boca').value = !isNaN(bocaCm) && bocaCm > 0 ? Math.round(bocaCm * 10) : '';
+
+  /* Adicionales → checkboxes */
+  var adicLower = (lead.adicionales || '').toLowerCase();
+  document.getElementById('f-cb-bajo').checked = adicLower.indexOf('bajo parrilla') >= 0 || adicLower.indexOf('bajo mesada') >= 0;
+  document.getElementById('f-cb-mesada').checked = adicLower.indexOf('bajo mesada') >= 0 || adicLower.indexOf('mesada') >= 0;
+  document.getElementById('f-cb-tapa').checked = adicLower.indexOf('tapa') >= 0 || adicLower.indexOf('horno') >= 0;
+  document.getElementById('f-cb-lateral').checked = adicLower.indexOf('lateral') >= 0;
+
+  onConfigChange();
+  render();
+}
+
+/* ============ INIT ============ */
+function init() {
+  var today = new Date();
+  var yyyy = today.getFullYear();
+  var mm = String(today.getMonth() + 1).padStart(2, '0');
+  var dd = String(today.getDate()).padStart(2, '0');
+  document.getElementById('f-fecha').value = yyyy + '-' + mm + '-' + dd;
+
+  bindEvents();
+
+  /* Google Sheets lead selector */
+  document.getElementById('btn-load-leads').addEventListener('click', loadLeadsFromSheet);
+  document.getElementById('f-lead-select').addEventListener('change', onLeadSelect);
+  document.getElementById('btn-new-blank').addEventListener('click', function() {
+    document.getElementById('f-lead-select').value = '';
+    document.getElementById('f-cliente').value = '';
+    document.getElementById('f-telefono').value = '';
+    document.getElementById('f-localidad').value = 'Rosario';
+    document.getElementById('f-sistema').value = 'Guillotina contrapesado';
+    document.getElementById('f-material').value = 'Acero inoxidable esmerilado';
+    document.getElementById('f-ancho').value = '';
+    document.getElementById('f-alto').value = '';
+    document.getElementById('f-boca').value = '';
+    document.getElementById('f-cb-bajo').checked = false;
+    document.getElementById('f-cb-mesada').checked = false;
+    document.getElementById('f-cb-tapa').checked = false;
+    document.getElementById('f-cb-lateral').checked = false;
+    onConfigChange();
+    render();
+  });
+
+  /* Auto-load leads on start */
+  loadLeadsFromSheet();
+
+  rebuildItemsFromConfig();
+  updatePhoto();
+  render();
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
