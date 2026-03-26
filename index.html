@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quality Deco - Generador de Presupuestos</title>
+<title>Quality Deco - CRM</title>
 <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;600;700;900&display=swap" rel="stylesheet">
 <style>
 /* ========== RESET & BASE ========== */
@@ -1028,6 +1028,200 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
 }
 .presup-history-item .phi-detail-row.phi-summary {
   font-weight: 600; color: #2a2a2a; padding-top: 6px; border-top: 1px solid #e0e4e8; margin-top: 4px;
+}
+
+/* ========== MOBILE RESPONSIVE ========== */
+@media (max-width: 768px) {
+  /* --- Body & Layout --- */
+  body { overflow: auto; }
+  .main-content { flex-direction: column; overflow: auto; height: auto; min-height: 0; }
+
+  /* --- Top Tab Bar --- */
+  .top-tab-bar {
+    overflow-x: auto; white-space: nowrap; padding: 0 10px; gap: 0;
+    -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  }
+  .top-tab-bar::-webkit-scrollbar { display: none; }
+  .top-tab-bar .tab-brand { font-size: 10px; margin-right: 12px; letter-spacing: 1px; }
+  .top-tab-bar .tab-btn { font-size: 11px; padding: 10px 12px; letter-spacing: 0.5px; }
+  .top-tab-bar .btn-global-refresh { font-size: 11px; padding: 5px 10px; }
+
+  /* --- Home Dashboard --- */
+  .home-panel { padding: 20px 16px; }
+  .home-welcome h1 { font-size: 20px; }
+  .home-cards-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .home-card { padding: 16px 18px; }
+  .home-card .hc-icon { font-size: 22px; margin-bottom: 6px; }
+  .home-card .hc-number { font-size: 17px; }
+
+  /* --- Pipeline / Kanban --- */
+  .pipeline-panel { padding: 16px; }
+  .pipeline-toolbar { flex-wrap: wrap; }
+  .pipeline-toolbar h1 { font-size: 18px; }
+  .kanban-board {
+    flex-direction: column; overflow-x: hidden; overflow-y: auto;
+    gap: 12px;
+  }
+  .kanban-column {
+    min-width: 100%; width: 100%; flex-shrink: 1; max-height: none;
+  }
+  .kanban-col-body { max-height: 300px; }
+  .cerrados-body.open { flex-direction: column; }
+  .cerrados-sub.ganados { border-right: none; border-bottom: 1px solid #f0f0f0; }
+  .cerrados-cards { flex-wrap: wrap; }
+  .cerrado-card { min-width: 100%; max-width: 100%; }
+
+  /* --- Presupuestos (form + preview) --- */
+  .form-panel {
+    width: 100%; min-width: 100%; border-right: none; border-bottom: 1px solid #333;
+    height: auto; max-height: none; overflow-y: visible;
+  }
+  .preview-panel { display: none; }
+
+  /* Presupuestos Dashboard */
+  .presupuestos-dashboard { padding: 20px 16px; }
+  .presup-dash-toolbar { flex-wrap: wrap; gap: 10px; }
+  .presup-dash-toolbar h1 { font-size: 18px; }
+  .presup-dash-toolbar .btn-nuevo-presup { margin-left: 0; width: 100%; justify-content: center; }
+  .presup-dash-stats { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .presup-dash-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .presup-dash-table { min-width: 600px; }
+
+  /* --- Contactos --- */
+  .contactos-panel { padding: 20px 16px; }
+  .contactos-toolbar { flex-direction: column; align-items: stretch; gap: 8px; }
+  .contactos-toolbar h1 { font-size: 18px; }
+  .contactos-toolbar .ct-search { width: 100%; }
+  .contactos-toolbar .ct-filter { width: 100%; }
+  .contactos-toolbar .btn-nuevo-contacto { margin-left: 0; width: 100%; text-align: center; }
+  .contactos-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .contactos-table { min-width: 600px; }
+
+  /* --- Ventas --- */
+  .ventas-panel { padding: 20px 16px; }
+  .ventas-toolbar { flex-wrap: wrap; gap: 8px; }
+  .ventas-toolbar h1 { font-size: 18px; }
+  .ventas-toolbar .btn-export-csv { margin-left: 0; width: 100%; justify-content: center; }
+  .ventas-metrics { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .ventas-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .ventas-table { min-width: 600px; }
+
+  /* --- Estadisticas --- */
+  .estadisticas-panel { padding: 20px 16px; }
+  .stats-title { font-size: 18px; }
+  .stats-cards { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat-card { padding: 14px 18px; }
+  .stat-card .stat-number { font-size: 26px; }
+  .stats-charts { grid-template-columns: 1fr; gap: 14px; }
+  .chart-card { padding: 16px; }
+  .chart-bar-label { width: 90px; font-size: 12px; }
+
+  /* --- Ajustes --- */
+  .ajustes-panel { padding: 20px 16px; }
+  .ajustes-title { font-size: 18px; }
+  .ajustes-grid { grid-template-columns: 1fr; gap: 14px; }
+  .ajustes-card { padding: 18px; }
+  .ajustes-actions { flex-direction: column; }
+  .ajustes-actions .btn-save-settings { width: 100%; text-align: center; }
+  .ajustes-actions .btn-restore-settings { width: 100%; text-align: center; }
+
+  /* --- All Modals --- */
+  .lead-modal,
+  .contacto-modal,
+  .nueva-venta-modal {
+    width: 95vw; max-width: 95vw; max-height: 90vh; overflow-y: auto;
+    padding: 20px 18px;
+  }
+  .lead-modal h2,
+  .contacto-modal h2,
+  .nueva-venta-modal h2 { font-size: 17px; }
+  .lead-modal .modal-row .modal-label { width: 110px; font-size: 10px; }
+  .contacto-modal .modal-row-2 { flex-direction: column; gap: 0; }
+  .nueva-venta-modal .nv-info-row { flex-direction: column; gap: 4px; }
+
+  /* --- Login --- */
+  .login-box { width: 90vw; padding: 30px 24px; }
+
+  /* --- Preview page scaling for any visible preview context --- */
+  .page {
+    width: 100%; min-height: auto; height: auto;
+    transform-origin: top left;
+  }
+}
+
+@media (max-width: 480px) {
+  /* --- Tab Bar even smaller --- */
+  .top-tab-bar { height: 42px; padding: 0 6px; }
+  .top-tab-bar .tab-brand { display: none; }
+  .top-tab-bar .tab-btn { font-size: 10px; padding: 8px 8px; letter-spacing: 0; }
+  .top-tab-bar .btn-global-refresh { font-size: 10px; padding: 4px 8px; }
+
+  /* --- Home cards single column --- */
+  .home-cards-grid { grid-template-columns: 1fr; gap: 10px; }
+  .home-welcome h1 { font-size: 18px; }
+  .home-card { padding: 14px 16px; }
+
+  /* --- Tighter padding everywhere --- */
+  .home-panel,
+  .pipeline-panel,
+  .contactos-panel,
+  .ventas-panel,
+  .estadisticas-panel,
+  .ajustes-panel,
+  .presupuestos-dashboard { padding: 12px; }
+
+  .form-panel { padding: 12px 10px; }
+
+  /* --- Pipeline --- */
+  .pipeline-toolbar h1 { font-size: 16px; }
+  .kanban-col-body { max-height: 250px; }
+  .kanban-card { padding: 10px 12px; }
+  .kanban-card .card-name { font-size: 13px; }
+  .kanban-card .card-details { font-size: 10px; }
+
+  /* --- Presupuestos Dashboard --- */
+  .presup-dash-stats { grid-template-columns: 1fr; }
+  .presup-dash-stat-card .pds-number { font-size: 22px; }
+
+  /* --- Contactos / Ventas --- */
+  .contactos-toolbar h1,
+  .ventas-toolbar h1,
+  .stats-title,
+  .ajustes-title { font-size: 16px; }
+
+  .ventas-metrics { grid-template-columns: 1fr; }
+  .ventas-metric-card .vm-number { font-size: 22px; }
+
+  /* --- Estadisticas --- */
+  .stats-cards { grid-template-columns: 1fr; }
+  .stat-card .stat-number { font-size: 22px; }
+  .chart-bar-label { width: 70px; font-size: 11px; }
+  .chart-bar-track { height: 20px; }
+
+  /* --- Modals --- */
+  .lead-modal,
+  .contacto-modal,
+  .nueva-venta-modal { padding: 16px 14px; }
+  .lead-modal h2,
+  .contacto-modal h2,
+  .nueva-venta-modal h2 { font-size: 16px; margin-bottom: 12px; }
+  .lead-modal .modal-row { flex-direction: column; gap: 2px; }
+  .lead-modal .modal-row .modal-label { width: auto; }
+  .lead-modal .modal-actions { flex-direction: column; gap: 8px; }
+
+  /* --- Smaller fonts on form --- */
+  .form-panel h2 { font-size: 13px; }
+  .form-panel label { font-size: 11px; }
+  .form-panel input[type="text"],
+  .form-panel input[type="date"],
+  .form-panel input[type="number"],
+  .form-panel select,
+  .form-panel textarea { font-size: 13px; padding: 7px 8px; }
+  .btn-generate { font-size: 14px; padding: 12px 16px; }
+
+  /* --- Login --- */
+  .login-box { width: 94vw; padding: 24px 18px; }
+  .login-box .lb-brand { font-size: 20px; }
 }
 
 /* ========== PRINT ========== */
@@ -2075,7 +2269,7 @@ function bindEvents() {
     alert('IMPORTANTE: En el dialogo de impresion, activa "Graficos en segundo plano" (Background graphics) en Opciones para que se vean los colores correctamente. Margenes: Ninguno.');
     window.print();
     /* Restore title after print */
-    setTimeout(function() { document.title = 'Quality Deco - Generador de Presupuestos'; }, 1000);
+    setTimeout(function() { document.title = 'Quality Deco - CRM'; }, 1000);
   });
 }
 
