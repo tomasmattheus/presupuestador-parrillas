@@ -441,12 +441,52 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
 .estado-badge.estado-cerrado-ganado { background: #d1fae5; color: #059669; }
 .estado-badge.estado-cerrado-perdido { background: #fee2e2; color: #dc2626; }
 
+/* Sortable column headers */
+.contactos-table thead th.sortable {
+  cursor: pointer; user-select: none; transition: color 0.2s;
+}
+.contactos-table thead th.sortable:hover { color: #1DA1F2; }
+.contactos-table thead th .sort-indicator {
+  font-size: 10px; margin-left: 4px; color: #1DA1F2;
+}
+
+/* Nuevo contacto adicionales product list */
+.nc-productos-list {
+  border: 1px solid #e8ecf0; border-radius: 6px; overflow: hidden; margin-top: 4px;
+}
+.nc-producto-row {
+  display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid #f0f0f0;
+}
+.nc-producto-row:last-child { border-bottom: none; }
+.nc-producto-row input[type="text"] {
+  flex: 1; padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;
+  font-family: inherit; outline: none; color: #2a2a2a;
+}
+.nc-producto-row input[type="text"]:focus { border-color: #1DA1F2; }
+.nc-producto-row .nc-precio-input { width: 130px; flex: none; text-align: right; }
+.nc-producto-row .btn-nc-del {
+  background: none; border: none; color: #ef4444; font-size: 18px; cursor: pointer; padding: 2px 6px;
+  border-radius: 3px; line-height: 1; flex-shrink: 0;
+}
+.nc-producto-row .btn-nc-del:hover { background: rgba(239,68,68,0.1); }
+.btn-nc-add-producto {
+  background: none; border: 1px dashed #ccc; color: #888; padding: 8px 16px; border-radius: 0 0 6px 6px;
+  cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit; width: 100%;
+  transition: all 0.2s;
+}
+.btn-nc-add-producto:hover { border-color: #1DA1F2; color: #1DA1F2; }
+
 /* Inline estado select in contacts table */
 .contactos-table .estado-select-inline {
   padding: 3px 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 12px;
   font-family: inherit; background: #fff; cursor: pointer; outline: none; font-weight: 600;
 }
 .contactos-table .estado-select-inline:focus { border-color: #1DA1F2; }
+.btn-delete-contact {
+  background: none; border: none; color: #ef4444; font-size: 20px; cursor: pointer;
+  padding: 2px 6px; border-radius: 4px; line-height: 1; opacity: 0.5; transition: opacity 0.2s;
+}
+.btn-delete-contact:hover { opacity: 1; background: rgba(239,68,68,0.1); }
 
 /* ========== CONTACTO MODAL (New Contact) ========== */
 .contacto-modal-overlay {
@@ -813,6 +853,51 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
 }
 .ajustes-actions .btn-restore-settings:hover { background: #d1d5db; }
 
+/* ========== HOME DASHBOARD ========== */
+.home-panel {
+  display: none; flex: 1; height: 100%; background: #f0f2f5; overflow-y: auto; padding: 28px; flex-direction: column;
+}
+.home-panel.active { display: flex; }
+
+.home-welcome {
+  margin-bottom: 24px;
+}
+.home-welcome h1 {
+  font-size: 26px; font-weight: 900; color: #2a2a2a; margin: 0 0 4px;
+}
+.home-welcome .home-welcome-sub {
+  font-size: 14px; color: #888; font-weight: 500;
+}
+
+.home-cards-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 24px;
+}
+
+.home-card {
+  background: #fff; border-radius: 12px; padding: 24px 28px; box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; position: relative; overflow: hidden;
+  border-left: 5px solid transparent;
+}
+.home-card:hover {
+  transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
+.home-card .hc-icon {
+  font-size: 28px; margin-bottom: 10px; display: block;
+}
+.home-card .hc-number {
+  font-size: 20px; font-weight: 700; color: #2a2a2a; line-height: 1; margin-bottom: 6px;
+}
+.home-card .hc-label {
+  font-size: 12px; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+.home-card.hc-pipeline { border-left-color: #1DA1F2; }
+.home-card.hc-presupuestos { border-left-color: #f59e0b; }
+.home-card.hc-contactos { border-left-color: #8b5cf6; }
+.home-card.hc-ventas { border-left-color: #10b981; }
+.home-card.hc-estadisticas { border-left-color: #06b6d4; }
+.home-card.hc-ajustes { border-left-color: #6b7280; }
+
 /* ========== PRESUPUESTOS DASHBOARD ========== */
 .presupuestos-dashboard {
   display: none; flex: 1; height: 100%; background: #f0f2f5; overflow-y: auto; padding: 28px; flex-direction: column;
@@ -949,6 +1034,7 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
 @media print {
   .form-panel { display: none !important; }
   .top-tab-bar { display: none !important; }
+  .home-panel { display: none !important; }
   .pipeline-panel { display: none !important; }
   .contactos-panel { display: none !important; }
   .estadisticas-panel { display: none !important; }
@@ -992,7 +1078,8 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
 <!-- ==================== TOP TAB BAR ==================== -->
 <div class="top-tab-bar">
   <span class="tab-brand">QUALITY DECO</span>
-  <button class="tab-btn active" id="tab-pipeline" onclick="switchTab('pipeline')">Pipeline</button>
+  <button class="tab-btn active" id="tab-home" onclick="switchTab('home')">Home</button>
+  <button class="tab-btn" id="tab-pipeline" onclick="switchTab('pipeline')">Pipeline</button>
   <button class="tab-btn" id="tab-presupuestos" onclick="switchTab('presupuestos')">Presupuestos</button>
   <button class="tab-btn" id="tab-contactos" onclick="switchTab('contactos')">Contactos</button>
   <button class="tab-btn" id="tab-ventas" onclick="switchTab('ventas')">Ventas</button>
@@ -1006,6 +1093,15 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
 
 <!-- ==================== MAIN CONTENT ==================== -->
 <div class="main-content">
+
+<!-- ==================== HOME DASHBOARD ==================== -->
+<div class="home-panel active" id="home-panel">
+  <div class="home-welcome">
+    <h1 id="home-welcome-title">Bienvenido</h1>
+    <div class="home-welcome-sub" id="home-welcome-sub"></div>
+  </div>
+  <div class="home-cards-grid" id="home-cards-grid"></div>
+</div>
 
 <!-- ==================== PRESUPUESTOS DASHBOARD ==================== -->
 <div class="presupuestos-dashboard" id="presupuestos-dashboard">
@@ -1238,7 +1334,7 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
 </div>
 
 <!-- ==================== PIPELINE PANEL ==================== -->
-<div class="pipeline-panel active" id="pipeline-panel">
+<div class="pipeline-panel" id="pipeline-panel">
   <div class="pipeline-toolbar">
     <h1>Pipeline CRM</h1>
     <button class="btn-refresh" id="btn-pipeline-refresh" onclick="loadPipelineData()">
@@ -1277,15 +1373,16 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
     <table class="contactos-table" id="contactos-table">
       <thead>
         <tr>
-          <th>Nombre</th>
+          <th class="sortable" onclick="sortContactosBy('nombre')">Nombre<span class="sort-indicator" id="sort-ind-nombre"></span></th>
           <th>WhatsApp</th>
-          <th>Ciudad</th>
-          <th>Fecha</th>
-          <th>Estado</th>
+          <th class="sortable" onclick="sortContactosBy('ciudad')">Ciudad<span class="sort-indicator" id="sort-ind-ciudad"></span></th>
+          <th class="sortable" onclick="sortContactosBy('fecha')">Fecha<span class="sort-indicator" id="sort-ind-fecha"></span></th>
+          <th class="sortable" onclick="sortContactosBy('estado')">Estado<span class="sort-indicator" id="sort-ind-estado"></span></th>
           <th>Sistema</th>
           <th>Material</th>
           <th>Medidas</th>
           <th>Adicionales</th>
+          <th style="width:40px;"></th>
         </tr>
       </thead>
       <tbody id="contactos-tbody"></tbody>
@@ -1446,13 +1543,8 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
     <label>Ancho boca (cm)</label>
     <input type="number" id="nc-boca" placeholder="80">
     <label>Adicionales</label>
-    <select id="nc-adicionales">
-      <option value="">-- Ninguno --</option>
-      <option value="Solo frente">Solo frente</option>
-      <option value="Frente + Bajo mesada">Frente + Bajo mesada</option>
-      <option value="Frente + Bajo parrilla">Frente + Bajo parrilla</option>
-      <option value="Otro">Otro</option>
-    </select>
+    <div class="nc-productos-list" id="nc-productos-list"></div>
+    <button type="button" class="btn-nc-add-producto" onclick="ncAddProducto()">+ Agregar producto</button>
     <label>Estado proyecto</label>
     <select id="nc-estado">
       <option value="Nuevo Lead">Nuevo Lead</option>
@@ -1972,6 +2064,7 @@ function bindEvents() {
 
   document.getElementById('btn-generate').addEventListener('click', function() {
     saveBudgetToHistory();
+    autoCreateContactFromPresupuesto();
     /* Set PDF filename */
     var nro = document.getElementById('f-nro').value || '0001';
     var clienteName = document.getElementById('f-cliente').value || 'Sin_nombre';
@@ -2060,6 +2153,7 @@ function globalRefreshData() {
     showToast(allLeadsData.length + ' contactos cargados', 'success');
     /* Re-render current active tab */
     var activeTab = getCurrentTab();
+    if (activeTab === 'home') renderHomeDashboard();
     if (activeTab === 'pipeline') { renderKanban(); updatePipelineStatus(); }
     if (activeTab === 'contactos') renderContactos();
     if (activeTab === 'ventas') renderVentas();
@@ -2068,6 +2162,7 @@ function globalRefreshData() {
 }
 
 function getCurrentTab() {
+  if (document.getElementById('home-panel').classList.contains('active')) return 'home';
   if (document.getElementById('pipeline-panel').classList.contains('active')) return 'pipeline';
   if (document.getElementById('presupuestos-dashboard').classList.contains('active')) return 'presupuestos';
   if (document.getElementById('contactos-panel').classList.contains('active')) return 'contactos';
@@ -2152,7 +2247,7 @@ function loadLeadIntoForm(lead) {
 
 /* ============ TAB SWITCHING ============ */
 function switchTab(tab) {
-  var allTabs = ['pipeline', 'presupuestos', 'contactos', 'ventas', 'estadisticas', 'ajustes'];
+  var allTabs = ['home', 'pipeline', 'presupuestos', 'contactos', 'ventas', 'estadisticas', 'ajustes'];
   allTabs.forEach(function(t) {
     var btn = document.getElementById('tab-' + t);
     if (btn) btn.classList.remove('active');
@@ -2162,6 +2257,7 @@ function switchTab(tab) {
 
   var formPanel = document.getElementById('form-panel');
   var previewPanel = document.getElementById('preview-panel');
+  var homePanel = document.getElementById('home-panel');
   var pipelinePanel = document.getElementById('pipeline-panel');
   var contactosPanel = document.getElementById('contactos-panel');
   var ventasPanel = document.getElementById('ventas-panel');
@@ -2171,6 +2267,7 @@ function switchTab(tab) {
 
   formPanel.style.display = 'none';
   previewPanel.style.display = 'none';
+  homePanel.classList.remove('active');
   pipelinePanel.classList.remove('active');
   contactosPanel.classList.remove('active');
   ventasPanel.classList.remove('active');
@@ -2178,7 +2275,10 @@ function switchTab(tab) {
   ajustesPanel.classList.remove('active');
   presupDashboard.classList.remove('active');
 
-  if (tab === 'presupuestos') {
+  if (tab === 'home') {
+    homePanel.classList.add('active');
+    renderHomeDashboard();
+  } else if (tab === 'presupuestos') {
     presupDashboard.classList.add('active');
     formPanel.style.display = 'none';
     previewPanel.style.display = 'none';
@@ -2616,6 +2716,60 @@ function generatePresupFromPipeline(rowIndex) {
 }
 
 /* ============ CONTACTOS TAB ============ */
+var contactosSort = { col: 'fecha', dir: 'desc' };
+
+function sortContactosBy(col) {
+  if (contactosSort.col === col) {
+    contactosSort.dir = contactosSort.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    contactosSort.col = col;
+    contactosSort.dir = (col === 'fecha') ? 'desc' : 'asc';
+  }
+  renderContactos();
+}
+
+function updateSortIndicators() {
+  var cols = ['nombre', 'ciudad', 'fecha', 'estado'];
+  cols.forEach(function(c) {
+    var el = document.getElementById('sort-ind-' + c);
+    if (el) el.textContent = '';
+  });
+  var activeEl = document.getElementById('sort-ind-' + contactosSort.col);
+  if (activeEl) {
+    activeEl.textContent = contactosSort.dir === 'asc' ? ' \u25B2' : ' \u25BC';
+  }
+}
+
+function applySortToContacts(arr) {
+  var col = contactosSort.col;
+  var dir = contactosSort.dir;
+  var mult = dir === 'asc' ? 1 : -1;
+
+  return arr.slice().sort(function(a, b) {
+    var va, vb;
+    if (col === 'nombre') {
+      va = (a.nombre || '').toLowerCase();
+      vb = (b.nombre || '').toLowerCase();
+      return va < vb ? -1 * mult : va > vb ? 1 * mult : 0;
+    } else if (col === 'ciudad') {
+      va = (a.ciudad || '').toLowerCase();
+      vb = (b.ciudad || '').toLowerCase();
+      return va < vb ? -1 * mult : va > vb ? 1 * mult : 0;
+    } else if (col === 'fecha') {
+      var da = parseGoogleDate(a.fecha);
+      var db = parseGoogleDate(b.fecha);
+      va = da ? da.getTime() : 0;
+      vb = db ? db.getTime() : 0;
+      return (va - vb) * mult;
+    } else if (col === 'estado') {
+      va = (a.stage || '').toLowerCase();
+      vb = (b.stage || '').toLowerCase();
+      return va < vb ? -1 * mult : va > vb ? 1 * mult : 0;
+    }
+    return 0;
+  });
+}
+
 function renderContactos() {
   var tbody = document.getElementById('contactos-tbody');
   var searchVal = (document.getElementById('ct-search').value || '').toLowerCase().trim();
@@ -2637,6 +2791,10 @@ function renderContactos() {
     if (filterCiudad && normalizeCiudad(lead.ciudad) !== filterCiudad) return false;
     return true;
   });
+
+  /* Apply sort */
+  filtered = applySortToContacts(filtered);
+  updateSortIndicators();
 
   tbody.innerHTML = '';
   filtered.forEach(function(lead) {
@@ -2667,13 +2825,23 @@ function renderContactos() {
       '<td>' + escapeHtml(lead.sistema || '-') + '</td>' +
       '<td>' + escapeHtml(lead.material || '-') + '</td>' +
       '<td>' + escapeHtml(medidas || '-') + '</td>' +
-      '<td>' + escapeHtml(lead.adicionales || '-') + '</td>';
+      '<td>' + escapeHtml(lead.adicionales || '-') + '</td>' +
+      '<td style="text-align:center;"><button class="btn-delete-contact" data-row="' + lead.rowIndex + '" title="Eliminar contacto">&times;</button></td>';
 
-    /* Click row to open detail modal (but not if clicking the select) */
+    /* Click row to open detail modal (but not if clicking the select or delete button) */
     tr.addEventListener('click', function(e) {
-      if (e.target.tagName === 'SELECT' || e.target.tagName === 'A') return;
+      if (e.target.tagName === 'SELECT' || e.target.tagName === 'A' || e.target.classList.contains('btn-delete-contact')) return;
       openLeadModal(lead);
     });
+
+    /* Delete button */
+    var delBtn = tr.querySelector('.btn-delete-contact');
+    if (delBtn) {
+      delBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        deleteContact(lead);
+      });
+    }
 
     tbody.appendChild(tr);
   });
@@ -2722,6 +2890,25 @@ function onInlineEstadoChange(selectEl) {
   updateLeadStage(lead, newStage);
 }
 
+function deleteContact(lead) {
+  if (!confirm('Eliminar el contacto "' + lead.nombre + '"? Esta accion no se puede deshacer.')) return;
+  /* Clear the row in the Sheet by setting all cells to empty */
+  var rowIdx = lead.rowIndex - 2;
+  /* Set nombre (col 0) to empty — this effectively "deletes" the row */
+  fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({ action: 'update', row: rowIdx, col: 0, value: '' })
+  }).then(function() {
+    /* Remove from local data */
+    allLeadsData = allLeadsData.filter(function(l) { return l.rowIndex !== lead.rowIndex; });
+    renderContactos();
+    showToast('Contacto eliminado');
+  }).catch(function() {
+    showToast('Error al eliminar', 'error');
+  });
+}
+
 /* Contactos filter event bindings */
 function bindContactosFilters() {
   document.getElementById('ct-search').addEventListener('input', function() { renderContactos(); });
@@ -2731,6 +2918,95 @@ function bindContactosFilters() {
 }
 
 /* ============ NUEVO CONTACTO MODAL ============ */
+var ncProductos = [];
+
+function ncAddProducto() {
+  ncProductos.push({ nombre: '', precio: '' });
+  ncRenderProductos();
+}
+
+function ncRemoveProducto(idx) {
+  ncProductos.splice(idx, 1);
+  ncRenderProductos();
+}
+
+function ncRenderProductos() {
+  var container = document.getElementById('nc-productos-list');
+  container.innerHTML = '';
+  if (ncProductos.length === 0) {
+    container.innerHTML = '<div style="padding:10px;color:#999;font-size:13px;text-align:center;">Sin productos agregados</div>';
+    return;
+  }
+  ncProductos.forEach(function(prod, idx) {
+    var row = document.createElement('div');
+    row.className = 'nc-producto-row';
+
+    var inpNombre = document.createElement('input');
+    inpNombre.type = 'text';
+    inpNombre.placeholder = 'Nombre del producto';
+    inpNombre.value = prod.nombre;
+    inpNombre.setAttribute('data-idx', idx);
+    inpNombre.addEventListener('input', function() {
+      ncProductos[parseInt(this.getAttribute('data-idx'))].nombre = this.value;
+    });
+
+    var inpPrecio = document.createElement('input');
+    inpPrecio.type = 'text';
+    inpPrecio.className = 'nc-precio-input';
+    inpPrecio.placeholder = '$ 0';
+    inpPrecio.value = prod.precio;
+    inpPrecio.setAttribute('data-idx', idx);
+    inpPrecio.addEventListener('focus', function() {
+      var i = parseInt(this.getAttribute('data-idx'));
+      var raw = (ncProductos[i].precio || '').toString().replace(/\D/g, '');
+      this.value = raw === '0' ? '' : raw;
+    });
+    inpPrecio.addEventListener('blur', function() {
+      var i = parseInt(this.getAttribute('data-idx'));
+      var raw = this.value.replace(/\D/g, '');
+      var val = raw === '' ? 0 : parseInt(raw, 10);
+      ncProductos[i].precio = val > 0 ? formatPrice(val) : '';
+      this.value = ncProductos[i].precio;
+    });
+
+    var btnDel = document.createElement('button');
+    btnDel.className = 'btn-nc-del';
+    btnDel.innerHTML = '&times;';
+    btnDel.setAttribute('data-idx', idx);
+    btnDel.addEventListener('click', function() {
+      ncRemoveProducto(parseInt(this.getAttribute('data-idx')));
+    });
+
+    row.appendChild(inpNombre);
+    row.appendChild(inpPrecio);
+    row.appendChild(btnDel);
+    container.appendChild(row);
+  });
+}
+
+function ncGetAdicionalesString() {
+  return ncProductos
+    .map(function(p) { return p.nombre.trim(); })
+    .filter(function(n) { return n.length > 0; })
+    .join(', ');
+}
+
+function ncSaveProductPrices(nombre, whatsapp) {
+  var key = (nombre || '').trim() + '|' + (whatsapp || '').trim();
+  var products = ncProductos
+    .filter(function(p) { return p.nombre.trim().length > 0; })
+    .map(function(p) {
+      var raw = (p.precio || '').toString().replace(/\D/g, '');
+      return { nombre: p.nombre.trim(), precio: raw === '' ? 0 : parseInt(raw, 10) };
+    });
+  if (products.length > 0) {
+    var allProducts = {};
+    try { allProducts = JSON.parse(localStorage.getItem('qd_contact_products') || '{}'); } catch(e) {}
+    allProducts[key] = products;
+    localStorage.setItem('qd_contact_products', JSON.stringify(allProducts));
+  }
+}
+
 function openNuevoContactoModal() {
   document.getElementById('contacto-modal-overlay').classList.add('active');
   /* Reset form */
@@ -2742,7 +3018,8 @@ function openNuevoContactoModal() {
   document.getElementById('nc-ancho').value = '';
   document.getElementById('nc-alto').value = '';
   document.getElementById('nc-boca').value = '';
-  document.getElementById('nc-adicionales').value = '';
+  ncProductos = [];
+  ncRenderProductos();
   document.getElementById('nc-estado').value = 'Nuevo Lead';
 }
 
@@ -2761,9 +3038,12 @@ function submitNuevoContacto() {
   var ancho = document.getElementById('nc-ancho').value.trim();
   var alto = document.getElementById('nc-alto').value.trim();
   var boca = document.getElementById('nc-boca').value.trim();
-  var adicionales = document.getElementById('nc-adicionales').value;
+  var adicionales = ncGetAdicionalesString();
   var estado = document.getElementById('nc-estado').value;
   var fecha = getTodayStr();
+
+  /* Save product prices to localStorage */
+  ncSaveProductPrices(nombre, whatsapp);
 
   var values = [
     nombre,           /* 0: Nombre */
@@ -3933,6 +4213,184 @@ function submitNuevaVenta() {
   });
 }
 
+/* ============ HOME DASHBOARD ============ */
+function renderHomeDashboard() {
+  /* Welcome sub */
+  var user = sessionStorage.getItem('qd_user') || 'usuario';
+  var today = new Date();
+  var meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  var fechaHoy = today.getDate() + ' de ' + meses[today.getMonth()] + ' de ' + today.getFullYear();
+  var displayName = user.charAt(0).toUpperCase() + user.slice(1);
+  document.getElementById('home-welcome-title').textContent = 'Bienvenido, ' + displayName;
+  document.getElementById('home-welcome-sub').textContent = fechaHoy;
+
+  /* Calculate metrics */
+  var activeLeads = allLeadsData.filter(function(l) {
+    return l.stage !== 'Cerrado Ganado' && l.stage !== 'Cerrado Perdido';
+  }).length;
+
+  var budgetHistory = getBudgetHistoryAll();
+  var now = new Date();
+  var thisMonth = now.getMonth();
+  var thisYear = now.getFullYear();
+  var budgetsThisMonth = 0;
+  for (var bk in budgetHistory) {
+    if (!budgetHistory.hasOwnProperty(bk)) continue;
+    var bArr = budgetHistory[bk];
+    if (!Array.isArray(bArr)) continue;
+    bArr.forEach(function(b) {
+      if (b.id) {
+        var ts = parseInt(b.id);
+        if (!isNaN(ts)) {
+          var d = new Date(ts);
+          if (d.getMonth() === thisMonth && d.getFullYear() === thisYear) budgetsThisMonth++;
+        }
+      }
+    });
+  }
+
+  var totalContactos = allLeadsData.length;
+
+  var ganados = allLeadsData.filter(function(l) { return l.stage === 'Cerrado Ganado'; });
+  var perdidos = allLeadsData.filter(function(l) { return l.stage === 'Cerrado Perdido'; });
+  var ventasStore = getVentasData();
+  var facturacionTotal = 0;
+  ganados.forEach(function(lead) {
+    var key = getVentaKey(lead);
+    var vdata = ventasStore[key];
+    if (vdata && vdata.monto) facturacionTotal += vdata.monto;
+  });
+
+  var tasaCierre = (ganados.length + perdidos.length) > 0
+    ? Math.round((ganados.length / (ganados.length + perdidos.length)) * 100) : 0;
+
+  var facDisplay = facturacionTotal >= 1000000
+    ? '$ ' + (facturacionTotal / 1000000).toFixed(1) + 'M'
+    : formatPrice(facturacionTotal);
+
+  var container = document.getElementById('home-cards-grid');
+  container.innerHTML =
+    '<div class="home-card hc-pipeline" onclick="switchTab(\'pipeline\')">' +
+      '<span class="hc-icon">&#128202;</span>' +
+      '<div class="hc-number">Pipeline</div>' +
+      '<div class="hc-label">' + activeLeads + ' leads activos</div>' +
+    '</div>' +
+    '<div class="home-card hc-presupuestos" onclick="switchTab(\'presupuestos\')">' +
+      '<span class="hc-icon">&#128196;</span>' +
+      '<div class="hc-number">Presupuestos</div>' +
+      '<div class="hc-label">' + budgetsThisMonth + ' enviados este mes</div>' +
+    '</div>' +
+    '<div class="home-card hc-contactos" onclick="switchTab(\'contactos\')">' +
+      '<span class="hc-icon">&#128101;</span>' +
+      '<div class="hc-number">Contactos</div>' +
+      '<div class="hc-label">' + totalContactos + ' en la base</div>' +
+    '</div>' +
+    '<div class="home-card hc-ventas" onclick="switchTab(\'ventas\')">' +
+      '<span class="hc-icon">&#128176;</span>' +
+      '<div class="hc-number">Ventas</div>' +
+      '<div class="hc-label">' + facDisplay + ' facturado</div>' +
+    '</div>' +
+    '<div class="home-card hc-estadisticas" onclick="switchTab(\'estadisticas\')">' +
+      '<span class="hc-icon">&#128200;</span>' +
+      '<div class="hc-number">Estadisticas</div>' +
+      '<div class="hc-label">' + tasaCierre + '% tasa de cierre</div>' +
+    '</div>' +
+    '<div class="home-card hc-ajustes" onclick="switchTab(\'ajustes\')">' +
+      '<span class="hc-icon">&#9881;</span>' +
+      '<div class="hc-number">Ajustes</div>' +
+      '<div class="hc-label">Configuracion del sistema</div>' +
+    '</div>';
+}
+
+/* ============ AUTO-CREATE CONTACT FROM PRESUPUESTO ============ */
+function autoCreateContactFromPresupuesto() {
+  var cliente = (document.getElementById('f-cliente').value || '').trim();
+  if (!cliente) return;
+
+  /* Check if contact already exists */
+  var exists = allLeadsData.some(function(l) {
+    return l.nombre && l.nombre.trim().toLowerCase() === cliente.toLowerCase();
+  });
+  if (exists) return;
+
+  var telefono = (document.getElementById('f-telefono').value || '').trim().replace(/\D/g, '');
+  /* Convert phone to whatsapp format */
+  var waNum = telefono;
+  if (waNum.startsWith('0')) waNum = '549' + waNum.substring(1);
+
+  var fecha = getTodayStr();
+  var localidad = (document.getElementById('f-localidad').value || '').trim();
+  var ancho = document.getElementById('f-ancho').value;
+  var alto = document.getElementById('f-alto').value;
+  var boca = document.getElementById('f-boca').value;
+
+  /* Convert mm to cm */
+  var anchoCm = ancho ? (parseFloat(ancho) / 10).toString() : '';
+  var altoCm = alto ? (parseFloat(alto) / 10).toString() : '';
+  var bocaCm = boca ? (parseFloat(boca) / 10).toString() : '';
+
+  /* Map sistema */
+  var sistemaRaw = document.getElementById('f-sistema').value;
+  var sistemaMapped = sistemaRaw;
+  if (sistemaRaw.indexOf('Guillotina') >= 0) sistemaMapped = 'Guillotina';
+  else if (sistemaRaw.indexOf('Levadizo') >= 0) sistemaMapped = 'Levadizo';
+
+  /* Map material */
+  var materialRaw = document.getElementById('f-material').value;
+  var materialMapped = materialRaw;
+  if (materialRaw.indexOf('inoxidable') >= 0 || materialRaw.indexOf('Inoxidable') >= 0) materialMapped = 'Acero Inoxidable';
+  else if (materialRaw.indexOf('epoxi') >= 0 || materialRaw.indexOf('Epoxi') >= 0) materialMapped = 'Epoxi';
+
+  /* Build adicionales from checkboxes */
+  var adicParts = ['Frente'];
+  if (document.getElementById('f-cb-bajo').checked) {
+    adicParts.push('Bajo parrilla');
+  }
+  if (document.getElementById('f-cb-mesada').checked) {
+    adicParts.push('Bajo mesada');
+  }
+  if (document.getElementById('f-cb-tapa').checked) {
+    adicParts.push('Tapa horno');
+  }
+  if (document.getElementById('f-cb-lateral').checked) {
+    adicParts.push('Lateral');
+  }
+  var adicionales = adicParts.join(' + ');
+
+  var values = [
+    cliente,            /* 0: Nombre */
+    waNum,              /* 1: WhatsApp */
+    fecha,              /* 2: Fecha */
+    localidad,          /* 3: Ciudad */
+    'Presupuesto Enviado', /* 4: Estado proyecto */
+    anchoCm,            /* 5: Ancho total */
+    altoCm,             /* 6: Alto total */
+    bocaCm,             /* 7: Ancho boca */
+    '',                 /* 8: Tiene foto */
+    sistemaMapped,      /* 9: Sistema */
+    materialMapped,     /* 10: Material */
+    adicionales,        /* 11: Adicionales */
+    '',                 /* 12: Medidas pendientes */
+    ''                  /* 13: Cargado HubSpot */
+  ];
+
+  fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'addRow', values: values })
+  })
+  .then(function() {
+    showToast('Contacto creado automaticamente: ' + cliente, 'success');
+    /* Reload data */
+    dataLoaded = false;
+    loadSharedData();
+  })
+  .catch(function(err) {
+    showToast('Error creando contacto: ' + err.message, 'error');
+  });
+}
+
 /* ============ INIT ============ */
 function init() {
   var today = new Date();
@@ -4032,7 +4490,7 @@ function setupLogin() {
   /* Check if already logged in this session */
   if (sessionStorage.getItem('qd_logged_in') === 'true') {
     document.getElementById('login-overlay').classList.add('hidden');
-    loadPipelineData();
+    loadSharedData(function() { renderHomeDashboard(); });
     return;
   }
 
@@ -4054,7 +4512,7 @@ function attemptLogin() {
     sessionStorage.setItem('qd_user', user);
     document.getElementById('login-overlay').classList.add('hidden');
     document.getElementById('login-error').style.display = 'none';
-    loadPipelineData();
+    loadSharedData(function() { renderHomeDashboard(); });
   } else {
     document.getElementById('login-error').style.display = 'block';
     document.getElementById('login-pw').value = '';
