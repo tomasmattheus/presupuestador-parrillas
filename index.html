@@ -3428,17 +3428,20 @@ function renderStatsCards() {
   }).length;
   var ganados = allLeadsData.filter(function(l) { return l.stage === 'Cerrado Ganado'; }).length;
   var perdidos = allLeadsData.filter(function(l) { return l.stage === 'Cerrado Perdido'; }).length;
-  var tasaCierre = (ganados + perdidos) > 0 ? Math.round((ganados / (ganados + perdidos)) * 100) : 0;
+  var tasaCierre = totalLeads > 0 ? Math.round((ganados / totalLeads) * 100) : 0;
+  var presupEnviados = allLeadsData.filter(function(l) { return l.stage === 'Presupuesto Enviado'; }).length;
+  var nuevosLeads = allLeadsData.filter(function(l) { return l.stage === 'Nuevo Lead'; }).length;
+  var tasaPresup = totalLeads > 0 ? Math.round(((presupEnviados + ganados + perdidos) / totalLeads) * 100) : 0;
 
   container.innerHTML =
     '<div class="stat-card"><div class="stat-accent" style="background:#1DA1F2;"></div>' +
       '<div class="stat-number">' + totalLeads + '</div><div class="stat-label">Total leads</div></div>' +
-    '<div class="stat-card"><div class="stat-accent" style="background:#8b5cf6;"></div>' +
-      '<div class="stat-number">' + activos + '</div><div class="stat-label">Leads activos</div></div>' +
+    '<div class="stat-card"><div class="stat-accent" style="background:#f59e0b;"></div>' +
+      '<div class="stat-number">' + tasaPresup + '%</div><div class="stat-label">Presupuestados (' + (presupEnviados + ganados + perdidos) + ' de ' + totalLeads + ')</div></div>' +
     '<div class="stat-card"><div class="stat-accent" style="background:#10b981;"></div>' +
       '<div class="stat-number">' + ganados + '</div><div class="stat-label">Cerrados ganados</div></div>' +
-    '<div class="stat-card"><div class="stat-accent" style="background:#f59e0b;"></div>' +
-      '<div class="stat-number">' + tasaCierre + '%</div><div class="stat-label">Tasa de cierre</div></div>';
+    '<div class="stat-card"><div class="stat-accent" style="background:#8b5cf6;"></div>' +
+      '<div class="stat-number">' + tasaCierre + '%</div><div class="stat-label">Tasa de cierre (' + ganados + ' de ' + totalLeads + ')</div></div>';
 }
 
 function renderStatsCharts() {
@@ -4584,8 +4587,8 @@ function renderHomeDashboard() {
     if (vdata && vdata.monto) facturacionTotal += vdata.monto;
   });
 
-  var tasaCierre = (ganados.length + perdidos.length) > 0
-    ? Math.round((ganados.length / (ganados.length + perdidos.length)) * 100) : 0;
+  var tasaCierre = allLeadsData.length > 0
+    ? Math.round((ganados.length / allLeadsData.length) * 100) : 0;
 
   var facDisplay = facturacionTotal >= 1000000
     ? '$ ' + (facturacionTotal / 1000000).toFixed(1) + 'M'
