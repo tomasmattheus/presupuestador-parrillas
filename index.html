@@ -42,6 +42,12 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
 }
 .top-tab-bar .btn-global-refresh:hover { border-color: #1DA1F2; color: #1DA1F2; }
 .top-tab-bar .btn-global-refresh.loading { opacity: 0.5; pointer-events: none; }
+.top-tab-bar .btn-logout {
+  background: none; border: 1px solid #444; color: #888; padding: 6px 10px;
+  border-radius: 4px; cursor: pointer; display: flex; align-items: center;
+  transition: all 0.2s; margin-left: 8px;
+}
+.top-tab-bar .btn-logout:hover { border-color: #ef4444; color: #ef4444; }
 
 /* ========== MAIN CONTENT AREA ========== */
 .main-content { display: flex; flex: 1; overflow: hidden; }
@@ -346,7 +352,7 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
 .kanban-col-body::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
 
 .kanban-card {
-  background: #fff; border-radius: 8px; padding: 12px 14px; margin-bottom: 8px;
+  background: #fff; border-radius: 8px; padding: 12px 14px 28px; margin-bottom: 8px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.08); cursor: grab; transition: box-shadow 0.15s, transform 0.15s;
   border: 1px solid #eee; position: relative;
 }
@@ -377,6 +383,14 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
 }
 .kanban-card .card-actions .card-action-btn:hover { opacity: 1; transform: scale(1.15); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
 .kanban-card .card-actions .btn-win { background: #10b981; color: #fff; }
+.kanban-card .btn-del-pipeline {
+  position: absolute; bottom: 8px; right: 10px;
+  width: 22px; height: 22px; border-radius: 50%; border: none; cursor: pointer;
+  font-size: 10px; display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.15s, background 0.15s; opacity: 0; background: #ddd; color: #999;
+}
+.kanban-card:hover .btn-del-pipeline { opacity: 0.6; }
+.kanban-card .btn-del-pipeline:hover { opacity: 1; background: #ef4444; color: #fff; }
 .kanban-card .card-actions .btn-lose { background: #ef4444; color: #fff; }
 
 /* Lead Detail Modal */
@@ -429,6 +443,7 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
 .pipeline-toast.show { opacity: 1; }
 .pipeline-toast.success { background: #10b981; }
 .pipeline-toast.error { background: #ef4444; }
+.pipeline-toast.loading { background: #1DA1F2; }
 
 /* ========== CONTACTOS PANEL ========== */
 .contactos-panel {
@@ -780,6 +795,17 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
   outline: none; margin-bottom: 10px;
 }
 .login-box input:focus { border-color: #1DA1F2; }
+.login-ce-input {
+  width: 100%; padding: 10px 14px; background: #2a2a2a; border: 1px solid #444;
+  border-radius: 6px; color: #eee; font-size: 14px; font-family: inherit;
+  outline: none; margin-bottom: 10px; min-height: 20px; cursor: text;
+  -webkit-user-modify: read-write-plaintext-only;
+}
+.login-ce-input:focus { border-color: #1DA1F2; }
+.login-ce-input:empty::before {
+  content: attr(data-placeholder); color: #666; pointer-events: none;
+}
+.login-ce-pw { -webkit-text-security: disc; text-security: disc; }
 .login-box .login-btn {
   width: 100%; padding: 12px; background: #1DA1F2; color: #fff; border: none;
   border-radius: 6px; font-size: 15px; font-weight: 700; cursor: pointer;
@@ -1131,6 +1157,28 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
 .sr-city { color: #888; font-size: 12px; }
 .sr-badge { margin-left: auto; }
 
+/* ========== CUSTOM CONFIRM MODAL ========== */
+.confirm-overlay {
+  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4); z-index: 2000; align-items: center; justify-content: center;
+}
+.confirm-overlay.active { display: flex; }
+.confirm-box {
+  background: #fff; border-radius: 12px; padding: 28px 32px; max-width: 380px; width: 90%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25); text-align: center;
+}
+.confirm-box h3 { font-size: 16px; font-weight: 700; color: #2a2a2a; margin-bottom: 6px; }
+.confirm-box p { font-size: 13px; color: #888; margin-bottom: 20px; }
+.confirm-btns { display: flex; gap: 10px; justify-content: center; }
+.confirm-btns button {
+  padding: 10px 24px; border-radius: 6px; border: none; font-size: 14px;
+  font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.15s;
+}
+.confirm-btn-cancel { background: #f0f0f0; color: #666; }
+.confirm-btn-cancel:hover { background: #e0e0e0; }
+.confirm-btn-ok { background: #ef4444; color: #fff; }
+.confirm-btn-ok:hover { background: #dc2626; }
+
 /* ========== HOME TO-DO ========== */
 .home-todo {
   max-width: 420px; margin: 20px auto 0; background: #fff; border-radius: 12px;
@@ -1467,6 +1515,7 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
   .home-todo { display: none !important; }
   .login-overlay { display: none !important; }
   #edit-contact-modal-overlay { display: none !important; }
+  .confirm-overlay { display: none !important; }
   #edit-venta-modal-overlay { display: none !important; }
   #presup-detail-modal-overlay { display: none !important; }
   .preview-panel { display: block !important; margin: 0; padding: 0; width: 100%; background: white; overflow: visible; height: auto; }
@@ -1485,15 +1534,29 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
 </head>
 <body>
 
+<!-- ==================== CONFIRM MODAL ==================== -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <h3 id="confirm-title">Confirmar</h3>
+    <p id="confirm-text"></p>
+    <div class="confirm-btns">
+      <button class="confirm-btn-cancel" onclick="closeConfirmModal()">Cancelar</button>
+      <button class="confirm-btn-ok" id="confirm-ok-btn">Eliminar</button>
+    </div>
+  </div>
+</div>
+
 <!-- ==================== LOGIN ==================== -->
 <div class="login-overlay" id="login-overlay">
   <div class="login-box">
     <div class="lb-brand">QUALITY DECO</div>
     <div class="lb-sub">Frentes de parrillas</div>
     <h3>Iniciar sesion</h3>
-    <input type="text" id="login-user" placeholder="Usuario" autocomplete="username">
-    <input type="password" id="login-pw" placeholder="Contrasena" autocomplete="current-password">
-    <button class="login-btn" id="login-btn">Ingresar</button>
+    <div role="presentation" id="login-fields">
+      <div contenteditable="true" class="login-ce-input" id="login-user" data-placeholder="Usuario"></div>
+      <div contenteditable="true" class="login-ce-input login-ce-pw" id="login-pw" data-placeholder="Contrasena"></div>
+      <button class="login-btn" id="login-btn" type="button">Ingresar</button>
+    </div>
     <div class="login-error" id="login-error">Usuario o contrasena incorrectos</div>
   </div>
 </div>
@@ -1518,6 +1581,9 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
     Refresh
   </button>
   <span class="last-updated" id="last-updated"></span>
+  <button class="btn-logout" onclick="logout()" title="Cerrar sesion">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+  </button>
 </div>
 
 <!-- ==================== MAIN CONTENT ==================== -->
@@ -2685,7 +2751,7 @@ function loadSharedData(callback) {
       allLeadsData = [];
       rows.forEach(function(row, idx) {
         var cells = row.c;
-        if (!cells || !cells[0] || !cells[0].v) return;
+        if (!cells || !cells[0] || !cells[0].v || String(cells[0].v).trim() === '') return;
         var anchoVal = (cells[5] && cells[5].v) || '';
         var altoVal = (cells[6] && cells[6].v) || '';
         var hasMeasures = anchoVal && anchoVal !== '--' && anchoVal !== '-' &&
@@ -2879,6 +2945,9 @@ function switchTab(tab) {
     pipelinePanel.classList.add('active');
     if (!dataLoaded) {
       loadPipelineData();
+    } else {
+      renderKanban();
+      updatePipelineStatus();
     }
   } else if (tab === 'contactos') {
     contactosPanel.classList.add('active');
@@ -3130,7 +3199,7 @@ function createKanbanCard(lead) {
   card.addEventListener('click', function(e) {
     if (e.defaultPrevented) return;
     /* Don't open modal if clicking action buttons */
-    if (e.target.closest('.card-action-btn')) return;
+    if (e.target.closest('.card-action-btn') || e.target.closest('.btn-del-pipeline')) return;
     openLeadModal(lead);
   });
 
@@ -3168,8 +3237,28 @@ function createKanbanCard(lead) {
     html += '</div>';
   }
 
+  /* Delete button at bottom-right, separate from card-actions */
+  html += '<button class="btn-del-pipeline" title="Eliminar" onclick="event.preventDefault();event.stopPropagation();deletePipelineLead(' + lead.rowIndex + ')">&#128465;</button>';
+
   card.innerHTML = html;
   return card;
+}
+
+function deletePipelineLead(rowIndex) {
+  var lead = allLeadsData.find(function(l) { return l.rowIndex === rowIndex; });
+  if (!lead) return;
+  showConfirmModal('Eliminar "' + lead.nombre + '" del pipeline?', 'Esta accion no se puede deshacer.', function() {
+    showLoading();
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'update', row: rowIndex - 2, col: 0, value: '' })
+    }).then(function() {
+      allLeadsData = allLeadsData.filter(function(l) { return l.rowIndex !== rowIndex; });
+      renderKanban();
+      showToast('Lead eliminado', 'success');
+    }).catch(function() { showToast('Error al eliminar', 'error'); });
+  });
 }
 
 function markLeadWon(rowIndex) {
@@ -3189,7 +3278,7 @@ function updateLeadStage(lead, newStage) {
   lead.stage = newStage;
   lead.estado = newStage;
   renderKanban();
-  showToast('Moviendo a ' + newStage + '...', '');
+  showToast('Procesando...', 'loading');
 
   /* Auto-fill ventas when closing as won */
   if (newStage === 'Cerrado Ganado') {
@@ -3213,14 +3302,62 @@ function updateLeadStage(lead, newStage) {
   });
 }
 
+/* ============ CUSTOM CONFIRM MODAL ============ */
+var confirmCallback = null;
+
+function showConfirmModal(title, text, onConfirm) {
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-text').textContent = text;
+  confirmCallback = onConfirm;
+  var okBtn = document.getElementById('confirm-ok-btn');
+  okBtn.onclick = function() { executeConfirm(); };
+  /* Enter key triggers confirm */
+  document.getElementById('confirm-overlay').onkeydown = function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); executeConfirm(); }
+    if (e.key === 'Escape') { closeConfirmModal(); }
+  };
+  document.getElementById('confirm-overlay').classList.add('active');
+  okBtn.focus();
+}
+
+function executeConfirm() {
+  var cb = confirmCallback;
+  confirmCallback = null;
+  document.getElementById('confirm-overlay').classList.remove('active');
+  if (cb) cb();
+}
+
+function logout() {
+  sessionStorage.removeItem('qd_logged_in');
+  sessionStorage.removeItem('qd_user');
+  document.getElementById('login-overlay').classList.remove('hidden');
+  document.getElementById('login-user').textContent = '';
+  document.getElementById('login-pw').textContent = '';
+  document.getElementById('login-error').style.display = 'none';
+  document.getElementById('login-user').focus();
+}
+
+function closeConfirmModal() {
+  document.getElementById('confirm-overlay').classList.remove('active');
+  confirmCallback = null;
+}
+
 function showToast(message, type) {
   var toast = document.getElementById('pipeline-toast');
   toast.textContent = message;
   toast.className = 'pipeline-toast show' + (type ? ' ' + type : '');
   clearTimeout(toast._timeout);
-  toast._timeout = setTimeout(function() {
-    toast.classList.remove('show');
-  }, 2500);
+  if (type !== 'loading') {
+    toast._timeout = setTimeout(function() {
+      toast.classList.remove('show');
+    }, 2500);
+  }
+}
+
+function showLoading() { showToast('Procesando...', 'loading'); }
+function hideLoading() {
+  var toast = document.getElementById('pipeline-toast');
+  toast.classList.remove('show');
 }
 
 /* ============ LEAD DETAIL MODAL ============ */
@@ -3756,10 +3893,13 @@ function saveEditContact() {
 }
 
 function deleteContact(lead) {
-  if (!confirm('Eliminar el contacto "' + lead.nombre + '"? Esta accion no se puede deshacer.')) return;
-  /* Clear the row in the Sheet by setting all cells to empty */
+  showConfirmModal('Eliminar contacto', 'Eliminar "' + lead.nombre + '"? Esta accion no se puede deshacer.', function() {
+    deleteContactConfirmed(lead);
+  });
+}
+function deleteContactConfirmed(lead) {
+  showLoading();
   var rowIdx = lead.rowIndex - 2;
-  /* Set nombre (col 0) to empty — this effectively "deletes" the row */
   fetch(APPS_SCRIPT_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain' },
@@ -4562,8 +4702,8 @@ function saveEditVenta() {
 
 /* ---- Delete Venta ---- */
 function deleteVenta(lead) {
-  if (!confirm('Eliminar esta venta?')) return;
-  var key = getVentaKey(lead);
+  showConfirmModal('Eliminar venta', 'Eliminar la venta de "' + lead.nombre + '"? El lead volvera a Nuevo Lead.', function() {
+    var key = getVentaKey(lead);
   /* Remove from localStorage */
   var store = getVentasData();
   delete store[key];
@@ -4572,6 +4712,7 @@ function deleteVenta(lead) {
   updateLeadStage(lead, 'Nuevo Lead');
   renderVentas();
   showToast('Venta eliminada, lead movido a Nuevo Lead', 'success');
+  });
 }
 
 function recalcVentasMetrics() {
@@ -4772,10 +4913,11 @@ function saveSettings() {
 }
 
 function restoreDefaultSettings() {
-  if (!confirm('Restaurar todos los valores por defecto? Los cambios no guardados se perderan.')) return;
-  saveSettingsData(DEFAULT_SETTINGS);
-  loadSettingsIntoForm();
-  showToast('Valores restaurados', 'success');
+  showConfirmModal('Restaurar valores', 'Restaurar todos los valores por defecto?', function() {
+    saveSettingsData(DEFAULT_SETTINGS);
+    loadSettingsIntoForm();
+    showToast('Valores restaurados', 'success');
+  });
 }
 
 function applySettingsToPresupForm() {
@@ -5308,15 +5450,16 @@ function onPipelineStageChange() {
 
 /* ============ DELETE BUDGET ============ */
 function deleteBudget(clientKey, budgetId) {
-  if (!confirm('Eliminar este presupuesto?')) return;
-  var all = getBudgetHistoryAll();
-  if (all[clientKey]) {
-    all[clientKey] = all[clientKey].filter(function(b) { return b.id !== budgetId; });
-    if (all[clientKey].length === 0) delete all[clientKey];
-    saveBudgetHistoryAll(all);
-    renderPresupuestosDashboard();
-    showToast('Presupuesto eliminado');
-  }
+  showConfirmModal('Eliminar presupuesto', 'Eliminar este presupuesto del historial?', function() {
+    var all = getBudgetHistoryAll();
+    if (all[clientKey]) {
+      all[clientKey] = all[clientKey].filter(function(b) { return b.id !== budgetId; });
+      if (all[clientKey].length === 0) delete all[clientKey];
+      saveBudgetHistoryAll(all);
+      renderPresupuestosDashboard();
+      showToast('Presupuesto eliminado');
+    }
+  });
 }
 
 /* ============ NUEVA VENTA MODAL ============ */
@@ -5871,12 +6014,13 @@ function addUser() {
 
 function deleteUser(username) {
   if (username === 'admin') return;
-  if (!confirm('Eliminar usuario "' + username + '"?')) return;
-  var users = getUsers();
-  delete users[username];
-  saveUsers(users);
-  renderUsersTable();
-  showToast('Usuario eliminado');
+  showConfirmModal('Eliminar usuario', 'Eliminar el usuario "' + username + '"?', function() {
+    var users = getUsers();
+    delete users[username];
+    saveUsers(users);
+    renderUsersTable();
+    showToast('Usuario eliminado');
+  });
 }
 
 var USERS = getUsers();
@@ -5899,8 +6043,10 @@ function setupLogin() {
 }
 
 function attemptLogin() {
-  var user = document.getElementById('login-user').value.trim().toLowerCase();
-  var pw = document.getElementById('login-pw').value;
+  var userEl = document.getElementById('login-user');
+  var pwEl = document.getElementById('login-pw');
+  var user = (userEl.textContent || userEl.value || '').trim().toLowerCase();
+  var pw = (pwEl.textContent || pwEl.value || '').trim();
   var currentUsers = getUsers();
   if (currentUsers[user] && currentUsers[user] === pw) {
     sessionStorage.setItem('qd_logged_in', 'true');
@@ -5910,8 +6056,8 @@ function attemptLogin() {
     loadSharedData(function() { renderHomeDashboard(); });
   } else {
     document.getElementById('login-error').style.display = 'block';
-    document.getElementById('login-pw').value = '';
-    document.getElementById('login-pw').focus();
+    pwEl.textContent = '';
+    pwEl.focus();
   }
 }
 
