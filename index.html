@@ -48,6 +48,31 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
   transition: all 0.2s; margin-left: 8px;
 }
 .top-tab-bar .btn-logout:hover { border-color: #ef4444; color: #ef4444; }
+.top-tab-bar .btn-help {
+  background: none; border: 1px solid #444; color: #888;
+  width: 32px; height: 32px; border-radius: 50%;
+  font-size: 16px; font-weight: 700; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; margin-left: 8px;
+}
+.top-tab-bar .btn-help:hover { border-color: #1DA1F2; color: #1DA1F2; }
+.help-overlay {
+  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5); z-index: 2000;
+  align-items: center; justify-content: center;
+}
+.help-overlay.active { display: flex; }
+.help-panel {
+  background: #fff; width: 90vw; max-width: 750px; height: 90vh;
+  border-radius: 12px; overflow-y: auto; padding: 32px 40px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3); position: relative;
+}
+.help-close {
+  position: sticky; top: 0; float: right; background: #f0f0f0;
+  border: none; width: 32px; height: 32px; border-radius: 50%;
+  font-size: 18px; cursor: pointer; z-index: 1;
+}
+.help-close:hover { background: #ddd; }
 
 /* ========== MAIN CONTENT AREA ========== */
 .main-content { display: flex; flex: 1; overflow: hidden; }
@@ -1062,6 +1087,8 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
 }
 .presup-dash-table .btn-pdt-action:hover { border-color: #1DA1F2; color: #1DA1F2; }
 .presup-dash-table .btn-pdt-action.btn-duplicar:hover { border-color: #10b981; color: #10b981; }
+.presup-dash-table .btn-pdt-action.btn-editar { border-color: #93c5fd; color: #3b82f6; }
+.presup-dash-table .btn-pdt-action.btn-editar:hover { border-color: #3b82f6; color: #fff; background: #3b82f6; }
 .presup-dash-table .btn-pdt-action.btn-eliminar { border-color: #fca5a5; color: #ef4444; }
 .presup-dash-table .btn-pdt-action.btn-eliminar:hover { border-color: #ef4444; color: #fff; background: #ef4444; }
 
@@ -1514,6 +1541,7 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
   .loading-overlay { display: none !important; }
   .home-todo { display: none !important; }
   .login-overlay { display: none !important; }
+  .help-overlay { display: none !important; }
   #edit-contact-modal-overlay { display: none !important; }
   .confirm-overlay { display: none !important; }
   #edit-venta-modal-overlay { display: none !important; }
@@ -1585,6 +1613,7 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
   <button class="btn-logout" onclick="logout()" title="Cerrar sesion">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
   </button>
+  <button class="btn-help" onclick="toggleHelp()" title="Ayuda">?</button>
 </div>
 
 <!-- ==================== MAIN CONTENT ==================== -->
@@ -2235,6 +2264,236 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
 
 <!-- ==================== TOAST ==================== -->
 <div class="pipeline-toast" id="pipeline-toast"></div>
+
+<!-- ==================== HELP OVERLAY ==================== -->
+<div class="help-overlay" id="help-overlay" onclick="if(event.target===this)toggleHelp()">
+<div class="help-panel">
+<button class="help-close" onclick="toggleHelp()">&times;</button>
+
+<div style="text-align:center;margin-bottom:30px;">
+  <div style="font-size:28px;font-weight:800;color:#1DA1F2;letter-spacing:2px;">QUALITY DECO</div>
+  <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:3px;">Frentes de parrillas</div>
+  <div style="font-size:18px;font-weight:700;color:#2a2a2a;margin-top:16px;">Manual de Uso del Sistema</div>
+  <div style="font-size:12px;color:#666;margin-top:4px;">Guia completa para gestionar leads, presupuestos y ventas</div>
+</div>
+
+<h2 style="font-size:18px;font-weight:800;color:#1DA1F2;margin:30px 0 12px;padding-bottom:6px;border-bottom:2px solid #1DA1F2;">Acceso al sistema</h2>
+<div style="background:#f0f8ff;border:2px solid #1DA1F2;border-radius:12px;padding:20px;margin:16px 0;text-align:center;">
+  <div style="font-size:15px;font-weight:700;color:#1DA1F2;">presupuestosqd.vercel.app</div>
+  <div style="margin-top:8px;font-size:12px;">Usuario: <strong>gaston</strong> &nbsp;|&nbsp; Contrasena: <strong>gaston</strong></div>
+</div>
+<p style="font-size:13px;color:#444;margin-bottom:8px;">Abri el link en tu navegador (Chrome recomendado) desde la computadora o el celular. Vas a ver una pantalla de login. Ingresa tu usuario y contrasena.</p>
+<div style="background:#fffbeb;border:1px solid #f59e0b;border-radius:8px;padding:10px 14px;margin:10px 0;font-size:11px;"><strong style="color:#f59e0b;">TIP:</strong> Te recomendamos usar la computadora para generar presupuestos (el PDF sale mejor). Desde el celular podes ver el pipeline y contactos sin problema.</div>
+
+<h2 style="font-size:18px;font-weight:800;color:#1DA1F2;margin:30px 0 12px;padding-bottom:6px;border-bottom:2px solid #1DA1F2;">Pantalla principal (Home)</h2>
+<p style="font-size:13px;color:#444;margin-bottom:8px;">Cuando entras, ves 6 botones que te llevan a cada seccion del sistema:</p>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0;">
+  <div style="background:#fafafa;border-radius:8px;padding:12px;"><strong>Pipeline</strong><br><span style="font-size:11px;color:#666;">Tu tablero de ventas. Ves en que etapa esta cada persona que te consulto.</span></div>
+  <div style="background:#fafafa;border-radius:8px;padding:12px;"><strong>Presupuestos</strong><br><span style="font-size:11px;color:#666;">Generas presupuestos profesionales en PDF en 2 minutos.</span></div>
+  <div style="background:#fafafa;border-radius:8px;padding:12px;"><strong>Contactos</strong><br><span style="font-size:11px;color:#666;">La lista completa de todos los clientes.</span></div>
+  <div style="background:#fafafa;border-radius:8px;padding:12px;"><strong>Ventas</strong><br><span style="font-size:11px;color:#666;">Las ventas que cerraste, con montos y estados.</span></div>
+  <div style="background:#fafafa;border-radius:8px;padding:12px;"><strong>Estadisticas</strong><br><span style="font-size:11px;color:#666;">Numeros y graficos de como va el negocio.</span></div>
+  <div style="background:#fafafa;border-radius:8px;padding:12px;"><strong>Ajustes</strong><br><span style="font-size:11px;color:#666;">Configuracion del sistema, usuarios, textos.</span></div>
+</div>
+<p style="font-size:13px;color:#444;margin-bottom:8px;">Debajo de los botones tenes una <strong>lista de tareas del dia</strong> donde podes anotar cosas para no olvidarte (ej: "Llamar a Juan", "Medir parrilla de Atilio").</p>
+
+<h2 style="font-size:18px;font-weight:800;color:#1DA1F2;margin:30px 0 12px;padding-bottom:6px;border-bottom:2px solid #1DA1F2;">Pipeline — Tu tablero de ventas</h2>
+<p style="font-size:13px;color:#444;margin-bottom:8px;">El pipeline es un tablero donde ves en que etapa esta cada persona. Las personas llegan automaticamente cuando consultan por WhatsApp.</p>
+
+<h3 style="font-size:14px;font-weight:700;color:#2a2a2a;margin:16px 0 8px;">Las 3 etapas</h3>
+<div style="background:#fafafa;border-radius:8px;padding:14px 16px;margin:8px 0;border-left:4px solid #1DA1F2;">
+  <strong>Nuevo Lead</strong><br><span style="font-size:12px;color:#555;">La persona recien consulto por WhatsApp. Todavia no le mandaste presupuesto. Estos son los que tenes que atender primero.</span>
+</div>
+<div style="background:#fafafa;border-radius:8px;padding:14px 16px;margin:8px 0;border-left:4px solid #f59e0b;">
+  <strong>Presupuesto Enviado</strong><br><span style="font-size:12px;color:#555;">Ya le mandaste el presupuesto. Se mueve solo cuando generas el PDF desde el sistema. Aca ves cuantos dias lleva sin responder.</span>
+</div>
+<div style="background:#fafafa;border-radius:8px;padding:14px 16px;margin:8px 0;border-left:4px solid #8b5cf6;">
+  <strong>En Seguimiento</strong><br><span style="font-size:12px;color:#555;">Estas en conversacion activa con la persona. Arrastra la tarjeta aca cuando estes hablando.</span>
+</div>
+
+<h3 style="font-size:14px;font-weight:700;color:#2a2a2a;margin:16px 0 8px;">Como mover un lead</h3>
+<ol style="font-size:12px;color:#444;padding-left:20px;line-height:1.8;">
+  <li><strong>Arrastrar:</strong> Agarra la tarjeta con el mouse y soltala en otra columna.</li>
+  <li><strong>Cerrar como ganado:</strong> Aprета el boton verde (tilde) en la tarjeta. Desaparece del tablero y va a Ventas.</li>
+  <li><strong>Cerrar como perdido:</strong> Apreta el boton rojo (X). Desaparece del tablero.</li>
+  <li><strong>Escribirle por WhatsApp:</strong> Apreta el boton verde "WA" en la tarjeta. Se abre WhatsApp directo.</li>
+  <li><strong>Ver toda la info:</strong> Hace click en la tarjeta. Se abre la ficha completa con todos los datos.</li>
+</ol>
+<div style="background:#fffbeb;border:1px solid #f59e0b;border-radius:8px;padding:10px 14px;margin:10px 0;font-size:11px;"><strong style="color:#f59e0b;">TIP:</strong> Si un lead lleva mas de 3 dias en "Presupuesto Enviado", mandale un mensaje de seguimiento. El sistema te muestra los dias al lado de la fecha.</div>
+<p style="font-size:13px;color:#444;margin-bottom:8px;"><strong>Seccion "Cerrados":</strong> Abajo del tablero hay una seccion que se expande y muestra los leads que cerraste (ganados y perdidos). Si te equivocaste, apretas "Deshacer" y vuelve al tablero.</p>
+
+<h2 style="font-size:18px;font-weight:800;color:#1DA1F2;margin:30px 0 12px;padding-bottom:6px;border-bottom:2px solid #1DA1F2;">Presupuestos — Generar PDF profesional</h2>
+<h3 style="font-size:14px;font-weight:700;color:#2a2a2a;margin:16px 0 8px;">Ver presupuestos anteriores</h3>
+<p style="font-size:13px;color:#444;margin-bottom:8px;">Al entrar ves una lista de todos los presupuestos que generaste, con fecha, cliente, monto y acciones. Podes ver el detalle, editar o duplicar uno existente.</p>
+
+<h3 style="font-size:14px;font-weight:700;color:#2a2a2a;margin:16px 0 8px;">Crear un presupuesto nuevo</h3>
+<ol style="font-size:12px;color:#444;padding-left:20px;line-height:1.8;">
+  <li><strong>Apreta "Crear nuevo presupuesto".</strong> El numero de presupuesto se asigna automaticamente.</li>
+  <li><strong>Selecciona el lead del bot.</strong> Arriba hay un desplegable "Cargar lead del bot". Si la persona consulto por WhatsApp, seleccionala y se cargan los datos automaticamente (nombre, telefono, ciudad, medidas, material).</li>
+  <li><strong>Si no es del bot:</strong> Apretas "Nuevo en blanco" y completas los datos a mano.</li>
+  <li><strong>Completa los precios</strong> de cada producto en la tabla. Podes agregar productos con "+ Agregar producto".</li>
+  <li><strong>Subi una foto</strong> del tipo de trabajo similar (la foto aparece grande en la portada del presupuesto).</li>
+  <li><strong>Apretas "Generar PDF".</strong> Se abre la ventana de impresion del navegador.</li>
+  <li><strong>En la ventana de impresion:</strong> Activa "Graficos en segundo plano" y pone margenes en "Ninguno". Despues selecciona "Guardar como PDF".</li>
+</ol>
+<div style="background:#fef2f2;border:1px solid #ef4444;border-radius:8px;padding:10px 14px;margin:10px 0;font-size:11px;"><strong style="color:#ef4444;">IMPORTANTE:</strong> Siempre activa "Graficos en segundo plano" al imprimir. Si no, el PDF sale sin colores.</div>
+
+<h3 style="font-size:14px;font-weight:700;color:#2a2a2a;margin:16px 0 8px;">El presupuesto tiene 3 paginas</h3>
+<table style="width:100%;border-collapse:collapse;margin:10px 0;font-size:11px;">
+  <tr><th style="background:#f0f8ff;color:#1DA1F2;padding:8px 10px;text-align:left;font-size:10px;text-transform:uppercase;">Pagina</th><th style="background:#f0f8ff;color:#1DA1F2;padding:8px 10px;text-align:left;font-size:10px;text-transform:uppercase;">Contenido</th></tr>
+  <tr><td style="padding:8px 10px;border-bottom:1px solid #eee;"><strong>1 — Portada</strong></td><td style="padding:8px 10px;border-bottom:1px solid #eee;">Foto del trabajo, datos del cliente, saludo personalizado, resumen de especificaciones y precio total</td></tr>
+  <tr style="background:#fafafa;"><td style="padding:8px 10px;border-bottom:1px solid #eee;"><strong>2 — Detalle</strong></td><td style="padding:8px 10px;border-bottom:1px solid #eee;">Tabla con cada producto, codigo, medida, precio. Subtotal, IVA y total.</td></tr>
+  <tr><td style="padding:8px 10px;border-bottom:1px solid #eee;"><strong>3 — Pago e info</strong></td><td style="padding:8px 10px;border-bottom:1px solid #eee;">3 formas de pago (anticipado con descuento, 50/50, cuotas), informacion del servicio, garantia y condiciones.</td></tr>
+</table>
+
+<h3 style="font-size:14px;font-weight:700;color:#2a2a2a;margin:16px 0 8px;">Que pasa automaticamente al generar</h3>
+<ul style="font-size:12px;color:#444;padding-left:20px;line-height:1.8;">
+  <li>El lead se mueve a "Presupuesto Enviado" en el pipeline</li>
+  <li>Si el cliente no existia en la base, se crea automaticamente</li>
+  <li>El presupuesto queda guardado en el historial</li>
+  <li>El archivo se guarda como "Presupuesto_0001_NombreCliente.pdf"</li>
+</ul>
+
+<h2 style="font-size:18px;font-weight:800;color:#1DA1F2;margin:30px 0 12px;padding-bottom:6px;border-bottom:2px solid #1DA1F2;">Contactos — Tu base de clientes</h2>
+<p style="font-size:13px;color:#444;margin-bottom:8px;">Aca ves TODOS los clientes, los que vinieron por WhatsApp y los que cargaste a mano.</p>
+
+<h3 style="font-size:14px;font-weight:700;color:#2a2a2a;margin:16px 0 8px;">Buscar y filtrar</h3>
+<table style="width:100%;border-collapse:collapse;margin:10px 0;font-size:11px;">
+  <tr><th style="background:#f0f8ff;color:#1DA1F2;padding:8px 10px;text-align:left;font-size:10px;text-transform:uppercase;">Filtro</th><th style="background:#f0f8ff;color:#1DA1F2;padding:8px 10px;text-align:left;font-size:10px;text-transform:uppercase;">Que hace</th></tr>
+  <tr><td style="padding:8px 10px;border-bottom:1px solid #eee;"><strong>Buscador</strong></td><td style="padding:8px 10px;border-bottom:1px solid #eee;">Escribi el nombre y se filtra al instante</td></tr>
+  <tr style="background:#fafafa;"><td style="padding:8px 10px;border-bottom:1px solid #eee;"><strong>Por estado</strong></td><td style="padding:8px 10px;border-bottom:1px solid #eee;">Nuevo Lead, Presupuesto Enviado, En Seguimiento, Cerrado Ganado, Cerrado Perdido</td></tr>
+  <tr><td style="padding:8px 10px;border-bottom:1px solid #eee;"><strong>Por material</strong></td><td style="padding:8px 10px;border-bottom:1px solid #eee;">Epoxi o Acero Inoxidable</td></tr>
+  <tr style="background:#fafafa;"><td style="padding:8px 10px;border-bottom:1px solid #eee;"><strong>Por ciudad</strong></td><td style="padding:8px 10px;border-bottom:1px solid #eee;">Se agrupan automaticamente (todos los "Rosario" juntos)</td></tr>
+</table>
+<p style="font-size:13px;color:#444;margin-bottom:8px;">Podes <strong>ordenar</strong> haciendo click en el titulo de la columna (Nombre, Ciudad, Fecha, Estado). Click de nuevo para invertir el orden.</p>
+
+<h3 style="font-size:14px;font-weight:700;color:#2a2a2a;margin:16px 0 8px;">Ficha del contacto</h3>
+<p style="font-size:13px;color:#444;margin-bottom:4px;">Al hacer click en un contacto se abre su ficha con:</p>
+<ul style="font-size:12px;color:#444;padding-left:20px;line-height:1.8;">
+  <li>Todos sus datos (nombre, telefono, ciudad, medidas, material, sistema)</li>
+  <li>Link directo a <strong>WhatsApp</strong> para escribirle</li>
+  <li><strong>Mensajes rapidos:</strong> 4 mensajes pre-armados que podes copiar y pegar en WhatsApp</li>
+  <li><strong>Presupuestos enviados:</strong> Historial de todos los presupuestos que le generaste</li>
+  <li><strong>Notas:</strong> Podes anotar cosas como "Lo llame, dice que lo llame el lunes"</li>
+  <li>Boton <strong>"Generar presupuesto"</strong> que te lleva directo al formulario con los datos cargados</li>
+</ul>
+
+<h2 style="font-size:18px;font-weight:800;color:#1DA1F2;margin:30px 0 12px;padding-bottom:6px;border-bottom:2px solid #1DA1F2;">Ventas — Tus cierres</h2>
+<p style="font-size:13px;color:#444;margin-bottom:8px;">Aca aparecen todos los clientes que marcaste como "Cerrado Ganado" en el pipeline.</p>
+<h3 style="font-size:14px;font-weight:700;color:#2a2a2a;margin:16px 0 8px;">Filtrar por fecha</h3>
+<p style="font-size:13px;color:#444;margin-bottom:8px;">Arriba tenes botones rapidos: <strong>Todo, Hoy, 7 dias, 15 dias, 30 dias</strong>. Tambien podes elegir un rango de fechas personalizado con "Desde" y "Hasta".</p>
+<h3 style="font-size:14px;font-weight:700;color:#2a2a2a;margin:16px 0 8px;">Datos de cada venta</h3>
+<table style="width:100%;border-collapse:collapse;margin:10px 0;font-size:11px;">
+  <tr><th style="background:#f0f8ff;color:#1DA1F2;padding:8px 10px;text-align:left;font-size:10px;text-transform:uppercase;">Campo</th><th style="background:#f0f8ff;color:#1DA1F2;padding:8px 10px;text-align:left;font-size:10px;text-transform:uppercase;">Que poner</th></tr>
+  <tr><td style="padding:8px 10px;border-bottom:1px solid #eee;"><strong>Monto presupuestado</strong></td><td style="padding:8px 10px;border-bottom:1px solid #eee;">Se carga solo si le generaste presupuesto. Si no, escribilo.</td></tr>
+  <tr style="background:#fafafa;"><td style="padding:8px 10px;border-bottom:1px solid #eee;"><strong>Forma de pago</strong></td><td style="padding:8px 10px;border-bottom:1px solid #eee;">100% anticipado, 50/50, 3 cuotas, u Otro</td></tr>
+  <tr><td style="padding:8px 10px;border-bottom:1px solid #eee;"><strong>Estado de entrega</strong></td><td style="padding:8px 10px;border-bottom:1px solid #eee;">Pendiente fabricacion, En fabricacion, Listo para entregar, Entregado e instalado</td></tr>
+  <tr style="background:#fafafa;"><td style="padding:8px 10px;border-bottom:1px solid #eee;"><strong>Notas</strong></td><td style="padding:8px 10px;border-bottom:1px solid #eee;">Lo que quieras anotar</td></tr>
+</table>
+<h3 style="font-size:14px;font-weight:700;color:#2a2a2a;margin:16px 0 8px;">Exportar</h3>
+<ul style="font-size:12px;color:#444;padding-left:20px;line-height:1.8;">
+  <li><strong>Exportar CSV:</strong> Descarga un archivo para abrir en Excel</li>
+  <li><strong>Exportar Excel:</strong> Descarga un Excel formateado con resumen incluido</li>
+</ul>
+<p style="font-size:13px;color:#444;margin-bottom:8px;">Ambos exportan solo las ventas del periodo que tengas seleccionado.</p>
+<p style="font-size:13px;color:#444;margin-bottom:8px;"><strong>Crear nueva venta manual:</strong> Boton "+ Nueva venta". Elegis el cliente del desplegable, se cargan los datos, completas el monto y listo.</p>
+
+<h2 style="font-size:18px;font-weight:800;color:#1DA1F2;margin:30px 0 12px;padding-bottom:6px;border-bottom:2px solid #1DA1F2;">Estadisticas — Como va el negocio</h2>
+<h3 style="font-size:14px;font-weight:700;color:#2a2a2a;margin:16px 0 8px;">Metricas principales</h3>
+<table style="width:100%;border-collapse:collapse;margin:10px 0;font-size:11px;">
+  <tr><th style="background:#f0f8ff;color:#1DA1F2;padding:8px 10px;text-align:left;font-size:10px;text-transform:uppercase;">Metrica</th><th style="background:#f0f8ff;color:#1DA1F2;padding:8px 10px;text-align:left;font-size:10px;text-transform:uppercase;">Que significa</th></tr>
+  <tr><td style="padding:8px 10px;border-bottom:1px solid #eee;"><strong>Total leads</strong></td><td style="padding:8px 10px;border-bottom:1px solid #eee;">Cuantas personas te consultaron en total</td></tr>
+  <tr style="background:#fafafa;"><td style="padding:8px 10px;border-bottom:1px solid #eee;"><strong>Presupuestados</strong></td><td style="padding:8px 10px;border-bottom:1px solid #eee;">Que porcentaje de los leads recibio presupuesto</td></tr>
+  <tr><td style="padding:8px 10px;border-bottom:1px solid #eee;"><strong>Cerrados ganados</strong></td><td style="padding:8px 10px;border-bottom:1px solid #eee;">Cuantas ventas cerraste</td></tr>
+  <tr style="background:#fafafa;"><td style="padding:8px 10px;border-bottom:1px solid #eee;"><strong>Tasa de cierre</strong></td><td style="padding:8px 10px;border-bottom:1px solid #eee;">De cada 100 que te consultan, cuantos compran</td></tr>
+</table>
+<h3 style="font-size:14px;font-weight:700;color:#2a2a2a;margin:16px 0 8px;">Graficos</h3>
+<ul style="font-size:12px;color:#444;padding-left:20px;line-height:1.8;">
+  <li><strong>Leads por etapa:</strong> Cuantos tenes en cada columna del pipeline</li>
+  <li><strong>Leads por ciudad:</strong> De donde vienen tus clientes</li>
+  <li><strong>Leads por material:</strong> Epoxi vs Inoxidable — que prefieren</li>
+  <li><strong>Leads por sistema:</strong> Guillotina vs Levadizo</li>
+  <li><strong>Leads por semana:</strong> Cuantos leads te llegan cada semana</li>
+</ul>
+<p style="font-size:13px;color:#444;margin-bottom:8px;">Mismos filtros que Ventas: Todo, 7 dias, 15 dias, 30 dias, 90 dias, o rango personalizado. Las metricas y graficos se recalculan segun el periodo.</p>
+<p style="font-size:13px;color:#444;margin-bottom:8px;">Boton "Exportar reporte" descarga un Excel con todas las estadisticas del periodo seleccionado.</p>
+
+<h2 style="font-size:18px;font-weight:800;color:#1DA1F2;margin:30px 0 12px;padding-bottom:6px;border-bottom:2px solid #1DA1F2;">Ajustes</h2>
+<p style="font-size:13px;color:#444;margin-bottom:8px;">Desde aca podes configurar:</p>
+<div style="background:#fafafa;border-radius:8px;padding:14px 16px;margin:8px 0;border-left:4px solid #1DA1F2;">
+  <strong>Datos de la empresa</strong><br><span style="font-size:12px;color:#555;">Nombre, direccion, telefono, Instagram. Estos datos aparecen en los presupuestos PDF.</span>
+</div>
+<div style="background:#fafafa;border-radius:8px;padding:14px 16px;margin:8px 0;border-left:4px solid #1DA1F2;">
+  <strong>Valores por defecto</strong><br><span style="font-size:12px;color:#555;">IVA (21%), descuento por pago anticipado (5%), recargo por cuotas (15%), cantidad de cuotas (3), validez del presupuesto (10 dias). Podes cambiarlos y se aplican a todos los presupuestos nuevos.</span>
+</div>
+<div style="background:#fafafa;border-radius:8px;padding:14px 16px;margin:8px 0;border-left:4px solid #1DA1F2;">
+  <strong>Textos</strong><br><span style="font-size:12px;color:#555;">El saludo del presupuesto, el texto final, y las condiciones legales. Podes personalizarlos.</span>
+</div>
+<div style="background:#fafafa;border-radius:8px;padding:14px 16px;margin:8px 0;border-left:4px solid #1DA1F2;">
+  <strong>Plantillas de mensajes</strong><br><span style="font-size:12px;color:#555;">Los 4 mensajes rapidos que aparecen en la ficha del contacto. Podes editarlos aca.</span>
+</div>
+<div style="background:#fafafa;border-radius:8px;padding:14px 16px;margin:8px 0;border-left:4px solid #1DA1F2;">
+  <strong>Usuarios</strong><br><span style="font-size:12px;color:#555;">Podes agregar o eliminar personas que acceden al sistema.</span>
+</div>
+<p style="font-size:13px;color:#444;margin-bottom:8px;">Despues de cambiar algo, apreta <strong>"Guardar cambios"</strong>.</p>
+
+<h2 style="font-size:18px;font-weight:800;color:#1DA1F2;margin:30px 0 12px;padding-bottom:6px;border-bottom:2px solid #1DA1F2;">El flujo completo — Como funciona todo</h2>
+<div style="background:#f5f5f5;border-radius:10px;padding:16px;margin:12px 0;font-family:monospace;font-size:11px;line-height:1.9;color:#555;white-space:pre-wrap;">1. La persona ve tu anuncio en Instagram/Facebook
+         ↓
+2. Hace click → le abre WhatsApp
+         ↓
+3. El bot le hace preguntas automaticas
+   (nombre, ciudad, medidas, material, sistema)
+         ↓
+4. Los datos se guardan automaticamente
+         ↓
+5. Vos abris presupuestosqd.vercel.app
+         ↓
+6. En PIPELINE ves el lead nuevo
+         ↓
+7. Haces click → ves sus datos → "Generar presupuesto"
+         ↓
+8. Cargas los precios → generas el PDF
+         ↓
+9. Le mandas el PDF por WhatsApp
+         ↓
+10. Se mueve automaticamente a "Presupuesto Enviado"
+         ↓
+11. Haces seguimiento (lo moves a "En Seguimiento")
+         ↓
+12. Si cierra → tilde verde → aparece en VENTAS
+    Si no cierra → X roja → queda en cerrados</div>
+
+<h2 style="font-size:18px;font-weight:800;color:#1DA1F2;margin:30px 0 12px;padding-bottom:6px;border-bottom:2px solid #1DA1F2;">Tips importantes</h2>
+<div style="background:#fafafa;border-radius:8px;padding:14px 16px;margin:8px 0;border-left:4px solid #1DA1F2;">
+  <strong>Revisa el pipeline todos los dias</strong><br><span style="font-size:12px;color:#555;">Si un lead lleva mas de 3 dias en "Presupuesto Enviado", mandale un mensaje de seguimiento. Usa los mensajes rapidos de la ficha.</span>
+</div>
+<div style="background:#fafafa;border-radius:8px;padding:14px 16px;margin:8px 0;border-left:4px solid #10b981;">
+  <strong>Subi fotos reales a los presupuestos</strong><br><span style="font-size:12px;color:#555;">Una foto de un trabajo similar al que el cliente quiere genera mucha mas confianza que sin foto. Elegilas del celular al momento de generar.</span>
+</div>
+<div style="background:#fafafa;border-radius:8px;padding:14px 16px;margin:8px 0;border-left:4px solid #f59e0b;">
+  <strong>Marca los cerrados</strong><br><span style="font-size:12px;color:#555;">Si no marcas ganados/perdidos, las estadisticas no van a ser correctas. Cuando un cliente te confirma, apreta el tilde verde. Si no se da, la X roja.</span>
+</div>
+<div style="background:#fafafa;border-radius:8px;padding:14px 16px;margin:8px 0;border-left:4px solid #1DA1F2;">
+  <strong>Usa las notas</strong><br><span style="font-size:12px;color:#555;">Anota todo lo que pase con cada cliente: "Lo llame, dice que lo llame el lunes", "Esta esperando que termine la obra". Asi no te olvidas de nada.</span>
+</div>
+<div style="background:#fafafa;border-radius:8px;padding:14px 16px;margin:8px 0;border-left:4px solid #ef4444;">
+  <strong>No limpies la cache del navegador</strong><br><span style="font-size:12px;color:#555;">Algunas configuraciones se guardan en tu navegador. Si limpias todo, vas a tener que volver a configurar los ajustes y las tareas del dia. Los datos de leads, presupuestos, ventas y notas no se pierden.</span>
+</div>
+
+<h2 style="font-size:18px;font-weight:800;color:#1DA1F2;margin:30px 0 12px;padding-bottom:6px;border-bottom:2px solid #1DA1F2;">Busqueda rapida</h2>
+<p style="font-size:13px;color:#444;margin-bottom:8px;">En la barra de arriba hay un buscador. Escribi el nombre de un cliente y te aparecen resultados al instante. Hace click en un resultado para abrir su ficha.</p>
+
+<h2 style="font-size:18px;font-weight:800;color:#1DA1F2;margin:30px 0 12px;padding-bottom:6px;border-bottom:2px solid #1DA1F2;">Soporte</h2>
+<p style="font-size:13px;color:#444;margin-bottom:8px;">Cualquier duda o problema con el sistema, contacta a Tomas de HQL Agency.</p>
+
+<div style="text-align:center;padding:20px 0;color:#ccc;font-size:10px;border-top:1px solid #eee;margin-top:30px;">
+  Quality Deco — Frentes de parrillas<br>
+  Sistema desarrollado por HQL Agency — Marzo 2026
+</div>
+
+</div>
+</div>
 
 <script>
 /* ============ UTILS ============ */
@@ -3386,6 +3645,11 @@ function logout() {
   document.getElementById('login-pw').textContent = '';
   document.getElementById('login-error').style.display = 'none';
   document.getElementById('login-user').focus();
+}
+
+function toggleHelp() {
+  var overlay = document.getElementById('help-overlay');
+  overlay.classList.toggle('active');
 }
 
 function closeConfirmModal() {
@@ -5427,17 +5691,19 @@ function renderPresupuestosDashboard() {
       '<td class="pdt-total">' + formatPrice(b.total) + '</td>' +
       '<td><span class="pdt-items-label">' + escapeHtml(itemCount) + '</span></td>' +
       '<td>' +
-        '<button class="btn-pdt-action" data-idx="' + idx + '" onclick="openPresupDetailModal(' + idx + ')">Ver</button>' +
-        '<button class="btn-pdt-action btn-duplicar" data-idx="' + idx + '" onclick="duplicarPresupuesto(' + idx + ')">Duplicar</button>' +
+        '<button class="btn-pdt-action" onclick="openPresupDetailModal(\'' + escapeAttr(b.id) + '\')">Ver</button>' +
+        '<button class="btn-pdt-action btn-editar" onclick="editPresupuesto(\'' + escapeAttr(b.id) + '\')">Editar</button>' +
+        '<button class="btn-pdt-action btn-duplicar" onclick="duplicarPresupuesto(\'' + escapeAttr(b.id) + '\')">Duplicar</button>' +
         '<button class="btn-pdt-action btn-eliminar" onclick="deleteBudget(\'' + escapeAttr(b.clientKey) + '\',\'' + escapeAttr(b.id) + '\')">Eliminar</button>' +
       '</td>';
     tbody.appendChild(tr);
   });
 }
 
-function openPresupDetailModal(idx) {
+function openPresupDetailModal(budgetId) {
   var flat = getAllBudgetsFlat();
-  var b = flat[idx];
+  var b = flat.find(function(x) { return x.id === budgetId; });
+  if (!b) { b = flat[parseInt(budgetId)]; }
   if (!b) return;
 
   var html = '<h2 style="font-size:18px;font-weight:900;color:#1DA1F2;margin-bottom:4px;">PRESUPUESTO #' + escapeHtml(b.nro) + ' &mdash; ' + escapeHtml(b.fecha) + '</h2>';
@@ -5484,9 +5750,10 @@ function closePresupDetailModal() {
   document.getElementById('presup-detail-modal-overlay').classList.remove('active');
 }
 
-function duplicarPresupuesto(idx) {
+function duplicarPresupuesto(budgetId) {
   var flat = getAllBudgetsFlat();
-  var b = flat[idx];
+  var b = flat.find(function(x) { return x.id === budgetId; });
+  if (!b) { b = flat[parseInt(budgetId)]; }
   if (!b) return;
 
   showPresupForm(true);
@@ -5530,6 +5797,71 @@ function duplicarPresupuesto(idx) {
   }
   renderLineItemsForm();
   render();
+}
+
+function editPresupuesto(budgetId) {
+  var flat = getAllBudgetsFlat();
+  var b = flat.find(function(x) { return x.id === budgetId; });
+  if (!b) return;
+
+  showPresupForm(true);
+
+  /* Fill the form with budget data including nro */
+  document.getElementById('f-nro').value = b.nro;
+  document.getElementById('f-cliente').value = b.cliente || '';
+  /* Set sistema */
+  if (b.sistema) document.getElementById('f-sistema').value = mapSistemaToForm(b.sistema);
+  /* Set material */
+  if (b.material) document.getElementById('f-material').value = mapMaterialToForm(b.material);
+  /* Parse medidas (e.g. "1200 x 2400 mm") */
+  if (b.medidas) {
+    var mParts = b.medidas.replace('mm', '').trim().split('x');
+    if (mParts.length >= 2) {
+      document.getElementById('f-ancho').value = mParts[0].trim();
+      document.getElementById('f-alto').value = mParts[1].trim();
+    }
+  }
+  document.getElementById('f-descuento').value = b.descuento || 5;
+  document.getElementById('f-recargo').value = b.recargo || 15;
+  document.getElementById('f-cuotas').value = b.cuotas || 3;
+
+  /* Rebuild items - clear checkboxes first */
+  document.getElementById('f-cb-bajo').checked = false;
+  document.getElementById('f-cb-mesada').checked = false;
+  document.getElementById('f-cb-tapa').checked = false;
+  document.getElementById('f-cb-lateral').checked = false;
+  onConfigChange();
+
+  /* Now override line items with the budget's items */
+  lineItems = [];
+  if (b.items && b.items.length > 0) {
+    b.items.forEach(function(item) {
+      var isFree = item.precio === 0;
+      var isFixed = (item.nombre || '').toLowerCase().indexOf('palita') >= 0 ||
+                    (item.nombre || '').toLowerCase().indexOf('colocacion') >= 0;
+      var newItem = createItem(item.nombre, '', item.precio, isFree, isFixed, 'QD-' + String(nextItemId).padStart(3, '0'));
+      if (!isFixed && !isFree) newItem._custom = true;
+      lineItems.push(newItem);
+    });
+  }
+  renderLineItemsForm();
+  render();
+}
+
+function mapSistemaToForm(sistema) {
+  if (!sistema) return 'Guillotina contrapesado';
+  var s = sistema.toLowerCase();
+  if (s.indexOf('guillotina') >= 0) return 'Guillotina contrapesado';
+  if (s.indexOf('levadizo') >= 0) return 'Levadizo con pistones';
+  return sistema;
+}
+
+function mapMaterialToForm(material) {
+  if (!material) return 'Acero inoxidable esmerilado';
+  var m = material.toLowerCase();
+  if (m.indexOf('inox') >= 0 || m.indexOf('acero') >= 0) return 'Acero inoxidable esmerilado';
+  if (m.indexOf('epoxi') >= 0 || m.indexOf('chapa') >= 0) return 'Chapa pintada epoxi negro';
+  return material;
 }
 
 function showPresupForm(skipClear) {
