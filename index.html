@@ -4984,8 +4984,37 @@ function renderVentasTable(ganados, ventasStore) {
       '<td>' + escapeHtml(formatDateAR(lead.fecha) || '-') + '</td>' +
       '<td>' + escapeHtml(lead.sistema || '-') + '</td>' +
       '<td>' + escapeHtml(lead.material || '-') + '</td>' +
-      '<td>' + escapeHtml(medidas) + '</td>' +
+      '<td><input type="text" class="vt-inline-input" style="width:120px;" value="' + escapeAttr(medidas === '-' ? '' : medidas) + '" placeholder="Ej: 200x250" data-row="' + lead.rowIndex + '" data-field="medidas"></td>' +
       '<td></td><td></td><td></td><td></td><td></td>';
+
+    /* Medidas (editable) — update lead data in Sheet */
+    var medidasInput = tr.querySelector('input[data-field="medidas"]');
+    if (medidasInput) {
+      medidasInput.addEventListener('blur', function() {
+        var rowIdx = parseInt(this.getAttribute('data-row'));
+        var val = this.value.trim();
+        var theLead = allLeadsData.find(function(l) { return l.rowIndex === rowIdx; });
+        if (!theLead) return;
+        /* Parse "200x250" or "A: 200 | H: 250 | B: 100" into separate values */
+        var parts = val.replace(/[AHBahb]:\s*/g, '').split(/[x|×,]/);
+        var ancho = parts[0] ? parts[0].trim() : '-';
+        var alto = parts[1] ? parts[1].trim() : '-';
+        var boca = parts[2] ? parts[2].trim() : '-';
+        /* Update cols 5 (ancho), 6 (alto), 7 (boca) in Sheet */
+        var updates = [{col: 5, val: ancho}, {col: 6, val: alto}, {col: 7, val: boca}];
+        updates.forEach(function(u) {
+          fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            headers: {'Content-Type': 'text/plain'},
+            body: JSON.stringify({action: 'update', sheet: 'Leads QD', row: rowIdx - 2, col: u.col, value: u.val})
+          });
+        });
+        theLead.ancho = ancho;
+        theLead.alto = alto;
+        theLead.boca = boca;
+        showToast('Medidas actualizadas', 'success');
+      });
+    }
 
     /* Monto presupuestado (editable) */
     var tdMonto = tr.children[6];
