@@ -3005,56 +3005,91 @@ var sheetsLoaded = { presupuestos: false, ventas: false, notas: false };
 var sheetsDataLoaded = false;
 
 function loadAllSheetData(callback) {
-  var loaded = 0;
-  var total = 3;
-
-  function checkDone() {
-    loaded++;
-    if (loaded >= total) {
-      sheetsDataLoaded = true;
-      if (callback) callback();
-    }
+  /* Now handled inside loadSharedData in parallel. This is kept for compatibility. */
+  if (sheetsDataLoaded) {
+    if (callback) callback();
+    return;
   }
-
-  /* Load Presupuestos */
-  fetch(APPS_SCRIPT_URL + '?sheet=Presupuestos')
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (data.success) allPresupuestosData = data.data || [];
-      sheetsLoaded.presupuestos = true;
-      checkDone();
-    }).catch(function() { checkDone(); });
-
-  /* Load Ventas */
-  fetch(APPS_SCRIPT_URL + '?sheet=Ventas')
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (data.success) allVentasData = data.data || [];
-      sheetsLoaded.ventas = true;
-      checkDone();
-    }).catch(function() { checkDone(); });
-
-  /* Load Notas */
-  fetch(APPS_SCRIPT_URL + '?sheet=Notas')
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (data.success) allNotasData = data.data || [];
-      sheetsLoaded.notas = true;
-      checkDone();
-    }).catch(function() { checkDone(); });
+  /* If not loaded yet, trigger a full reload */
+  dataLoading = false;
+  dataLoaded = false;
+  loadSharedData(callback);
 }
 
 function loadSharedData(callback) {
   if (dataLoading) return;
   dataLoading = true;
+
+  /* CACHE-FIRST: show cached data instantly, update from network in background */
+  var cached = localStorage.getItem('qd_cache_leads');
+  if (cached && !dataLoaded) {
+    try {
+      allLeadsData = JSON.parse(cached);
+      dataLoaded = true;
+      leadsData = allLeadsData.filter(function(l) { return l.hasMeasures; });
+      populateLeadSelect();
+      /* Show cached sheets data too */
+      var cachedP = localStorage.getItem('qd_cache_presupuestos');
+      var cachedV = localStorage.getItem('qd_cache_ventas');
+      var cachedN = localStorage.getItem('qd_cache_notas');
+      if (cachedP) { try { allPresupuestosData = JSON.parse(cachedP); sheetsLoaded.presupuestos = true; } catch(e){} }
+      if (cachedV) { try { allVentasData = JSON.parse(cachedV); sheetsLoaded.ventas = true; } catch(e){} }
+      if (cachedN) { try { allNotasData = JSON.parse(cachedN); sheetsLoaded.notas = true; } catch(e){} }
+      sheetsDataLoaded = true;
+      if (callback) callback();
+    } catch(e) {}
+  }
+
   var loadingEl = document.getElementById('loading-overlay');
-  if (loadingEl) loadingEl.classList.add('active');
+  if (loadingEl && !dataLoaded) loadingEl.classList.add('active');
+
+  /* NETWORK: fetch all 4 sources in PARALLEL */
   var url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:json&gid=' + SHEET_GID;
+  var done = 0;
+  var total = 4;
+  var hadCache = dataLoaded;
+
+  function networkDone() {
+    done++;
+    if (done >= total) {
+      dataLoaded = true;
+      dataLoading = false;
+      sheetsDataLoaded = true;
+      var loadingEl2 = document.getElementById('loading-overlay');
+      if (loadingEl2) loadingEl2.classList.remove('active');
+      var now = new Date();
+      var updEl = document.getElementById('last-updated');
+      if (updEl) updEl.textContent = 'Actualizado ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+      leadsData = allLeadsData.filter(function(l) { return l.hasMeasures; });
+      populateLeadSelect();
+      /* Cache for next time */
+      try {
+        localStorage.setItem('qd_cache_leads', JSON.stringify(allLeadsData));
+        localStorage.setItem('qd_cache_presupuestos', JSON.stringify(allPresupuestosData));
+        localStorage.setItem('qd_cache_ventas', JSON.stringify(allVentasData));
+        localStorage.setItem('qd_cache_notas', JSON.stringify(allNotasData));
+      } catch(e) {}
+      if (hadCache) {
+        /* Data was already shown from cache — re-render current tab silently */
+        var activeTab = getCurrentTab();
+        if (activeTab === 'home') renderHomeDashboard();
+        else if (activeTab === 'pipeline') { renderKanban(); updatePipelineStatus(); }
+        else if (activeTab === 'contactos') renderContactos();
+        else if (activeTab === 'ventas') renderVentas();
+        else if (activeTab === 'estadisticas') { renderStatsCards(); renderStatsCharts(); }
+        else if (activeTab === 'presupuestos') renderPresupuestosDashboard();
+      } else {
+        if (callback) callback();
+      }
+    }
+  }
+
+  /* 1. Leads from gviz */
   fetch(url)
     .then(function(r) { return r.text(); })
     .then(function(text) {
       var jsonStr = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);?/);
-      if (!jsonStr) { dataLoading = false; showToast('Error al leer Sheet', 'error'); return; }
+      if (!jsonStr) { networkDone(); return; }
       var data = JSON.parse(jsonStr[1]);
       var rows = data.table.rows;
       allLeadsData = [];
@@ -3085,33 +3120,36 @@ function loadSharedData(callback) {
           stage: mapEstadoToStage((cells[4] && cells[4].v) || '')
         });
       });
-      dataLoaded = true;
-      dataLoading = false;
-      var loadingEl2 = document.getElementById('loading-overlay');
-      if (loadingEl2) loadingEl2.classList.remove('active');
-
-      /* Update last-updated indicator */
-      var now = new Date();
-      var hh = String(now.getHours()).padStart(2,'0');
-      var mm = String(now.getMinutes()).padStart(2,'0');
-      var updEl = document.getElementById('last-updated');
-      if (updEl) updEl.textContent = 'Actualizado ' + hh + ':' + mm;
-
-      /* Also populate the presupuestos lead selector */
-      leadsData = allLeadsData.filter(function(l) { return l.hasMeasures; });
-      populateLeadSelect();
-
-      /* Load Presupuestos/Ventas/Notas from Sheets, then fire callback */
-      loadAllSheetData(function() {
-        if (callback) callback();
-      });
+      networkDone();
     })
-    .catch(function(err) {
-      dataLoading = false;
-      var loadingEl3 = document.getElementById('loading-overlay');
-      if (loadingEl3) loadingEl3.classList.remove('active');
-      showToast('Error al cargar datos: ' + err.message, 'error');
-    });
+    .catch(function() { networkDone(); });
+
+  /* 2. Presupuestos */
+  fetch(APPS_SCRIPT_URL + '?sheet=Presupuestos')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.success) allPresupuestosData = data.data || [];
+      sheetsLoaded.presupuestos = true;
+      networkDone();
+    }).catch(function() { networkDone(); });
+
+  /* 3. Ventas */
+  fetch(APPS_SCRIPT_URL + '?sheet=Ventas')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.success) allVentasData = data.data || [];
+      sheetsLoaded.ventas = true;
+      networkDone();
+    }).catch(function() { networkDone(); });
+
+  /* 4. Notas */
+  fetch(APPS_SCRIPT_URL + '?sheet=Notas')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.success) allNotasData = data.data || [];
+      sheetsLoaded.notas = true;
+      networkDone();
+    }).catch(function() { networkDone(); });
 }
 
 function globalRefreshData() {
