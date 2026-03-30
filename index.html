@@ -2728,13 +2728,60 @@ function bindEvents() {
 /* ============ GOOGLE SHEETS INTEGRATION ============ */
 var SHEET_ID = '19SEgflKP6oQY0zQmUqArbhQaQPf57oX0x4GGrfwmjYg';
 var SHEET_GID = '1476153618';
-var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwEv5cpspLWWpBSvNdR5qdnaEX4u49MqEv8Rl5-_RIHhEmRNvrOfxEQX63YoQ-uN_lk/exec';
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbza5n11bicJ5pIHrQqteiwrIDr9hvzBgJWoY-A88OI-yF2s2X5b4Fwl9HEOTxh6cbUI/exec';
 var leadsData = [];
 
 /* ============ SHARED DATA STORE ============ */
 var allLeadsData = [];
 var dataLoaded = false;
 var dataLoading = false;
+
+/* ============ SHEETS CACHE FOR PRESUPUESTOS / VENTAS / NOTAS ============ */
+var allPresupuestosData = [];
+var allVentasData = [];
+var allNotasData = [];
+var sheetsLoaded = { presupuestos: false, ventas: false, notas: false };
+var sheetsDataLoaded = false;
+
+function loadAllSheetData(callback) {
+  var loaded = 0;
+  var total = 3;
+
+  function checkDone() {
+    loaded++;
+    if (loaded >= total) {
+      sheetsDataLoaded = true;
+      if (callback) callback();
+    }
+  }
+
+  /* Load Presupuestos */
+  fetch(APPS_SCRIPT_URL + '?sheet=Presupuestos')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.success) allPresupuestosData = data.data || [];
+      sheetsLoaded.presupuestos = true;
+      checkDone();
+    }).catch(function() { checkDone(); });
+
+  /* Load Ventas */
+  fetch(APPS_SCRIPT_URL + '?sheet=Ventas')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.success) allVentasData = data.data || [];
+      sheetsLoaded.ventas = true;
+      checkDone();
+    }).catch(function() { checkDone(); });
+
+  /* Load Notas */
+  fetch(APPS_SCRIPT_URL + '?sheet=Notas')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.success) allNotasData = data.data || [];
+      sheetsLoaded.notas = true;
+      checkDone();
+    }).catch(function() { checkDone(); });
+}
 
 function loadSharedData(callback) {
   if (dataLoading) return;
@@ -2793,7 +2840,10 @@ function loadSharedData(callback) {
       leadsData = allLeadsData.filter(function(l) { return l.hasMeasures; });
       populateLeadSelect();
 
-      if (callback) callback();
+      /* Load Presupuestos/Ventas/Notas from Sheets, then fire callback */
+      loadAllSheetData(function() {
+        if (callback) callback();
+      });
     })
     .catch(function(err) {
       dataLoading = false;
@@ -3453,38 +3503,101 @@ function closeLeadModal() {
 
 var currentModalLead = null;
 
-/* ============ CONTACT NOTES ============ */
+/* ============ CONTACT NOTES (Google Sheets: Notas) ============ */
 function getContactNotesAll() {
-  var raw = localStorage.getItem('qd_contact_notes');
-  try { return raw ? JSON.parse(raw) : {}; } catch(e) { return {}; }
+  /* Build old format from allNotasData for compatibility */
+  var result = {};
+  allNotasData.forEach(function(row, idx) {
+    if (!row[0]) return;
+    var key = (row[0] || '') + '|' + (row[1] || '');
+    if (!result[key]) result[key] = [];
+    result[key].push({
+      id: idx.toString(),
+      date: row[2] || '',
+      user: row[3] || '',
+      text: row[4] || '',
+      _rowIndex: idx
+    });
+  });
+  /* Fallback to localStorage if sheets not loaded */
+  if (!sheetsLoaded.notas) {
+    var raw = localStorage.getItem('qd_contact_notes');
+    try { return raw ? JSON.parse(raw) : {}; } catch(e) { return {}; }
+  }
+  return result;
 }
 
 function getContactNotes(key) {
   var all = getContactNotesAll();
-  return all[key] || [];
+  var notes = all[key] || [];
+  /* Return newest first */
+  return notes.slice().reverse();
 }
 
 function saveContactNote(key, text) {
-  var all = getContactNotesAll();
-  if (!all[key]) all[key] = [];
+  var parts = key.split('|');
   var now = new Date();
   var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
   var dateStr = pad(now.getDate()) + '/' + pad(now.getMonth() + 1) + '/' + now.getFullYear() + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes());
   var user = sessionStorage.getItem('qd_user') || 'admin';
-  all[key].unshift({
-    id: now.getTime(),
-    date: dateStr,
-    text: text,
-    user: user
+
+  /* Also save to localStorage as fallback */
+  var rawLocal = localStorage.getItem('qd_contact_notes');
+  try {
+    var localAll = rawLocal ? JSON.parse(rawLocal) : {};
+    if (!localAll[key]) localAll[key] = [];
+    localAll[key].unshift({ id: now.getTime(), date: dateStr, text: text, user: user });
+    localStorage.setItem('qd_contact_notes', JSON.stringify(localAll));
+  } catch(e) {}
+
+  /* POST to Google Sheets */
+  fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({
+      action: 'addRow',
+      sheet: 'Notas',
+      headers: ['cliente', 'telefono', 'fecha', 'usuario', 'texto'],
+      values: [parts[0] || '', parts[1] || '', dateStr, user, text]
+    })
+  }).then(function() {
+    loadAllSheetData(function() {
+      if (currentModalLead) renderNotesInModal(currentModalLead);
+    });
+  }).catch(function(err) {
+    console.warn('Error saving note to Sheet:', err);
   });
-  localStorage.setItem('qd_contact_notes', JSON.stringify(all));
 }
 
 function deleteContactNote(key, noteId) {
-  var all = getContactNotesAll();
-  if (!all[key]) return;
-  all[key] = all[key].filter(function(n) { return n.id !== noteId; });
-  localStorage.setItem('qd_contact_notes', JSON.stringify(all));
+  var idx = parseInt(noteId);
+
+  /* Also remove from localStorage as fallback */
+  var rawLocal = localStorage.getItem('qd_contact_notes');
+  try {
+    var localAll = rawLocal ? JSON.parse(rawLocal) : {};
+    if (localAll[key]) {
+      localAll[key] = localAll[key].filter(function(n) { return n.id.toString() !== noteId.toString(); });
+      localStorage.setItem('qd_contact_notes', JSON.stringify(localAll));
+    }
+  } catch(e) {}
+
+  /* POST deleteRow to Google Sheets */
+  fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({
+      action: 'deleteRow',
+      sheet: 'Notas',
+      row: idx
+    })
+  }).then(function() {
+    loadAllSheetData(function() {
+      if (currentModalLead) renderNotesInModal(currentModalLead);
+    });
+  }).catch(function(err) {
+    console.warn('Error deleting note from Sheet:', err);
+  });
 }
 
 function renderNotesInModal(lead) {
@@ -3519,6 +3632,7 @@ function addNoteFromModal() {
   if (!text) return;
   var noteKey = (currentModalLead.nombre || '') + '|' + (currentModalLead.whatsapp || '');
   saveContactNote(noteKey, text);
+  /* Immediate local render for responsiveness; Sheet callback will re-render */
   renderNotesInModal(currentModalLead);
   showToast('Nota guardada', 'success');
 }
@@ -3527,6 +3641,7 @@ function deleteNoteFromModal(noteId) {
   if (!currentModalLead) return;
   var noteKey = (currentModalLead.nombre || '') + '|' + (currentModalLead.whatsapp || '');
   deleteContactNote(noteKey, noteId);
+  /* Immediate local render; Sheet callback will re-render */
   renderNotesInModal(currentModalLead);
 }
 
@@ -4415,14 +4530,62 @@ function parseFecha(str) {
   return parseGoogleDate(str);
 }
 
-/* ============ VENTAS TAB ============ */
+/* ============ VENTAS TAB (Google Sheets: Ventas) ============ */
 function getVentasData() {
+  /* Build old format from allVentasData for compatibility */
+  if (sheetsLoaded.ventas) {
+    var result = {};
+    allVentasData.forEach(function(row, idx) {
+      if (!row[0]) return;
+      var key = (row[0] || '') + '|' + (row[1] || '');
+      result[key] = {
+        monto: parseFloat(row[2]) || 0,
+        formaPago: row[3] || '',
+        estadoEntrega: row[4] || '',
+        notas: row[5] || '',
+        _rowIndex: idx
+      };
+    });
+    return result;
+  }
+  /* Fallback to localStorage */
   var raw = localStorage.getItem('qd_ventas_data');
   try { return raw ? JSON.parse(raw) : {}; } catch(e) { return {}; }
 }
 
 function saveVentasData(data) {
+  /* Save to localStorage as fallback */
   localStorage.setItem('qd_ventas_data', JSON.stringify(data));
+}
+
+var ventaSaveTimers = {};
+
+function saveVentaToSheet(key, ventaObj) {
+  /* Debounce: wait 800ms after last change before saving */
+  if (ventaSaveTimers[key]) clearTimeout(ventaSaveTimers[key]);
+  ventaSaveTimers[key] = setTimeout(function() {
+    var parts = key.split('|');
+    var cliente = parts[0] || '';
+    var telefono = parts[1] || '';
+
+    /* Always use findAndUpdate — finds by cliente (col 0), updates or creates */
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        action: 'findAndUpdate',
+        sheet: 'Ventas',
+        keyCol: 0,
+        keyVal: cliente,
+        headers: ['cliente', 'telefono', 'monto', 'forma_pago', 'estado_entrega', 'notas'],
+        values: [cliente, telefono, ventaObj.monto || 0, ventaObj.formaPago || '', ventaObj.estadoEntrega || '', ventaObj.notas || '']
+      })
+    }).then(function() {
+      loadAllSheetData();
+    }).catch(function(err) {
+      console.warn('Error saving venta to Sheet:', err);
+    });
+  }, 800);
 }
 
 function getVentaKey(lead) {
@@ -4576,6 +4739,7 @@ function renderVentasTable(ganados, ventasStore) {
       if (!store[k]) store[k] = {};
       store[k].monto = val;
       saveVentasData(store);
+      saveVentaToSheet(k, store[k]);
       this.value = val > 0 ? formatPrice(val) : '';
       recalcVentasMetrics();
     });
@@ -4601,6 +4765,7 @@ function renderVentasTable(ganados, ventasStore) {
       if (!store[k]) store[k] = {};
       store[k].formaPago = this.value;
       saveVentasData(store);
+      saveVentaToSheet(k, store[k]);
     });
     tdPago.appendChild(selPago);
 
@@ -4624,6 +4789,7 @@ function renderVentasTable(ganados, ventasStore) {
       if (!store[k]) store[k] = {};
       store[k].estadoEntrega = this.value;
       saveVentasData(store);
+      saveVentaToSheet(k, store[k]);
     });
     tdEntrega.appendChild(selEntrega);
 
@@ -4643,6 +4809,7 @@ function renderVentasTable(ganados, ventasStore) {
       if (!store[k]) store[k] = {};
       store[k].notas = this.value;
       saveVentasData(store);
+      saveVentaToSheet(k, store[k]);
     });
     tdNotas.appendChild(inpNotas);
 
@@ -4705,6 +4872,7 @@ function saveEditVenta() {
   store[key].estadoEntrega = estadoEntrega;
   store[key].notas = notas;
   saveVentasData(store);
+  saveVentaToSheet(key, store[key]);
   closeEditVentaModal();
   renderVentas();
   showToast('Venta actualizada', 'success');
@@ -4714,14 +4882,31 @@ function saveEditVenta() {
 function deleteVenta(lead) {
   showConfirmModal('Eliminar venta', 'Eliminar la venta de "' + lead.nombre + '"? El lead volvera a Nuevo Lead.', function() {
     var key = getVentaKey(lead);
-  /* Remove from localStorage */
-  var store = getVentasData();
-  delete store[key];
-  saveVentasData(store);
-  /* Move lead back to Nuevo Lead */
-  updateLeadStage(lead, 'Nuevo Lead');
-  renderVentas();
-  showToast('Venta eliminada, lead movido a Nuevo Lead', 'success');
+    var store = getVentasData();
+    var existing = store[key];
+    /* Delete from Sheet if row exists */
+    if (existing && typeof existing._rowIndex === 'number') {
+      fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({
+          action: 'deleteRow',
+          sheet: 'Ventas',
+          row: existing._rowIndex
+        })
+      }).then(function() {
+        loadAllSheetData();
+      }).catch(function(err) {
+        console.warn('Error deleting venta from Sheet:', err);
+      });
+    }
+    /* Remove from localStorage */
+    delete store[key];
+    saveVentasData(store);
+    /* Move lead back to Nuevo Lead */
+    updateLeadStage(lead, 'Nuevo Lead');
+    renderVentas();
+    showToast('Venta eliminada, lead movido a Nuevo Lead', 'success');
   });
 }
 
@@ -4953,13 +5138,41 @@ function applySettingsToPresupForm() {
   legalInput.value = s.legal;
 }
 
-/* ============ BUDGET HISTORY ============ */
+/* ============ BUDGET HISTORY (Google Sheets: Presupuestos) ============ */
 function getBudgetHistoryAll() {
+  /* Build the old format from allPresupuestosData for compatibility */
+  if (sheetsLoaded.presupuestos) {
+    var result = {};
+    allPresupuestosData.forEach(function(row) {
+      if (!row[0]) return;
+      var key = (row[3] || '') + '|' + (row[4] || '');
+      if (!result[key]) result[key] = [];
+      result[key].push({
+        id: row[0] || '',
+        fecha: row[1] || '',
+        nro: row[2] || '',
+        sistema: row[5] || '',
+        material: row[6] || '',
+        medidas: row[7] || '',
+        items: (function() { try { return JSON.parse(row[8] || '[]'); } catch(e) { return []; } })(),
+        subtotal: parseFloat(row[9]) || 0,
+        iva: parseFloat(row[10]) || 0,
+        total: parseFloat(row[11]) || 0,
+        descuento: parseFloat(row[12]) || 0,
+        recargo: parseFloat(row[13]) || 0,
+        cuotas: parseInt(row[14]) || 0,
+        _rowIndex: allPresupuestosData.indexOf(row)
+      });
+    });
+    return result;
+  }
+  /* Fallback to localStorage */
   var raw = localStorage.getItem('qd_presupuestos_history');
   try { return raw ? JSON.parse(raw) : {}; } catch(e) { return {}; }
 }
 
 function saveBudgetHistoryAll(data) {
+  /* Save to localStorage as fallback */
   localStorage.setItem('qd_presupuestos_history', JSON.stringify(data));
 }
 
@@ -5009,8 +5222,10 @@ function saveBudgetToHistory() {
   var total = subtotal + ivaAmount;
   var medidas = ancho + ' x ' + alto + ' mm';
 
+  var budgetId = Date.now().toString();
+
   var budget = {
-    id: Date.now().toString(),
+    id: budgetId,
     fecha: fecha,
     nro: nro,
     sistema: sistema,
@@ -5025,10 +5240,27 @@ function saveBudgetToHistory() {
     cuotas: cuotas
   };
 
+  /* Save to localStorage as fallback */
   var all = getBudgetHistoryAll();
   if (!all[key]) all[key] = [];
   all[key].push(budget);
   saveBudgetHistoryAll(all);
+
+  /* POST to Google Sheets */
+  fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({
+      action: 'addRow',
+      sheet: 'Presupuestos',
+      headers: ['id', 'fecha', 'nro', 'cliente', 'telefono', 'sistema', 'material', 'medidas', 'items_json', 'subtotal', 'iva', 'total', 'descuento', 'recargo', 'cuotas'],
+      values: [budgetId, fecha, nro, cliente, waNum, sistema, material, medidas, JSON.stringify(items), subtotal, ivaAmount, total, descuento, recargo, cuotas]
+    })
+  }).then(function() {
+    loadAllSheetData();
+  }).catch(function(err) {
+    console.warn('Error saving budget to Sheet:', err);
+  });
 }
 
 function autoMoveToPresupuestoEnviado() {
@@ -5069,24 +5301,34 @@ function toggleBudgetDetail(detailId, toggleId) {
 }
 
 function autoFillVentaFromBudget(lead) {
-  var budgetKey = getBudgetKey(lead.nombre, lead.whatsapp);
-  var budgets = getBudgetHistory(budgetKey);
-  if (!budgets || budgets.length === 0) return;
+  /* Search for budget by name match (phone formats may differ) */
+  var all = getBudgetHistoryAll();
+  var leadName = (lead.nombre || '').trim().toLowerCase();
+  var latestBudget = null;
 
-  var latestBudget = budgets[budgets.length - 1];
+  for (var k in all) {
+    if (!all.hasOwnProperty(k)) continue;
+    var budgetName = k.split('|')[0].trim().toLowerCase();
+    if (budgetName === leadName && all[k].length > 0) {
+      latestBudget = all[k][all[k].length - 1];
+      break;
+    }
+  }
+
   var ventaKey = getVentaKey(lead);
   var ventasStore = getVentasData();
   if (!ventasStore[ventaKey]) {
     ventasStore[ventaKey] = { monto: 0, formaPago: '', estadoEntrega: 'Pendiente fabricacion', notas: '' };
   }
-  /* Only fill monto if not already set */
-  if (!ventasStore[ventaKey].monto || ventasStore[ventaKey].monto === 0) {
+
+  if (latestBudget && (!ventasStore[ventaKey].monto || ventasStore[ventaKey].monto === 0)) {
     ventasStore[ventaKey].monto = latestBudget.total;
   }
   if (!ventasStore[ventaKey].estadoEntrega) {
     ventasStore[ventaKey].estadoEntrega = 'Pendiente fabricacion';
   }
   saveVentasData(ventasStore);
+  saveVentaToSheet(ventaKey, ventasStore[ventaKey]);
 }
 
 /* ============ PRESUPUESTOS DASHBOARD ============ */
@@ -5465,6 +5707,25 @@ function deleteBudget(clientKey, budgetId) {
   showConfirmModal('Eliminar presupuesto', 'Eliminar este presupuesto del historial?', function() {
     var all = getBudgetHistoryAll();
     if (all[clientKey]) {
+      /* Find the row to delete from sheet */
+      var budgetToDelete = all[clientKey].find(function(b) { return b.id === budgetId; });
+      if (budgetToDelete && typeof budgetToDelete._rowIndex === 'number') {
+        fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({
+            action: 'deleteRow',
+            sheet: 'Presupuestos',
+            row: budgetToDelete._rowIndex
+          })
+        }).then(function() {
+          loadAllSheetData(function() {
+            renderPresupuestosDashboard();
+          });
+        }).catch(function(err) {
+          console.warn('Error deleting budget from Sheet:', err);
+        });
+      }
       all[clientKey] = all[clientKey].filter(function(b) { return b.id !== budgetId; });
       if (all[clientKey].length === 0) delete all[clientKey];
       saveBudgetHistoryAll(all);
@@ -5573,14 +5834,16 @@ function submitNuevaVenta() {
   .then(function() {
     /* 2. Save venta data */
     var ventaKey = getVentaKey(lead);
-    var ventasStore = getVentasData();
-    ventasStore[ventaKey] = {
+    var ventaObj = {
       monto: monto,
       formaPago: formaPago,
       estadoEntrega: estadoEntrega,
       notas: notas
     };
+    var ventasStore = getVentasData();
+    ventasStore[ventaKey] = ventaObj;
     saveVentasData(ventasStore);
+    saveVentaToSheet(ventaKey, ventaObj);
 
     /* 3. Close modal, re-render, toast */
     btn.disabled = false;
@@ -5592,14 +5855,16 @@ function submitNuevaVenta() {
   .catch(function(err) {
     /* Still save locally even if sheet update fails */
     var ventaKey = getVentaKey(lead);
-    var ventasStore = getVentasData();
-    ventasStore[ventaKey] = {
+    var ventaObj = {
       monto: monto,
       formaPago: formaPago,
       estadoEntrega: estadoEntrega,
       notas: notas
     };
+    var ventasStore = getVentasData();
+    ventasStore[ventaKey] = ventaObj;
     saveVentasData(ventasStore);
+    saveVentaToSheet(ventaKey, ventaObj);
 
     btn.disabled = false;
     btn.textContent = 'Registrar venta';
