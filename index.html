@@ -916,6 +916,63 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
 }
 .ajustes-card .btn-add-stage:hover { border-color: #1DA1F2; color: #1DA1F2; }
 
+/* Ajustes collapsible sections */
+.ajustes-section {
+  margin-bottom: 12px;
+}
+.ajustes-section-header {
+  display: flex; align-items: center; gap: 10px; padding: 14px 20px;
+  background: #fff; border-radius: 10px; cursor: pointer; user-select: none;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06); transition: background 0.2s;
+}
+.ajustes-section-header:hover { background: #f8f9fa; }
+.ajustes-section-header h2 {
+  font-size: 15px; font-weight: 700; color: #2a2a2a; text-transform: uppercase;
+  letter-spacing: 0.5px; margin: 0; flex: 1;
+}
+.ajustes-section-arrow {
+  font-size: 12px; color: #999; transition: transform 0.2s; flex-shrink: 0;
+}
+.ajustes-section.open .ajustes-section-arrow { transform: rotate(180deg); }
+.ajustes-section-body {
+  display: none; padding-top: 12px;
+}
+.ajustes-section.open .ajustes-section-body { display: block; }
+
+/* Info servicio editor in settings */
+.info-servicio-card-editor {
+  background: #f8f9fa; border: 1px solid #eee; border-radius: 8px; padding: 14px; margin-bottom: 12px;
+}
+.info-servicio-card-editor .isv-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+}
+.info-servicio-card-editor .isv-header input {
+  flex: 1; padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;
+  font-weight: 600; font-family: inherit; color: #2a2a2a; outline: none;
+}
+.info-servicio-card-editor .isv-header input:focus { border-color: #1DA1F2; }
+.info-servicio-card-editor .isv-header .btn-del-info-card {
+  background: none; border: none; color: #ef4444; font-size: 16px; cursor: pointer; padding: 2px 6px; border-radius: 3px;
+}
+.info-servicio-card-editor .isv-header .btn-del-info-card:hover { background: rgba(239,68,68,0.1); }
+.info-servicio-card-editor .isv-items { display: flex; flex-direction: column; gap: 4px; }
+.info-servicio-card-editor .isv-item-row {
+  display: flex; align-items: center; gap: 6px;
+}
+.info-servicio-card-editor .isv-item-row input {
+  flex: 1; padding: 5px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;
+  font-family: inherit; color: #2a2a2a; outline: none;
+}
+.info-servicio-card-editor .isv-item-row input:focus { border-color: #1DA1F2; }
+.info-servicio-card-editor .isv-item-row .btn-del-info-item {
+  background: none; border: none; color: #ccc; font-size: 14px; cursor: pointer; padding: 0 4px;
+}
+.info-servicio-card-editor .isv-item-row .btn-del-info-item:hover { color: #ef4444; }
+.info-servicio-card-editor .btn-add-info-item {
+  background: none; border: none; color: #1DA1F2; font-size: 12px; cursor: pointer; padding: 4px 0;
+  font-weight: 600; margin-top: 4px;
+}
+
 /* Nueva Venta Modal */
 .nueva-venta-modal-overlay {
   display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -1875,40 +1932,7 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
     <div class="section-label-wrap"><div class="section-label">Formas de pago</div></div>
     <div class="pay-cards" id="pv-pay-cards"></div>
     <div class="info-section-label"><div class="section-label">Informacion del servicio</div></div>
-    <div class="info-grid">
-      <div class="info-card">
-        <div class="ic-header"><div class="ic-dot"></div><div class="ic-title">Fabricacion y entrega</div></div>
-        <div class="ic-body">
-          <div class="ic-item"><span class="ic-dash">--</span><span>Fabricacion 100% propia en nuestro taller</span></div>
-          <div class="ic-item"><span class="ic-dash">--</span><span>Plazo estimado: 15 a 20 dias habiles</span></div>
-          <div class="ic-item"><span class="ic-dash">--</span><span>Entrega e instalacion en obra</span></div>
-        </div>
-      </div>
-      <div class="info-card">
-        <div class="ic-header"><div class="ic-dot"></div><div class="ic-title">El frente incluye</div></div>
-        <div class="ic-body">
-          <div class="ic-item"><span class="ic-dash">--</span><span>Frente completo segun configuracion</span></div>
-          <div class="ic-item"><span class="ic-dash">--</span><span>Palita y atizador de regalo</span></div>
-          <div class="ic-item"><span class="ic-dash">--</span><span>Instalacion profesional en obra</span></div>
-        </div>
-      </div>
-      <div class="info-card">
-        <div class="ic-header"><div class="ic-dot"></div><div class="ic-title">Garantia</div></div>
-        <div class="ic-body">
-          <div class="ic-item"><span class="ic-dash">--</span><span>Garantia por defectos de fabricacion</span></div>
-          <div class="ic-item"><span class="ic-dash">--</span><span>Soporte post-venta permanente</span></div>
-          <div class="ic-item"><span class="ic-dash">--</span><span>Materiales de primera calidad</span></div>
-        </div>
-      </div>
-      <div class="info-card">
-        <div class="ic-header"><div class="ic-dot"></div><div class="ic-title">Proceso</div></div>
-        <div class="ic-body">
-          <div class="ic-item"><span class="ic-dash">--</span><span>Visita tecnica para medicion</span></div>
-          <div class="ic-item"><span class="ic-dash">--</span><span>Confirmacion con sena del 50%</span></div>
-          <div class="ic-item"><span class="ic-dash">--</span><span>Fabricacion, entrega e instalacion</span></div>
-        </div>
-      </div>
-    </div>
+    <div class="info-grid" id="pv-info-grid"></div>
     <div class="legal-box" id="pv-legal"></div>
     <div class="cta-box" id="pv-cta"></div>
     <div class="p3-footer">
@@ -1939,11 +1963,6 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
     <input type="text" class="ct-search" id="ct-search" placeholder="Buscar por nombre...">
     <select class="ct-filter" id="ct-filter-estado">
       <option value="">Todos los estados</option>
-      <option value="Nuevo Lead">Nuevo Lead</option>
-      <option value="Presupuesto Enviado">Presupuesto Enviado</option>
-      <option value="En Seguimiento">En Seguimiento</option>
-      <option value="Cerrado Ganado">Cerrado Ganado</option>
-      <option value="Cerrado Perdido">Cerrado Perdido</option>
     </select>
     <select class="ct-filter" id="ct-filter-material">
       <option value="">Todos los materiales</option>
@@ -2072,81 +2091,141 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
 <!-- ==================== AJUSTES PANEL ==================== -->
 <div class="ajustes-panel" id="ajustes-panel">
   <h1 class="ajustes-title">Ajustes</h1>
-  <div class="ajustes-grid">
 
-    <!-- Card 1: Datos de la empresa -->
-    <div class="ajustes-card">
-      <h3>Datos de la empresa</h3>
-      <label>Nombre empresa</label>
-      <input type="text" id="set-empresa-nombre" value="QUALITY DECO">
-      <label>Subtitulo</label>
-      <input type="text" id="set-empresa-subtitulo" value="Frentes de parrillas">
-      <label>Direccion</label>
-      <input type="text" id="set-empresa-direccion" value="Campbell 1505 A · Rosario · Santa Fe">
-      <label>Telefono</label>
-      <input type="text" id="set-empresa-telefono" value="0341-3664952">
-      <label>Instagram</label>
-      <input type="text" id="set-empresa-instagram" value="@qualitydeco.ok">
-      <label>WhatsApp (para wa.me)</label>
-      <input type="text" id="set-empresa-whatsapp" value="5493413664952">
+  <!-- Section 1: Empresa y valores -->
+  <div class="ajustes-section open" id="aj-sec-empresa">
+    <div class="ajustes-section-header" onclick="toggleAjustesSection('aj-sec-empresa')">
+      <h2>Empresa y valores</h2>
+      <span class="ajustes-section-arrow">&#9660;</span>
     </div>
-
-    <!-- Card 2: Valores por defecto -->
-    <div class="ajustes-card">
-      <h3>Valores por defecto</h3>
-      <label>IVA %</label>
-      <input type="number" id="set-iva" value="21" min="0" max="100">
-      <label>Descuento anticipado %</label>
-      <input type="number" id="set-descuento" value="5" min="0" max="100">
-      <label>Recargo cuotas %</label>
-      <input type="number" id="set-recargo" value="15" min="0" max="100">
-      <label>Cantidad cuotas</label>
-      <input type="number" id="set-cuotas" value="3" min="2" max="24">
-      <label>Validez presupuesto</label>
-      <input type="text" id="set-validez" value="10 dias">
-    </div>
-
-    <!-- Card 3: Textos por defecto -->
-    <div class="ajustes-card" style="grid-column: span 2;">
-      <h3>Textos por defecto</h3>
-      <label>Saludo</label>
-      <textarea id="set-saludo" rows="3">&#161;Hola [cliente]! Gracias por contactarte con Quality Deco &#x1f44b; En base a las medidas y preferencias que nos compartiste, te armamos este presupuesto para tu frente de parrilla. Cualquier consulta, no dudes en escribirnos &#x1f4ac;</textarea>
-      <label>CTA final</label>
-      <textarea id="set-cta" rows="2">Te interesa avanzar? Contactanos por WhatsApp y coordinamos la visita de medicion en tu obra.</textarea>
-      <label>Condiciones legales</label>
-      <textarea id="set-legal" rows="4">Los precios expresados son en pesos argentinos y no incluyen IVA. El presupuesto tiene una validez especificada a partir de la fecha de emision. Las medidas definitivas se confirman en la visita tecnica. Los plazos de fabricacion se acuerdan al momento de la sena. Quality Deco no se responsabiliza por modificaciones en obra no comunicadas previamente. La garantia cubre defectos de fabricacion, no el desgaste por uso normal.</textarea>
-    </div>
-
-    <!-- Card 4: Pipeline -->
-    <div class="ajustes-card">
-      <h3>Pipeline</h3>
-      <p style="font-size:12px;color:#999;margin-bottom:10px;">Etapas del pipeline de ventas. Las etapas "Cerrado Ganado" y "Cerrado Perdido" no se pueden eliminar.</p>
-      <div id="pipeline-stages-container"></div>
-      <button class="btn-add-stage" onclick="addPipelineStage()">+ Agregar etapa</button>
-    </div>
-
-    <!-- Card 5: Plantillas de mensaje -->
-    <div class="ajustes-card" style="grid-column: span 2;">
-      <h3>Plantillas de mensaje</h3>
-      <p style="font-size:12px;color:#999;margin-bottom:10px;">Usa [nombre] como variable para el nombre del contacto.</p>
-      <div id="templates-edit-container"></div>
-    </div>
-
-    <!-- Card 6: Usuarios -->
-    <div class="ajustes-card">
-      <h3>Usuarios</h3>
-      <table class="users-table">
-        <thead><tr><th>Usuario</th><th>Contrasena</th><th>Rol</th><th></th></tr></thead>
-        <tbody id="users-tbody"></tbody>
-      </table>
-      <div style="margin-top:10px;display:flex;gap:8px;">
-        <input type="text" id="new-user-name" placeholder="Usuario" style="flex:1;padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:13px;">
-        <input type="text" id="new-user-pw" placeholder="Contrasena" style="flex:1;padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:13px;">
-        <button onclick="addUser()" style="padding:6px 14px;background:#1DA1F2;color:#fff;border:none;border-radius:4px;font-weight:600;cursor:pointer;font-size:13px;">+ Agregar</button>
+    <div class="ajustes-section-body">
+      <div class="ajustes-grid">
+        <div class="ajustes-card">
+          <h3>Datos de la empresa</h3>
+          <label>Nombre empresa</label>
+          <input type="text" id="set-empresa-nombre" value="QUALITY DECO">
+          <label>Subtitulo</label>
+          <input type="text" id="set-empresa-subtitulo" value="Frentes de parrillas">
+          <label>Direccion</label>
+          <input type="text" id="set-empresa-direccion" value="Campbell 1505 A · Rosario · Santa Fe">
+          <label>Telefono</label>
+          <input type="text" id="set-empresa-telefono" value="0341-3664952">
+          <label>Instagram</label>
+          <input type="text" id="set-empresa-instagram" value="@qualitydeco.ok">
+          <label>WhatsApp (para wa.me)</label>
+          <input type="text" id="set-empresa-whatsapp" value="5493413664952">
+        </div>
+        <div class="ajustes-card">
+          <h3>Valores por defecto</h3>
+          <label>IVA %</label>
+          <input type="number" id="set-iva" value="21" min="0" max="100">
+          <label>Descuento anticipado %</label>
+          <input type="number" id="set-descuento" value="5" min="0" max="100">
+          <label>Recargo cuotas %</label>
+          <input type="number" id="set-recargo" value="15" min="0" max="100">
+          <label>Cantidad cuotas</label>
+          <input type="number" id="set-cuotas" value="3" min="2" max="24">
+          <label>Validez presupuesto</label>
+          <input type="text" id="set-validez" value="10 dias">
+        </div>
       </div>
     </div>
-
   </div>
+
+  <!-- Section 2: Textos del presupuesto -->
+  <div class="ajustes-section" id="aj-sec-textos">
+    <div class="ajustes-section-header" onclick="toggleAjustesSection('aj-sec-textos')">
+      <h2>Textos del presupuesto</h2>
+      <span class="ajustes-section-arrow">&#9660;</span>
+    </div>
+    <div class="ajustes-section-body">
+      <div class="ajustes-grid">
+        <div class="ajustes-card" style="grid-column: span 2;">
+          <h3>Textos por defecto</h3>
+          <label>Saludo</label>
+          <textarea id="set-saludo" rows="3">&#161;Hola [cliente]! Gracias por contactarte con Quality Deco &#x1f44b; En base a las medidas y preferencias que nos compartiste, te armamos este presupuesto para tu frente de parrilla. Cualquier consulta, no dudes en escribirnos &#x1f4ac;</textarea>
+          <label>CTA final</label>
+          <textarea id="set-cta" rows="2">Te interesa avanzar? Contactanos por WhatsApp y coordinamos la visita de medicion en tu obra.</textarea>
+          <label>Condiciones legales</label>
+          <textarea id="set-legal" rows="4">Los precios expresados son en pesos argentinos y no incluyen IVA. El presupuesto tiene una validez especificada a partir de la fecha de emision. Las medidas definitivas se confirman en la visita tecnica. Los plazos de fabricacion se acuerdan al momento de la sena. Quality Deco no se responsabiliza por modificaciones en obra no comunicadas previamente. La garantia cubre defectos de fabricacion, no el desgaste por uso normal.</textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 3: Informacion del servicio -->
+  <div class="ajustes-section" id="aj-sec-info-servicio">
+    <div class="ajustes-section-header" onclick="toggleAjustesSection('aj-sec-info-servicio')">
+      <h2>Informacion del servicio (presupuesto pag 3)</h2>
+      <span class="ajustes-section-arrow">&#9660;</span>
+    </div>
+    <div class="ajustes-section-body">
+      <div class="ajustes-grid">
+        <div class="ajustes-card" style="grid-column: span 2;">
+          <p style="font-size:12px;color:#999;margin-bottom:12px;">Edita las 4 tarjetas de informacion que aparecen en la pagina 3 del presupuesto.</p>
+          <div id="info-servicio-editor"></div>
+          <button class="btn-add-stage" onclick="addInfoServicioCard()">+ Agregar tarjeta</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 4: Pipeline -->
+  <div class="ajustes-section" id="aj-sec-pipeline">
+    <div class="ajustes-section-header" onclick="toggleAjustesSection('aj-sec-pipeline')">
+      <h2>Pipeline</h2>
+      <span class="ajustes-section-arrow">&#9660;</span>
+    </div>
+    <div class="ajustes-section-body">
+      <div class="ajustes-grid">
+        <div class="ajustes-card">
+          <p style="font-size:12px;color:#999;margin-bottom:10px;">Etapas del pipeline de ventas. Las etapas "Cerrado Ganado" y "Cerrado Perdido" no se pueden eliminar.</p>
+          <div id="pipeline-stages-container"></div>
+          <button class="btn-add-stage" onclick="addPipelineStage()">+ Agregar etapa</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 5: Plantillas de mensaje -->
+  <div class="ajustes-section" id="aj-sec-plantillas">
+    <div class="ajustes-section-header" onclick="toggleAjustesSection('aj-sec-plantillas')">
+      <h2>Plantillas de mensaje</h2>
+      <span class="ajustes-section-arrow">&#9660;</span>
+    </div>
+    <div class="ajustes-section-body">
+      <div class="ajustes-grid">
+        <div class="ajustes-card" style="grid-column: span 2;">
+          <p style="font-size:12px;color:#999;margin-bottom:10px;">Usa [nombre] como variable para el nombre del contacto.</p>
+          <div id="templates-edit-container"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 6: Usuarios -->
+  <div class="ajustes-section" id="aj-sec-usuarios">
+    <div class="ajustes-section-header" onclick="toggleAjustesSection('aj-sec-usuarios')">
+      <h2>Usuarios</h2>
+      <span class="ajustes-section-arrow">&#9660;</span>
+    </div>
+    <div class="ajustes-section-body">
+      <div class="ajustes-grid">
+        <div class="ajustes-card">
+          <table class="users-table">
+            <thead><tr><th>Usuario</th><th>Contrasena</th><th>Rol</th><th></th></tr></thead>
+            <tbody id="users-tbody"></tbody>
+          </table>
+          <div style="margin-top:10px;display:flex;gap:8px;">
+            <input type="text" id="new-user-name" placeholder="Usuario" style="flex:1;padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:13px;">
+            <input type="text" id="new-user-pw" placeholder="Contrasena" style="flex:1;padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:13px;">
+            <button onclick="addUser()" style="padding:6px 14px;background:#1DA1F2;color:#fff;border:none;border-radius:4px;font-weight:600;cursor:pointer;font-size:13px;">+ Agregar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="ajustes-actions">
     <button class="btn-save-settings" onclick="saveSettings()">Guardar cambios</button>
     <button class="btn-restore-settings" onclick="restoreDefaultSettings()">Restaurar valores por defecto</button>
@@ -2193,13 +2272,7 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
     <div class="nc-productos-list" id="nc-productos-list"></div>
     <button type="button" class="btn-nc-add-producto" onclick="ncAddProducto()">+ Agregar producto</button>
     <label>Estado proyecto</label>
-    <select id="nc-estado">
-      <option value="Nuevo Lead">Nuevo Lead</option>
-      <option value="Presupuesto Enviado">Presupuesto Enviado</option>
-      <option value="En Seguimiento">En Seguimiento</option>
-      <option value="Cerrado Ganado">Cerrado Ganado</option>
-      <option value="Cerrado Perdido">Cerrado Perdido</option>
-    </select>
+    <select id="nc-estado"></select>
     <button class="btn-submit" id="btn-nc-submit" onclick="submitNuevoContacto()">Guardar contacto</button>
   </div>
 </div>
@@ -2216,13 +2289,7 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
       <div><label>WhatsApp</label><input type="text" id="ec-whatsapp"></div>
       <div><label>Ciudad</label><input type="text" id="ec-ciudad"></div>
       <div><label>Estado</label>
-        <select id="ec-estado">
-          <option value="Nuevo Lead">Nuevo Lead</option>
-          <option value="Presupuesto Enviado">Presupuesto Enviado</option>
-          <option value="En Seguimiento">En Seguimiento</option>
-          <option value="Cerrado Ganado">Cerrado Ganado</option>
-          <option value="Cerrado Perdido">Cerrado Perdido</option>
-        </select>
+        <select id="ec-estado"></select>
       </div>
       <div><label>Sistema</label>
         <select id="ec-sistema">
@@ -2998,6 +3065,21 @@ function render() {
   var empresaIG = settings.empresaInstagram || '@qualitydeco.ok';
   document.getElementById('pv-p3-brand').textContent = empresaNombre + ' | ' + empresaSub;
   document.getElementById('pv-p3-contact').textContent = empresaDir + ' \u00B7 ' + empresaTel + ' \u00B7 ' + empresaIG;
+
+  /* Render info del servicio from settings */
+  var infoGrid = document.getElementById('pv-info-grid');
+  if (infoGrid) {
+    var infoCards = settings.infoServicio || DEFAULT_SETTINGS.infoServicio;
+    var infoHtml = '';
+    infoCards.forEach(function(card) {
+      infoHtml += '<div class="info-card"><div class="ic-header"><div class="ic-dot"></div><div class="ic-title">' + escapeHtml(card.titulo) + '</div></div><div class="ic-body">';
+      card.items.forEach(function(item) {
+        infoHtml += '<div class="ic-item"><span class="ic-dash">--</span><span>' + escapeHtml(item) + '</span></div>';
+      });
+      infoHtml += '</div></div>';
+    });
+    infoGrid.innerHTML = infoHtml;
+  }
 }
 
 /* ============ EVENT BINDING ============ */
@@ -3408,30 +3490,67 @@ function switchTab(tab) {
 }
 
 /* ============ PIPELINE / KANBAN ============ */
-var PIPELINE_STAGES = [
-  { id: 'nuevo-lead', name: 'Nuevo Lead', color: '#1DA1F2' },
-  { id: 'presupuesto-enviado', name: 'Presupuesto Enviado', color: '#f59e0b' },
-  { id: 'en-seguimiento', name: 'En Seguimiento', color: '#8b5cf6' }
-];
+function getActivePipelineStages() {
+  var all = getPipelineStages();
+  return all.filter(function(s) { return s.name !== 'Cerrado Ganado' && s.name !== 'Cerrado Perdido'; });
+}
 
-var ALL_STAGES = [
-  { id: 'nuevo-lead', name: 'Nuevo Lead', color: '#1DA1F2' },
-  { id: 'presupuesto-enviado', name: 'Presupuesto Enviado', color: '#f59e0b' },
-  { id: 'en-seguimiento', name: 'En Seguimiento', color: '#8b5cf6' },
-  { id: 'cerrado-ganado', name: 'Cerrado Ganado', color: '#10b981' },
-  { id: 'cerrado-perdido', name: 'Cerrado Perdido', color: '#ef4444' }
-];
+function getAllPipelineStages() {
+  return getPipelineStages();
+}
 
 var draggedCard = null;
 
 function mapEstadoToStage(estado) {
   if (!estado) return 'Nuevo Lead';
   var s = estado.trim();
-  var validStages = ['Nuevo Lead', 'Presupuesto Enviado', 'En Seguimiento', 'Cerrado Ganado', 'Cerrado Perdido'];
-  for (var i = 0; i < validStages.length; i++) {
-    if (s.toLowerCase() === validStages[i].toLowerCase()) return validStages[i];
+  var allStages = getAllPipelineStages();
+  for (var i = 0; i < allStages.length; i++) {
+    if (s.toLowerCase() === allStages[i].name.toLowerCase()) return allStages[i].name;
+  }
+  /* If the stage name matches exactly (custom stage), return it */
+  for (var j = 0; j < allStages.length; j++) {
+    if (s === allStages[j].name) return allStages[j].name;
   }
   return 'Nuevo Lead';
+}
+
+function buildStageOptionsHtml(selectedValue) {
+  var stages = getAllPipelineStages();
+  var html = '';
+  stages.forEach(function(s) {
+    html += '<option value="' + escapeHtml(s.name) + '"' + (s.name === selectedValue ? ' selected' : '') + '>' + escapeHtml(s.name) + '</option>';
+  });
+  return html;
+}
+
+function populateStageSelects() {
+  var stages = getAllPipelineStages();
+  /* Populate filter select (has "Todos" option) */
+  var filterSelect = document.getElementById('ct-filter-estado');
+  if (filterSelect) {
+    var currentVal = filterSelect.value;
+    filterSelect.innerHTML = '<option value="">Todos los estados</option>';
+    stages.forEach(function(s) {
+      var opt = document.createElement('option');
+      opt.value = s.name;
+      opt.textContent = s.name;
+      filterSelect.appendChild(opt);
+    });
+    filterSelect.value = currentVal;
+  }
+  /* Populate nc-estado */
+  var ncSelect = document.getElementById('nc-estado');
+  if (ncSelect) {
+    var ncVal = ncSelect.value || 'Nuevo Lead';
+    ncSelect.innerHTML = buildStageOptionsHtml(ncVal);
+  }
+  /* Populate ec-estado */
+  var ecSelect = document.getElementById('ec-estado');
+  if (ecSelect) {
+    var ecVal = ecSelect.value || 'Nuevo Lead';
+    ecSelect.innerHTML = buildStageOptionsHtml(ecVal);
+  }
 }
 
 function updatePipelineStatus() {
@@ -3457,7 +3576,7 @@ function renderKanban() {
   board.innerHTML = '';
 
   /* Only show active stages (not Cerrado Ganado/Perdido) */
-  PIPELINE_STAGES.forEach(function(stage) {
+  getActivePipelineStages().forEach(function(stage) {
     var stageLeads = allLeadsData.filter(function(l) { return l.stage === stage.name; });
 
     var col = document.createElement('div');
@@ -4227,11 +4346,7 @@ function renderContactos() {
       '<td>' + escapeHtml(formatDateAR(lead.fecha) || '-') + '</td>' +
       '<td>' +
         '<select class="estado-select-inline" data-row="' + lead.rowIndex + '" onchange="onInlineEstadoChange(this)">' +
-          '<option value="Nuevo Lead"' + (lead.stage === 'Nuevo Lead' ? ' selected' : '') + '>Nuevo Lead</option>' +
-          '<option value="Presupuesto Enviado"' + (lead.stage === 'Presupuesto Enviado' ? ' selected' : '') + '>Presupuesto Enviado</option>' +
-          '<option value="En Seguimiento"' + (lead.stage === 'En Seguimiento' ? ' selected' : '') + '>En Seguimiento</option>' +
-          '<option value="Cerrado Ganado"' + (lead.stage === 'Cerrado Ganado' ? ' selected' : '') + '>Cerrado Ganado</option>' +
-          '<option value="Cerrado Perdido"' + (lead.stage === 'Cerrado Perdido' ? ' selected' : '') + '>Cerrado Perdido</option>' +
+          buildStageOptionsHtml(lead.stage) +
         '</select>' +
       '</td>' +
       '<td>' + escapeHtml(lead.sistema || '-') + '</td>' +
@@ -4712,10 +4827,10 @@ function renderStatsCharts() {
   /* Chart 1: Leads por etapa */
   html += '<div class="chart-card"><h3>Leads por etapa</h3>';
   var stageCounts = {};
-  ALL_STAGES.forEach(function(s) { stageCounts[s.name] = 0; });
+  getAllPipelineStages().forEach(function(s) { stageCounts[s.name] = 0; });
   filteredData.forEach(function(l) { stageCounts[l.stage] = (stageCounts[l.stage] || 0) + 1; });
-  var maxStage = Math.max.apply(null, ALL_STAGES.map(function(s) { return stageCounts[s.name]; })) || 1;
-  ALL_STAGES.forEach(function(s) {
+  var maxStage = Math.max.apply(null, getAllPipelineStages().map(function(s) { return stageCounts[s.name]; })) || 1;
+  getAllPipelineStages().forEach(function(s) {
     var count = stageCounts[s.name];
     var pct = Math.round((count / maxStage) * 100);
     html += buildBarRow(s.name, count, pct, s.color);
@@ -4825,11 +4940,11 @@ function exportStatsExcel() {
 
   /* Leads por etapa */
   var stageCounts = {};
-  ALL_STAGES.forEach(function(s) { stageCounts[s.name] = 0; });
+  getAllPipelineStages().forEach(function(s) { stageCounts[s.name] = 0; });
   filteredData.forEach(function(l) { stageCounts[l.stage] = (stageCounts[l.stage] || 0) + 1; });
   html += '<table>';
   html += '<tr><th>Etapa</th><th>Cantidad</th></tr>';
-  ALL_STAGES.forEach(function(s) {
+  getAllPipelineStages().forEach(function(s) {
     html += '<tr><td>' + s.name + '</td><td>' + stageCounts[s.name] + '</td></tr>';
   });
   html += '</table><br>';
@@ -5503,7 +5618,13 @@ var DEFAULT_SETTINGS = {
   validez: '10 dias',
   saludo: '\u00A1Hola [cliente]! Gracias por contactarte con Quality Deco \uD83D\uDC4B En base a las medidas y preferencias que nos compartiste, te armamos este presupuesto para tu frente de parrilla. Cualquier consulta, no dudes en escribirnos \uD83D\uDCAC',
   cta: 'Te interesa avanzar? Contactanos por WhatsApp y coordinamos la visita de medicion en tu obra.',
-  legal: 'Los precios expresados son en pesos argentinos y no incluyen IVA. El presupuesto tiene una validez especificada a partir de la fecha de emision. Las medidas definitivas se confirman en la visita tecnica. Los plazos de fabricacion se acuerdan al momento de la sena. Quality Deco no se responsabiliza por modificaciones en obra no comunicadas previamente. La garantia cubre defectos de fabricacion, no el desgaste por uso normal.'
+  legal: 'Los precios expresados son en pesos argentinos y no incluyen IVA. El presupuesto tiene una validez especificada a partir de la fecha de emision. Las medidas definitivas se confirman en la visita tecnica. Los plazos de fabricacion se acuerdan al momento de la sena. Quality Deco no se responsabiliza por modificaciones en obra no comunicadas previamente. La garantia cubre defectos de fabricacion, no el desgaste por uso normal.',
+  infoServicio: [
+    { titulo: 'Fabricacion y entrega', items: ['Fabricacion 100% propia en nuestro taller', 'Plazo estimado: 15 a 20 dias habiles', 'Entrega e instalacion en obra'] },
+    { titulo: 'El frente incluye', items: ['Frente completo segun configuracion', 'Palita y atizador de regalo', 'Instalacion profesional en obra'] },
+    { titulo: 'Garantia', items: ['Garantia por defectos de fabricacion', 'Soporte post-venta permanente', 'Materiales de primera calidad'] },
+    { titulo: 'Proceso', items: ['Visita tecnica para medicion', 'Confirmacion con sena del 50%', 'Fabricacion, entrega e instalacion'] }
+  ]
 };
 
 function getSettings() {
@@ -5539,6 +5660,7 @@ function loadSettingsIntoForm() {
   document.getElementById('set-saludo').value = s.saludo;
   document.getElementById('set-cta').value = s.cta;
   document.getElementById('set-legal').value = s.legal;
+  renderInfoServicioEditor(s.infoServicio || DEFAULT_SETTINGS.infoServicio);
   renderTemplatesInSettings();
 }
 
@@ -5557,7 +5679,8 @@ function saveSettings() {
     validez: document.getElementById('set-validez').value,
     saludo: document.getElementById('set-saludo').value,
     cta: document.getElementById('set-cta').value,
-    legal: document.getElementById('set-legal').value
+    legal: document.getElementById('set-legal').value,
+    infoServicio: readInfoServicioFromEditor()
   };
   saveSettingsData(data);
   saveTemplatesFromSettings();
@@ -5570,6 +5693,95 @@ function restoreDefaultSettings() {
     loadSettingsIntoForm();
     showToast('Valores restaurados', 'success');
   });
+}
+
+/* ---- Ajustes collapsible sections ---- */
+function toggleAjustesSection(id) {
+  var section = document.getElementById(id);
+  if (section) section.classList.toggle('open');
+}
+
+/* ---- Info Servicio Editor ---- */
+function renderInfoServicioEditor(cards) {
+  var container = document.getElementById('info-servicio-editor');
+  if (!container) return;
+  container.innerHTML = '';
+  cards.forEach(function(card, cardIdx) {
+    var div = document.createElement('div');
+    div.className = 'info-servicio-card-editor';
+    div.setAttribute('data-card-idx', cardIdx);
+
+    var headerHtml = '<div class="isv-header">' +
+      '<input type="text" value="' + escapeHtml(card.titulo) + '" placeholder="Titulo de la tarjeta">' +
+      '<button class="btn-del-info-card" onclick="removeInfoServicioCard(' + cardIdx + ')" title="Eliminar tarjeta">&#10007;</button>' +
+      '</div>';
+
+    var itemsHtml = '<div class="isv-items">';
+    card.items.forEach(function(item, itemIdx) {
+      itemsHtml += '<div class="isv-item-row">' +
+        '<input type="text" value="' + escapeHtml(item) + '" placeholder="Item...">' +
+        '<button class="btn-del-info-item" onclick="removeInfoServicioItem(' + cardIdx + ',' + itemIdx + ')" title="Eliminar">&#10007;</button>' +
+        '</div>';
+    });
+    itemsHtml += '</div>';
+    itemsHtml += '<button class="btn-add-info-item" onclick="addInfoServicioItem(' + cardIdx + ')">+ Agregar item</button>';
+
+    div.innerHTML = headerHtml + itemsHtml;
+    container.appendChild(div);
+  });
+}
+
+function readInfoServicioFromEditor() {
+  var container = document.getElementById('info-servicio-editor');
+  if (!container) return DEFAULT_SETTINGS.infoServicio;
+  var cards = [];
+  container.querySelectorAll('.info-servicio-card-editor').forEach(function(cardEl) {
+    var titulo = cardEl.querySelector('.isv-header input').value.trim();
+    var items = [];
+    cardEl.querySelectorAll('.isv-items .isv-item-row input').forEach(function(inp) {
+      var val = inp.value.trim();
+      if (val) items.push(val);
+    });
+    if (titulo || items.length > 0) {
+      cards.push({ titulo: titulo || 'Sin titulo', items: items });
+    }
+  });
+  return cards;
+}
+
+function addInfoServicioCard() {
+  var current = readInfoServicioFromEditor();
+  current.push({ titulo: 'Nueva tarjeta', items: ['Item 1'] });
+  renderInfoServicioEditor(current);
+}
+
+function removeInfoServicioCard(cardIdx) {
+  var current = readInfoServicioFromEditor();
+  current.splice(cardIdx, 1);
+  renderInfoServicioEditor(current);
+}
+
+function addInfoServicioItem(cardIdx) {
+  var current = readInfoServicioFromEditor();
+  if (current[cardIdx]) {
+    current[cardIdx].items.push('');
+    renderInfoServicioEditor(current);
+    /* Focus the new empty input */
+    var container = document.getElementById('info-servicio-editor');
+    var cardEls = container.querySelectorAll('.info-servicio-card-editor');
+    if (cardEls[cardIdx]) {
+      var inputs = cardEls[cardIdx].querySelectorAll('.isv-items .isv-item-row input');
+      if (inputs.length > 0) inputs[inputs.length - 1].focus();
+    }
+  }
+}
+
+function removeInfoServicioItem(cardIdx, itemIdx) {
+  var current = readInfoServicioFromEditor();
+  if (current[cardIdx]) {
+    current[cardIdx].items.splice(itemIdx, 1);
+    renderInfoServicioEditor(current);
+  }
 }
 
 function applySettingsToPresupForm() {
@@ -5812,7 +6024,8 @@ function getAllBudgetsFlat() {
         descuento: b.descuento || 0,
         recargo: b.recargo || 0,
         cuotas: b.cuotas || 3,
-        id: b.id || ''
+        id: b.id || '',
+        _rowIndex: b._rowIndex
       });
     });
   }
@@ -6211,6 +6424,7 @@ function addPipelineStage() {
   stages.splice(insertIdx, 0, {"name": "Nueva etapa", "color": "#6b7280"});
   savePipelineStages(stages);
   renderPipelineSettings();
+  populateStageSelects();
 }
 
 function deletePipelineStage(index) {
@@ -6219,6 +6433,7 @@ function deletePipelineStage(index) {
   stages.splice(index, 1);
   savePipelineStages(stages);
   renderPipelineSettings();
+  populateStageSelects();
 }
 
 function onPipelineStageChange() {
@@ -6237,6 +6452,7 @@ function onPipelineStageChange() {
     }
   });
   savePipelineStages(stages);
+  populateStageSelects();
 }
 
 /* ============ DELETE BUDGET ============ */
@@ -6775,6 +6991,9 @@ function init() {
   rebuildItemsFromConfig();
   updatePhoto();
   render();
+
+  /* Populate stage selects from pipeline config */
+  populateStageSelects();
 
   /* Global search */
   initGlobalSearch();
