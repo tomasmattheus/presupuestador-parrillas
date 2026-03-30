@@ -1528,6 +1528,28 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
 .ajustes-card .template-edit-item textarea { min-height: 50px; font-size: 13px; }
 .ajustes-card .template-edit-item .template-edit-name { font-size: 12px; font-weight: 600; color: #555; margin-bottom: 4px; }
 
+/* Bulk select */
+.bulk-bar {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  background: #2a2a2a; color: #fff; padding: 12px 24px; border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3); display: none; align-items: center; gap: 16px;
+  z-index: 500; font-size: 14px; font-weight: 600;
+}
+.bulk-bar.visible { display: flex; }
+.bulk-bar .bulk-count { color: #1DA1F2; }
+.bulk-bar .bulk-delete {
+  background: #ef4444; color: #fff; border: none; padding: 8px 18px;
+  border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer;
+  font-family: inherit;
+}
+.bulk-bar .bulk-delete:hover { background: #dc2626; }
+.bulk-bar .bulk-cancel {
+  background: none; color: #888; border: none; font-size: 13px; cursor: pointer;
+  font-family: inherit;
+}
+.bulk-bar .bulk-cancel:hover { color: #fff; }
+.bulk-check { width: 16px; height: 16px; accent-color: #1DA1F2; cursor: pointer; }
+
 @media print {
   .form-panel { display: none !important; }
   .top-tab-bar { display: none !important; }
@@ -1549,6 +1571,7 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
   .help-overlay { display: none !important; }
   #edit-contact-modal-overlay { display: none !important; }
   .confirm-overlay { display: none !important; }
+  .bulk-bar { display: none !important; }
   #edit-venta-modal-overlay { display: none !important; }
   #presup-detail-modal-overlay { display: none !important; }
   .preview-panel { display: block !important; margin: 0; padding: 0; width: 100%; background: white; overflow: visible; height: auto; }
@@ -1656,6 +1679,7 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
     <table class="presup-dash-table" id="presup-dash-table">
       <thead>
         <tr>
+          <th style="width:30px;"><input type="checkbox" class="bulk-check" id="pd-select-all" onchange="toggleAllPresupuestos(this.checked)"></th>
           <th>N&#176;</th>
           <th>Fecha</th>
           <th>Cliente</th>
@@ -1668,6 +1692,11 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
       </thead>
       <tbody id="presup-dash-tbody"></tbody>
     </table>
+  </div>
+  <div class="bulk-bar" id="pd-bulk-bar">
+    <span><span class="bulk-count" id="pd-bulk-count">0</span> seleccionados</span>
+    <button class="bulk-delete" onclick="bulkDeletePresupuestos()">Eliminar seleccionados</button>
+    <button class="bulk-cancel" onclick="clearPresupuestosSelection()">Cancelar</button>
   </div>
 </div>
 
@@ -1919,6 +1948,7 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
     <table class="contactos-table" id="contactos-table">
       <thead>
         <tr>
+          <th style="width:30px;"><input type="checkbox" class="bulk-check" id="ct-select-all" onchange="toggleAllContactos(this.checked)"></th>
           <th class="sortable" onclick="sortContactosBy('nombre')">Nombre<span class="sort-indicator" id="sort-ind-nombre"></span></th>
           <th>WhatsApp</th>
           <th class="sortable" onclick="sortContactosBy('ciudad')">Ciudad<span class="sort-indicator" id="sort-ind-ciudad"></span></th>
@@ -1933,6 +1963,11 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
       </thead>
       <tbody id="contactos-tbody"></tbody>
     </table>
+  </div>
+  <div class="bulk-bar" id="ct-bulk-bar">
+    <span><span class="bulk-count" id="ct-bulk-count">0</span> seleccionados</span>
+    <button class="bulk-delete" onclick="bulkDeleteContactos()">Eliminar seleccionados</button>
+    <button class="bulk-cancel" onclick="clearContactosSelection()">Cancelar</button>
   </div>
 </div>
 
@@ -1970,6 +2005,7 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
     <table class="ventas-table" id="ventas-table">
       <thead>
         <tr>
+          <th style="width:30px;"><input type="checkbox" class="bulk-check" id="vt-select-all" onchange="toggleAllVentas(this.checked)"></th>
           <th>Cliente</th>
           <th>Ciudad</th>
           <th>Fecha cierre</th>
@@ -1985,6 +2021,11 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
       </thead>
       <tbody id="ventas-tbody"></tbody>
     </table>
+  </div>
+  <div class="bulk-bar" id="vt-bulk-bar">
+    <span><span class="bulk-count" id="vt-bulk-count">0</span> seleccionados</span>
+    <button class="bulk-delete" onclick="bulkDeleteVentas()">Eliminar seleccionados</button>
+    <button class="bulk-cancel" onclick="clearVentasSelection()">Cancelar</button>
   </div>
 </div>
 
@@ -4160,6 +4201,7 @@ function renderContactos() {
     }
 
     tr.innerHTML =
+      '<td><input type="checkbox" class="bulk-check ct-row-check" data-row="' + lead.rowIndex + '" onchange="updateContactosBulk()"></td>' +
       '<td style="font-weight:700;">' + escapeHtml(lead.nombre) + '</td>' +
       '<td>' + (waLink ? '<a href="' + waLink + '" target="_blank">' + escapeHtml(waDisplay) + '</a>' : escapeHtml(waDisplay)) + '</td>' +
       '<td>' + escapeHtml(lead.ciudad || '-') + '</td>' +
@@ -4184,7 +4226,7 @@ function renderContactos() {
 
     /* Click row to open detail modal (but not if clicking the select, delete or edit button) */
     tr.addEventListener('click', function(e) {
-      if (e.target.tagName === 'SELECT' || e.target.tagName === 'A' || e.target.classList.contains('btn-delete-contact') || e.target.classList.contains('btn-edit-contact')) return;
+      if (e.target.tagName === 'SELECT' || e.target.tagName === 'A' || e.target.tagName === 'INPUT' || e.target.classList.contains('btn-delete-contact') || e.target.classList.contains('btn-edit-contact')) return;
       openLeadModal(lead);
     });
 
@@ -5060,6 +5102,7 @@ function renderVentasTable(ganados, ventasStore) {
     var medidas = medidasParts.length > 0 ? medidasParts.join(' | ') : '-';
 
     tr.innerHTML =
+      '<td><input type="checkbox" class="bulk-check vt-row-check" data-row="' + lead.rowIndex + '" data-key="' + escapeAttr(key) + '" onchange="updateVentasBulk()"></td>' +
       '<td style="font-weight:700;"><a href="#" class="vt-client-link" data-row="' + lead.rowIndex + '" style="color:#1DA1F2;text-decoration:none;cursor:pointer;">' + escapeHtml(lead.nombre) + '</a></td>' +
       '<td>' + escapeHtml(lead.ciudad || '-') + '</td>' +
       '<td>' + escapeHtml(formatDateAR(lead.fecha) || '-') + '</td>' +
@@ -5109,7 +5152,7 @@ function renderVentasTable(ganados, ventasStore) {
     }
 
     /* Monto presupuestado (editable) */
-    var tdMonto = tr.children[6];
+    var tdMonto = tr.children[7];
     tdMonto.innerHTML = '';
     var inpMonto = document.createElement('input');
     inpMonto.type = 'text';
@@ -5139,7 +5182,7 @@ function renderVentasTable(ganados, ventasStore) {
     tdMonto.appendChild(inpMonto);
 
     /* Forma de pago (dropdown) */
-    var tdPago = tr.children[7];
+    var tdPago = tr.children[8];
     tdPago.innerHTML = '';
     var selPago = document.createElement('select');
     selPago.className = 'vt-inline-select';
@@ -5163,7 +5206,7 @@ function renderVentasTable(ganados, ventasStore) {
     tdPago.appendChild(selPago);
 
     /* Estado entrega (dropdown) */
-    var tdEntrega = tr.children[8];
+    var tdEntrega = tr.children[9];
     tdEntrega.innerHTML = '';
     var selEntrega = document.createElement('select');
     selEntrega.className = 'vt-inline-select';
@@ -5187,7 +5230,7 @@ function renderVentasTable(ganados, ventasStore) {
     tdEntrega.appendChild(selEntrega);
 
     /* Notas (editable text) */
-    var tdNotas = tr.children[9];
+    var tdNotas = tr.children[10];
     tdNotas.innerHTML = '';
     var inpNotas = document.createElement('input');
     inpNotas.type = 'text';
@@ -5798,7 +5841,7 @@ function renderPresupuestosDashboard() {
   tbody.innerHTML = '';
 
   if (flat.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" class="presup-dash-empty">' +
+    tbody.innerHTML = '<tr><td colspan="9" class="presup-dash-empty">' +
       '<div class="pde-icon">&#128196;</div>' +
       '<div class="pde-text">No hay presupuestos generados todavia.<br>Crea tu primer presupuesto para verlo aqui.</div>' +
       '</td></tr>';
@@ -5812,6 +5855,7 @@ function renderPresupuestosDashboard() {
     var itemCount = b.items.length + ' producto' + (b.items.length !== 1 ? 's' : '');
 
     tr.innerHTML =
+      '<td><input type="checkbox" class="bulk-check pd-row-check" data-id="' + escapeAttr(b.id) + '" onchange="updatePresupuestosBulk()"></td>' +
       '<td style="font-weight:700;">' + escapeHtml(b.nro) + '</td>' +
       '<td>' + escapeHtml(formatDateAR(b.fecha)) + '</td>' +
       '<td style="font-weight:600;"><a href="#" class="pd-client-link" style="color:#1DA1F2;text-decoration:none;" data-client="' + escapeAttr(b.cliente) + '">' + escapeHtml(b.cliente) + '</a></td>' +
@@ -6810,6 +6854,164 @@ function attemptLogin() {
     pwEl.textContent = '';
     pwEl.focus();
   }
+}
+
+/* ========== BULK SELECT & DELETE ========== */
+
+/* --- Contactos --- */
+function toggleAllContactos(checked) {
+  document.querySelectorAll('.ct-row-check').forEach(function(cb) { cb.checked = checked; });
+  updateContactosBulk();
+}
+
+function updateContactosBulk() {
+  var checked = document.querySelectorAll('.ct-row-check:checked');
+  var bar = document.getElementById('ct-bulk-bar');
+  document.getElementById('ct-bulk-count').textContent = checked.length;
+  bar.classList.toggle('visible', checked.length > 0);
+}
+
+function clearContactosSelection() {
+  document.querySelectorAll('.ct-row-check').forEach(function(cb) { cb.checked = false; });
+  document.getElementById('ct-select-all').checked = false;
+  updateContactosBulk();
+}
+
+function bulkDeleteContactos() {
+  var checked = document.querySelectorAll('.ct-row-check:checked');
+  var count = checked.length;
+  if (count === 0) return;
+  showConfirmModal('Eliminar ' + count + ' contacto' + (count > 1 ? 's' : ''), 'Esta accion no se puede deshacer.', function() {
+    showLoading();
+    var rows = [];
+    checked.forEach(function(cb) { rows.push(parseInt(cb.getAttribute('data-row'))); });
+    rows.sort(function(a, b) { return b - a; });
+    var chain = Promise.resolve();
+    rows.forEach(function(rowIndex) {
+      chain = chain.then(function() {
+        return fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({ action: 'deleteRow', sheet: 'Leads QD', row: rowIndex - 2 })
+        });
+      });
+    });
+    chain.then(function() {
+      rows.forEach(function(ri) {
+        allLeadsData = allLeadsData.filter(function(l) { return l.rowIndex !== ri; });
+      });
+      clearContactosSelection();
+      renderContactos();
+      showToast(count + ' contacto' + (count > 1 ? 's' : '') + ' eliminado' + (count > 1 ? 's' : ''), 'success');
+    });
+  });
+}
+
+/* --- Presupuestos --- */
+function toggleAllPresupuestos(checked) {
+  document.querySelectorAll('.pd-row-check').forEach(function(cb) { cb.checked = checked; });
+  updatePresupuestosBulk();
+}
+
+function updatePresupuestosBulk() {
+  var checked = document.querySelectorAll('.pd-row-check:checked');
+  var bar = document.getElementById('pd-bulk-bar');
+  document.getElementById('pd-bulk-count').textContent = checked.length;
+  bar.classList.toggle('visible', checked.length > 0);
+}
+
+function clearPresupuestosSelection() {
+  document.querySelectorAll('.pd-row-check').forEach(function(cb) { cb.checked = false; });
+  document.getElementById('pd-select-all').checked = false;
+  updatePresupuestosBulk();
+}
+
+function bulkDeletePresupuestos() {
+  var checked = document.querySelectorAll('.pd-row-check:checked');
+  var count = checked.length;
+  if (count === 0) return;
+  showConfirmModal('Eliminar ' + count + ' presupuesto' + (count > 1 ? 's' : ''), 'Se eliminaran del historial.', function() {
+    showLoading();
+    var ids = [];
+    checked.forEach(function(cb) { ids.push(cb.getAttribute('data-id')); });
+    var flat = getAllBudgetsFlat();
+    var rowIndexes = [];
+    ids.forEach(function(id) {
+      var b = flat.find(function(x) { return String(x.id) === String(id); });
+      if (b && typeof b._rowIndex === 'number') rowIndexes.push(b._rowIndex);
+    });
+    rowIndexes.sort(function(a, b) { return b - a; });
+    var chain = Promise.resolve();
+    rowIndexes.forEach(function(ri) {
+      chain = chain.then(function() {
+        return fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({ action: 'deleteRow', sheet: 'Presupuestos', row: ri })
+        });
+      });
+    });
+    chain.then(function() {
+      loadSharedData(function() { renderPresupuestosDashboard(); });
+      showToast(count + ' presupuesto' + (count > 1 ? 's' : '') + ' eliminado' + (count > 1 ? 's' : ''), 'success');
+    });
+  });
+}
+
+/* --- Ventas --- */
+function toggleAllVentas(checked) {
+  document.querySelectorAll('.vt-row-check').forEach(function(cb) { cb.checked = checked; });
+  updateVentasBulk();
+}
+
+function updateVentasBulk() {
+  var checked = document.querySelectorAll('.vt-row-check:checked');
+  var bar = document.getElementById('vt-bulk-bar');
+  document.getElementById('vt-bulk-count').textContent = checked.length;
+  bar.classList.toggle('visible', checked.length > 0);
+}
+
+function clearVentasSelection() {
+  document.querySelectorAll('.vt-row-check').forEach(function(cb) { cb.checked = false; });
+  document.getElementById('vt-select-all').checked = false;
+  updateVentasBulk();
+}
+
+function bulkDeleteVentas() {
+  var checked = document.querySelectorAll('.vt-row-check:checked');
+  var count = checked.length;
+  if (count === 0) return;
+  showConfirmModal('Eliminar ' + count + ' venta' + (count > 1 ? 's' : ''), 'Los leads volveran a "Nuevo Lead".', function() {
+    showLoading();
+    var rows = [];
+    checked.forEach(function(cb) {
+      rows.push({ rowIndex: parseInt(cb.getAttribute('data-row')), key: cb.getAttribute('data-key') });
+    });
+    var chain = Promise.resolve();
+    rows.forEach(function(r) {
+      chain = chain.then(function() {
+        var lead = allLeadsData.find(function(l) { return l.rowIndex === r.rowIndex; });
+        if (lead) {
+          lead.stage = 'Nuevo Lead';
+          lead.estado = 'Nuevo Lead';
+          return fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ action: 'update', sheet: 'Leads QD', row: r.rowIndex - 2, col: 4, value: 'Nuevo Lead' })
+          });
+        }
+      });
+    });
+    chain.then(function() {
+      var ventasStore = getVentasData();
+      rows.forEach(function(r) {
+        if (ventasStore[r.key]) delete ventasStore[r.key];
+      });
+      saveVentasData(ventasStore);
+      loadSharedData(function() { renderVentas(); });
+      showToast(count + ' venta' + (count > 1 ? 's' : '') + ' eliminada' + (count > 1 ? 's' : ''), 'success');
+    });
+  });
 }
 
 document.addEventListener('DOMContentLoaded', init);
