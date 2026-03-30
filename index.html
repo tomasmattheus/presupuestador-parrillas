@@ -1712,9 +1712,15 @@ body { display: flex; flex-direction: column; background: #111; color: #ccc; ove
   </div>
 
   <h2>Cargar lead del bot</h2>
-  <select id="f-lead-select" style="margin-bottom:8px;">
-    <option value="">-- Seleccionar lead --</option>
-  </select>
+  <div style="display:flex; gap:8px; margin-bottom:8px;">
+    <select id="f-lead-select" style="flex:1;">
+      <option value="">-- Seleccionar lead --</option>
+    </select>
+    <select id="f-lead-filter" style="width:auto;font-size:12px;" onchange="populateLeadSelect()">
+      <option value="all">Todos</option>
+      <option value="measures">Con medidas</option>
+    </select>
+  </div>
   <div style="display:flex; gap:8px;">
     <button class="btn-add" id="btn-load-leads" style="margin-top:0; margin-bottom:10px; background:#333; border:1px solid #555; flex:1;">Actualizar leads</button>
     <button class="btn-add" id="btn-new-blank" style="margin-top:0; margin-bottom:10px; background:#2a2a2a; border:1px solid #1DA1F2; color:#1DA1F2; flex:1;">Nuevo en blanco</button>
@@ -3239,14 +3245,21 @@ function loadLeadsFromSheet() {
 }
 
 function populateLeadSelect() {
+  var filterEl = document.getElementById('f-lead-filter');
+  var filterMode = filterEl ? filterEl.value : 'all';
+  var filtered = leadsData;
+  if (filterMode === 'measures') {
+    filtered = leadsData.filter(function(l) { return l.hasMeasures; });
+  }
   var sel = document.getElementById('f-lead-select');
-  sel.innerHTML = '<option value="">-- Seleccionar lead (' + leadsData.length + ' encontrados) --</option>';
-  leadsData.forEach(function(lead, i) {
+  sel.innerHTML = '<option value="">-- Seleccionar lead (' + filtered.length + ') --</option>';
+  filtered.forEach(function(lead) {
     var opt = document.createElement('option');
-    opt.value = i;
+    opt.value = allLeadsData.indexOf(lead);
     var label = lead.nombre;
     if (lead.ciudad) label += ' - ' + lead.ciudad;
     if (lead.sistema) label += ' (' + lead.sistema + ')';
+    if (!lead.hasMeasures) label += ' [sin medidas]';
     opt.textContent = label;
     sel.appendChild(opt);
   });
@@ -3255,7 +3268,7 @@ function populateLeadSelect() {
 function onLeadSelect() {
   var idx = document.getElementById('f-lead-select').value;
   if (idx === '') return;
-  var lead = leadsData[parseInt(idx)];
+  var lead = allLeadsData[parseInt(idx)];
   if (!lead) return;
 
   loadLeadIntoForm(lead);
