@@ -3250,7 +3250,11 @@ function switchTab(tab) {
     presupDashboard.classList.add('active');
     formPanel.style.display = 'none';
     previewPanel.style.display = 'none';
-    renderPresupuestosDashboard();
+    if (sheetsDataLoaded) {
+      renderPresupuestosDashboard();
+    } else {
+      loadAllSheetData(function() { renderPresupuestosDashboard(); });
+    }
   } else if (tab === 'pipeline') {
     pipelinePanel.classList.add('active');
     if (!dataLoaded) {
