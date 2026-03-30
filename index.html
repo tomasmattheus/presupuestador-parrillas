@@ -2514,20 +2514,21 @@ function parsePriceInput(str) {
 }
 
 function parseGoogleDate(raw) {
-  /* Google gviz returns dates as "Date(2026,2,8,15,20,27)" where month is 0-indexed */
   if (!raw) return null;
-  if (typeof raw === 'string') {
-    var m = raw.match(/Date\((\d+),(\d+),(\d+)/);
-    if (m) {
-      return new Date(parseInt(m[1]), parseInt(m[2]), parseInt(m[3]));
-    }
-    /* Also handle YYYY-MM-DD format */
-    var parts = raw.split('-');
-    if (parts.length === 3) {
-      return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-    }
-  }
   if (raw instanceof Date) return raw;
+  if (typeof raw === 'string') {
+    /* Google gviz: Date(2026,2,8,15,20,27) where month is 0-indexed */
+    var m = raw.match(/Date\((\d+),(\d+),(\d+)/);
+    if (m) return new Date(parseInt(m[1]), parseInt(m[2]), parseInt(m[3]));
+    /* ISO format: 2026-03-30T07:00:00.000Z */
+    if (raw.indexOf('T') > 0) return new Date(raw);
+    /* DD/MM/YYYY */
+    var slashParts = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (slashParts) return new Date(parseInt(slashParts[3]), parseInt(slashParts[2]) - 1, parseInt(slashParts[1]));
+    /* YYYY-MM-DD */
+    var dashParts = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if (dashParts) return new Date(parseInt(dashParts[1]), parseInt(dashParts[2]) - 1, parseInt(dashParts[3]));
+  }
   return null;
 }
 
@@ -4979,13 +4980,24 @@ function renderVentasTable(ganados, ventasStore) {
     var medidas = medidasParts.length > 0 ? medidasParts.join(' | ') : '-';
 
     tr.innerHTML =
-      '<td style="font-weight:700;">' + escapeHtml(lead.nombre) + '</td>' +
+      '<td style="font-weight:700;"><a href="#" class="vt-client-link" data-row="' + lead.rowIndex + '" style="color:#1DA1F2;text-decoration:none;cursor:pointer;">' + escapeHtml(lead.nombre) + '</a></td>' +
       '<td>' + escapeHtml(lead.ciudad || '-') + '</td>' +
       '<td>' + escapeHtml(formatDateAR(lead.fecha) || '-') + '</td>' +
       '<td>' + escapeHtml(lead.sistema || '-') + '</td>' +
       '<td>' + escapeHtml(lead.material || '-') + '</td>' +
       '<td><input type="text" class="vt-inline-input" style="width:120px;" value="' + escapeAttr(medidas === '-' ? '' : medidas) + '" placeholder="Ej: 200x250" data-row="' + lead.rowIndex + '" data-field="medidas"></td>' +
       '<td></td><td></td><td></td><td></td><td></td>';
+
+    /* Client name click → open lead modal */
+    var clientLink = tr.querySelector('.vt-client-link');
+    if (clientLink) {
+      clientLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        var ri = parseInt(this.getAttribute('data-row'));
+        var theLead = allLeadsData.find(function(l) { return l.rowIndex === ri; });
+        if (theLead) openLeadModal(theLead);
+      });
+    }
 
     /* Medidas (editable) — update lead data in Sheet */
     var medidasInput = tr.querySelector('input[data-field="medidas"]');
@@ -5721,8 +5733,8 @@ function renderPresupuestosDashboard() {
 
     tr.innerHTML =
       '<td style="font-weight:700;">' + escapeHtml(b.nro) + '</td>' +
-      '<td>' + escapeHtml(b.fecha) + '</td>' +
-      '<td style="font-weight:600;">' + escapeHtml(b.cliente) + '</td>' +
+      '<td>' + escapeHtml(formatDateAR(b.fecha)) + '</td>' +
+      '<td style="font-weight:600;"><a href="#" class="pd-client-link" style="color:#1DA1F2;text-decoration:none;" data-client="' + escapeAttr(b.cliente) + '">' + escapeHtml(b.cliente) + '</a></td>' +
       '<td>' + escapeHtml(sistemaShort) + '</td>' +
       '<td>' + escapeHtml(materialShort) + '</td>' +
       '<td class="pdt-total">' + formatPrice(b.total) + '</td>' +
@@ -5733,6 +5745,16 @@ function renderPresupuestosDashboard() {
         '<button class="btn-pdt-action btn-duplicar" onclick="duplicarPresupuesto(\'' + escapeAttr(b.id) + '\')">Duplicar</button>' +
         '<button class="btn-pdt-action btn-eliminar" onclick="deleteBudget(\'' + escapeAttr(b.clientKey) + '\',\'' + escapeAttr(b.id) + '\')">Eliminar</button>' +
       '</td>';
+    /* Client link click */
+    var clink = tr.querySelector('.pd-client-link');
+    if (clink) {
+      clink.addEventListener('click', function(e) {
+        e.preventDefault();
+        var cname = this.getAttribute('data-client').toLowerCase();
+        var theLead = allLeadsData.find(function(l) { return l.nombre && l.nombre.trim().toLowerCase() === cname; });
+        if (theLead) openLeadModal(theLead);
+      });
+    }
     tbody.appendChild(tr);
   });
 }
