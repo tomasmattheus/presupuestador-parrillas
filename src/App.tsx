@@ -9,6 +9,7 @@ import ConfirmModal from './components/common/ConfirmModal';
 import Toast from './components/common/Toast';
 import LeadDetailModal from './components/modals/LeadDetailModal';
 import LoginOverlay from './components/auth/LoginOverlay';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,6 +45,7 @@ export default function App() {
       <AuthProvider>
         <ModalProvider>
           <AppInner />
+          <SpeedInsights />
         </ModalProvider>
       </AuthProvider>
     </QueryClientProvider>
