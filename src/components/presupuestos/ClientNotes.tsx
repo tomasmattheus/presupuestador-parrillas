@@ -23,11 +23,11 @@ export default function ClientNotes({ clienteName, clienteWhatsapp }: Props) {
   const notes = useMemo(() => {
     const name = (clienteName || '').trim().toLowerCase();
     if (!name) return [];
-    const phone = String(clienteWhatsapp || '').replace(/\D/g, '');
+    const phone = String(clienteWhatsapp || '').replace(/\D/g, '').slice(-10);
     return allNotas.filter((n) => {
       if ((n.cliente || '').trim().toLowerCase() !== name) return false;
       if (!phone) return true;
-      const nPhone = String(n.telefono || '').replace(/\D/g, '');
+      const nPhone = String(n.telefono || '').replace(/\D/g, '').slice(-10);
       return !nPhone || nPhone === phone;
     }).sort((a, b) => b.rowIndex - a.rowIndex);
   }, [allNotas, clienteName, clienteWhatsapp]);

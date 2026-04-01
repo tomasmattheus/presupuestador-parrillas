@@ -37,7 +37,7 @@ export function parseNotas(rawData: any[][]): Nota[] {
 }
 
 function normalizeKey(name: string, phone: string): string {
-  return (name || '').trim().toLowerCase() + '|' + String(phone || '').replace(/\D/g, '');
+  return (name || '').trim().toLowerCase() + '|' + String(phone || '').replace(/\D/g, '').slice(-10);
 }
 
 export function getNotesForContact(allNotas: Nota[], clienteKey: string): Nota[] {
