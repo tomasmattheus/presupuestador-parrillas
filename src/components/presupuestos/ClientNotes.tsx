@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useContext } from 'react';
 import { useNotas } from '../../hooks/useNotas';
+import { ModalContext } from '../../contexts/ModalContext';
 
 function formatNotaDate(raw: string): string {
   if (!raw) return '';
@@ -11,29 +12,42 @@ function formatNotaDate(raw: string): string {
   return raw;
 }
 
+function last10(raw: string): string {
+  return String(raw || '').replace(/\D/g, '').slice(-10);
+}
+
 interface Props {
   clienteName: string;
   clienteWhatsapp: string;
+  leadSelected: boolean;
 }
 
-export default function ClientNotes({ clienteName, clienteWhatsapp }: Props) {
-  const { allNotas } = useNotas();
+export default function ClientNotes({ clienteName, clienteWhatsapp, leadSelected }: Props) {
+  const { allNotas, deleteNote } = useNotas();
+  const { showConfirm, showToast } = useContext(ModalContext);
   const [open, setOpen] = useState(true);
 
   const notes = useMemo(() => {
+    if (!leadSelected) return [];
     const name = (clienteName || '').trim().toLowerCase();
     if (!name) return [];
-    const phone = String(clienteWhatsapp || '').replace(/\D/g, '').slice(-10);
-    const byName = allNotas.filter((n) => (n.cliente || '').trim().toLowerCase() === name);
-    if (!phone) return byName.sort((a, b) => b.rowIndex - a.rowIndex);
-    const byPhone = byName.filter((n) => {
-      const nPhone = String(n.telefono || '').replace(/\D/g, '').slice(-10);
-      return !nPhone || nPhone === phone;
-    });
-    return (byPhone.length > 0 ? byPhone : byName).sort((a, b) => b.rowIndex - a.rowIndex);
-  }, [allNotas, clienteName, clienteWhatsapp]);
+    const phone = last10(clienteWhatsapp);
+    return allNotas.filter((n) => {
+      if ((n.cliente || '').trim().toLowerCase() !== name) return false;
+      const nPhone = last10(n.telefono);
+      if (phone && nPhone) return nPhone === phone;
+      return true;
+    }).sort((a, b) => b.rowIndex - a.rowIndex);
+  }, [allNotas, clienteName, clienteWhatsapp, leadSelected]);
 
-  if (!clienteName.trim() || notes.length === 0) return null;
+  const handleDelete = (rowIndex: number) => {
+    showConfirm('Eliminar nota', 'Seguro que queres eliminar esta nota?', () => {
+      deleteNote(rowIndex);
+      showToast('Nota eliminada', 'success');
+    });
+  };
+
+  if (!leadSelected || !clienteName.trim() || notes.length === 0) return null;
 
   return (
     <div className="mt-3 mb-1 bg-[#fffbeb] border border-[#fcd34d]/40 rounded-lg overflow-hidden">
@@ -50,9 +64,16 @@ export default function ClientNotes({ clienteName, clienteWhatsapp }: Props) {
       {open && (
         <div className="px-3 pb-2.5 flex flex-col gap-1.5 max-h-[150px] overflow-y-auto">
           {notes.map((note) => (
-            <div key={note.rowIndex} className="bg-white/60 rounded px-2.5 py-1.5">
+            <div key={note.rowIndex} className="bg-white/60 rounded px-2.5 py-1.5 relative group">
+              <button
+                className="absolute top-1 right-1 bg-transparent border-none text-[#ccc] text-sm cursor-pointer px-1 opacity-0 group-hover:opacity-100 hover:text-red-500 transition-all"
+                onClick={() => handleDelete(note.rowIndex)}
+                title="Eliminar nota"
+              >
+                &times;
+              </button>
               <div className="text-[10px] text-[#999]">{formatNotaDate(note.fecha)} — {note.usuario}</div>
-              <div className="text-[12px] text-[#2a2a2a] leading-snug">{note.texto}</div>
+              <div className="text-[12px] text-[#2a2a2a] leading-snug pr-4">{note.texto}</div>
             </div>
           ))}
         </div>

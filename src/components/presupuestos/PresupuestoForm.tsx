@@ -90,8 +90,11 @@ export default function PresupuestoForm({ onBack, editBudget, formHook, onPrint 
     setFormData((prev) => ({ ...prev, [key]: value }));
   }, [setFormData]);
 
+  const [leadSelected, setLeadSelected] = useState(!!editBudget);
+
   const handleLeadSelect = useCallback((lead: Lead) => {
     loadLeadIntoForm(lead);
+    setLeadSelected(true);
   }, [loadLeadIntoForm]);
 
   const handleNewBlank = useCallback(() => {
@@ -109,6 +112,7 @@ export default function PresupuestoForm({ onBack, editBudget, formHook, onPrint 
       cbLateral: false,
     }));
     setNro(nextNumber);
+    setLeadSelected(false);
   }, [setFormData, nextNumber]);
 
   const handlePhotoUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -266,7 +270,7 @@ export default function PresupuestoForm({ onBack, editBudget, formHook, onPrint 
       <h2 className="text-brand text-sm uppercase tracking-[1.5px] mt-2.5 mb-2.5 border-b border-[#eee] pb-1.5">Cargar lead del bot</h2>
       <LeadSelector onLeadSelect={handleLeadSelect} onNewBlank={handleNewBlank} />
 
-      <ClientNotes clienteName={formData.cliente} clienteWhatsapp={formData.telefono} />
+      <ClientNotes clienteName={formData.cliente} clienteWhatsapp={formData.telefono} leadSelected={leadSelected} />
 
       <h2 className="text-brand text-sm uppercase tracking-[1.5px] mt-5 mb-2.5 border-b border-[#eee] pb-1.5">Datos del cliente</h2>
       <div className="flex gap-2.5">
