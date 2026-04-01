@@ -16,17 +16,21 @@ interface Props {
   clienteWhatsapp: string;
 }
 
-export default function ClientNotes({ clienteName, clienteWhatsapp: _clienteWhatsapp }: Props) {
+export default function ClientNotes({ clienteName, clienteWhatsapp }: Props) {
   const { allNotas } = useNotas();
   const [open, setOpen] = useState(true);
 
   const notes = useMemo(() => {
     const name = (clienteName || '').trim().toLowerCase();
     if (!name) return [];
-    return allNotas.filter((n) =>
-      (n.cliente || '').trim().toLowerCase() === name
-    ).sort((a, b) => b.rowIndex - a.rowIndex);
-  }, [allNotas, clienteName]);
+    const phone = String(clienteWhatsapp || '').replace(/\D/g, '');
+    return allNotas.filter((n) => {
+      if ((n.cliente || '').trim().toLowerCase() !== name) return false;
+      if (!phone) return true;
+      const nPhone = String(n.telefono || '').replace(/\D/g, '');
+      return !nPhone || nPhone === phone;
+    }).sort((a, b) => b.rowIndex - a.rowIndex);
+  }, [allNotas, clienteName, clienteWhatsapp]);
 
   if (!clienteName.trim() || notes.length === 0) return null;
 
