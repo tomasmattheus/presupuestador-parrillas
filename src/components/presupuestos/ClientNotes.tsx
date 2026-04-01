@@ -24,12 +24,13 @@ export default function ClientNotes({ clienteName, clienteWhatsapp }: Props) {
     const name = (clienteName || '').trim().toLowerCase();
     if (!name) return [];
     const phone = String(clienteWhatsapp || '').replace(/\D/g, '').slice(-10);
-    return allNotas.filter((n) => {
-      if ((n.cliente || '').trim().toLowerCase() !== name) return false;
-      if (!phone) return true;
+    const byName = allNotas.filter((n) => (n.cliente || '').trim().toLowerCase() === name);
+    if (!phone) return byName.sort((a, b) => b.rowIndex - a.rowIndex);
+    const byPhone = byName.filter((n) => {
       const nPhone = String(n.telefono || '').replace(/\D/g, '').slice(-10);
       return !nPhone || nPhone === phone;
-    }).sort((a, b) => b.rowIndex - a.rowIndex);
+    });
+    return (byPhone.length > 0 ? byPhone : byName).sort((a, b) => b.rowIndex - a.rowIndex);
   }, [allNotas, clienteName, clienteWhatsapp]);
 
   if (!clienteName.trim() || notes.length === 0) return null;
