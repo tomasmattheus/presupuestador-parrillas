@@ -29,37 +29,24 @@ export default function PresupuestosDashboard({ onCreateNew, onEdit, onDuplicate
   const promedio = useMemo(() => (budgetsFlat.length > 0 ? Math.round(totalMonto / budgetsFlat.length) : 0), [totalMonto, budgetsFlat.length]);
 
   const handleDelete = useCallback((b: BudgetFlat) => {
-    showConfirm('Eliminar presupuesto', 'Eliminar presupuesto #' + b.nro + '?', () => {
-      queryClient.setQueryData(['presupuestos'], (old: any[][] | undefined) =>
-        (old || []).filter((_: any, i: number) => i !== b._rowIndex)
-      );
+    showConfirm('Eliminar presupuesto', 'Eliminar presupuesto #' + b.nro + '?', async () => {
+      await deleteBudget(b._rowIndex);
+      queryClient.invalidateQueries({ queryKey: ['presupuestos'] });
       showToast('Presupuesto eliminado', 'success');
-      deleteBudget(b._rowIndex)
-        .then(() => queryClient.invalidateQueries({ queryKey: ['presupuestos'] }))
-        .catch(() => {
-          queryClient.invalidateQueries({ queryKey: ['presupuestos'] });
-          showToast('Error al eliminar', 'error');
-        });
     });
   }, [showConfirm, showToast, queryClient]);
 
   const handleBulkDelete = useCallback(() => {
-    showConfirm('Eliminar seleccionados', 'Eliminar ' + count + ' presupuestos?', () => {
+    showConfirm('Eliminar seleccionados', 'Eliminar ' + count + ' presupuestos?', async () => {
       const toDelete = budgetsFlat.filter((b) => selectedIds.has(b.id));
       const sorted = [...toDelete].sort((a, b) => b._rowIndex - a._rowIndex);
-      const idxSet = new Set(sorted.map((b) => b._rowIndex));
-      queryClient.setQueryData(['presupuestos'], (old: any[][] | undefined) =>
-        (old || []).filter((_: any, i: number) => !idxSet.has(i))
-      );
+      for (const b of sorted) {
+        await deleteBudget(b._rowIndex);
+        await new Promise((r) => setTimeout(r, 500));
+      }
       clear();
+      queryClient.invalidateQueries({ queryKey: ['presupuestos'] });
       showToast(sorted.length + ' presupuestos eliminados', 'success');
-      (async () => {
-        for (const b of sorted) await deleteBudget(b._rowIndex);
-        queryClient.invalidateQueries({ queryKey: ['presupuestos'] });
-      })().catch(() => {
-        queryClient.invalidateQueries({ queryKey: ['presupuestos'] });
-        showToast('Error al eliminar', 'error');
-      });
     });
   }, [showConfirm, showToast, queryClient, budgetsFlat, selectedIds, count, clear]);
 

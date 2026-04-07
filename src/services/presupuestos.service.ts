@@ -44,7 +44,7 @@ export function parseBudgets(rawData: any[][]): Record<string, Budget[]> {
       descuento: parseFloat(row[12]) || 0,
       recargo: parseFloat(row[13]) || 0,
       cuotas: parseInt(row[14]) || 0,
-      _rowIndex: idx,
+      _rowIndex: idx + 2,
     });
   });
   return result;
