@@ -1,7 +1,9 @@
-import { useContext } from 'react';
+import { useContext, useState, useCallback, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { ModalContext } from '../../contexts/ModalContext';
 import { getEstadoBadgeClass } from '../../lib/mappers';
-import { formatDateAR } from '../../lib/dates';
+import { formatDateAR, parseGoogleDate } from '../../lib/dates';
+import { updateLeadField } from '../../services/leads.service';
 import BudgetHistorySection from './BudgetHistorySection';
 import NotesSection from './NotesSection';
 import MessageTemplatesSection from './MessageTemplatesSection';
@@ -14,8 +16,38 @@ const BADGE_COLORS: Record<string, string> = {
   'estado-cerrado-perdido': 'bg-[#fee2e2] text-[#dc2626]',
 };
 
+function parseSeguimientoToInput(raw: string): string {
+  if (!raw) return '';
+  const d = parseGoogleDate(raw);
+  if (!d || isNaN(d.getTime())) return '';
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 export default function LeadDetailModal() {
   const { leadModalLead: lead, closeLeadModal, requestGeneratePresup } = useContext(ModalContext);
+  const queryClient = useQueryClient();
+  const [followUp, setFollowUp] = useState('');
+
+  useEffect(() => {
+    if (lead) setFollowUp(parseSeguimientoToInput(lead.seguimiento));
+  }, [lead]);
+
+  const saveFollowUp = useCallback((date: string) => {
+    if (!lead) return;
+    setFollowUp(date);
+    updateLeadField(lead.rowIndex, 13, date);
+    queryClient.invalidateQueries({ queryKey: ['leads'] });
+  }, [lead, queryClient]);
+
+  const addDays = useCallback((days: number) => {
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    const val = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    saveFollowUp(val);
+  }, [saveFollowUp]);
 
   if (!lead) return null;
 
@@ -70,6 +102,46 @@ export default function LeadDetailModal() {
             </span>
           </div>
         ))}
+
+        <div className="flex py-3 border-b border-[#f0f0f0] text-sm items-start">
+          <span className="w-[140px] text-[#888] font-semibold uppercase text-[11px] tracking-wide pt-2 shrink-0">
+            Seguimiento
+          </span>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <input
+                type="date"
+                value={followUp}
+                onChange={(e) => saveFollowUp(e.target.value)}
+                className="text-sm py-1.5 px-2 border border-[#ddd] rounded-md font-sans outline-none focus:border-[#1DA1F2]"
+              />
+              {followUp && (
+                <button
+                  onClick={() => saveFollowUp('')}
+                  className="bg-transparent border-none text-[#e55] text-lg cursor-pointer px-1 leading-none hover:text-[#c33]"
+                >
+                  &times;
+                </button>
+              )}
+            </div>
+            <div className="flex gap-1.5 flex-wrap">
+              {[
+                ['En 3 dias', 3],
+                ['En 1 semana', 7],
+                ['En 15 dias', 15],
+                ['En 30 dias', 30],
+              ].map(([label, days]) => (
+                <button
+                  key={label as string}
+                  onClick={() => addDays(days as number)}
+                  className="bg-[#f0f2f5] text-[#555] border-none py-1 px-2.5 rounded text-[11px] font-semibold cursor-pointer hover:bg-[#e0e2e5] transition-colors"
+                >
+                  {label as string}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
 
         <BudgetHistorySection clienteKey={budgetKey} />
 

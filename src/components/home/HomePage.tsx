@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import { useAuth } from '../../hooks/useAuth';
+import { useLeads } from '../../hooks/useLeads';
 import HomeCards from './HomeCards';
+import FollowUpList from './FollowUpList';
 import TodoList from './TodoList';
 import type { TabId } from '../../types';
 
@@ -15,6 +17,7 @@ const MESES = [
 
 export default function HomePage({ onNavigate }: HomePageProps) {
   const { user } = useAuth();
+  const { data: leads = [] } = useLeads();
   const displayName = useMemo(() => {
     const name = user || 'usuario';
     return name.charAt(0).toUpperCase() + name.slice(1);
@@ -35,6 +38,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
       </div>
 
       <HomeCards onNavigate={onNavigate} />
+      <FollowUpList leads={leads} />
       <TodoList />
     </div>
   );

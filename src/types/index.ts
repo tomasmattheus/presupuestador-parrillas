@@ -13,6 +13,7 @@ export interface Lead {
   material: string;
   adicionales: string;
   medidasPend: string;
+  seguimiento: string;
   hasMeasures: boolean;
   stage: string;
 }

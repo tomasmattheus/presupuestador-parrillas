@@ -45,6 +45,7 @@ export async function fetchLeadsGviz(stages: PipelineStage[]): Promise<Lead[]> {
         material: String(cell(10)),
         adicionales: String(cell(11)),
         medidasPend: String(cell(12)),
+        seguimiento: String(cell(13)),
         hasMeasures: !!hasMeasures,
         stage: mapEstadoToStage(String(cell(4)), stages),
       });
