@@ -13,14 +13,14 @@ interface Props {
 export function usePrintPreview() {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const printPages = useCallback((fileName?: string) => {
+  const printPages = useCallback((fileName?: string, preOpenedWin?: Window | null) => {
     const container = containerRef.current;
     if (!container) return;
 
     const pages = container.querySelectorAll('.page');
     if (pages.length === 0) return;
 
-    const printWin = window.open('', '_blank', 'width=800,height=600');
+    const printWin = preOpenedWin || window.open('', '_blank', 'width=800,height=600');
     if (!printWin) return;
 
     const cssLinks = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))

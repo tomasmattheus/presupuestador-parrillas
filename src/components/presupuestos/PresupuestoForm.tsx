@@ -18,7 +18,7 @@ interface Props {
   onBack: () => void;
   editBudget?: BudgetFlat | null;
   formHook: PresupuestoFormHook;
-  onPrint?: (fileName?: string) => void;
+  onPrint?: (fileName?: string, preOpenedWin?: Window | null) => void;
 }
 
 export default function PresupuestoForm({ onBack, editBudget, formHook, onPrint }: Props) {
@@ -149,6 +149,7 @@ export default function PresupuestoForm({ onBack, editBudget, formHook, onPrint 
     const medidas = formData.ancho.trim() + ' x ' + formData.alto.trim() + ' mm';
 
     setSaving(true);
+    const printWin = window.open('', '_blank', 'width=800,height=600');
     try {
       await saveBudget({
         id,
@@ -244,8 +245,9 @@ export default function PresupuestoForm({ onBack, editBudget, formHook, onPrint 
 
       const clienteClean = (formData.cliente || 'Sin_nombre').trim().replace(/\s+/g, '_');
       const pdfName = `Presupuesto_${nro}_${clienteClean}`;
-      if (onPrint) onPrint(pdfName); else window.print();
+      if (onPrint) onPrint(pdfName, printWin); else window.print();
     } catch (err) {
+      if (printWin) printWin.close();
       console.error('Error guardando presupuesto:', err);
       showToast('Error al guardar presupuesto: ' + (err instanceof Error ? err.message : String(err)), 'error');
     } finally {
