@@ -17,10 +17,10 @@ function PriceCell({ item, onUpdatePrice }: { item: LineItem; onUpdatePrice: (id
   const displayPrice = item.isFree ? 'Sin cargo' : (item.price > 0 ? formatPrice(item.price) : '');
 
   const handleFocus = useCallback(() => {
-    if (item.isFree) return;
+    if (item.isFree && item.isFixed) return;
     setEditing(true);
     setRawValue(item.price > 0 ? String(item.price) : '');
-  }, [item.isFree, item.price]);
+  }, [item.isFree, item.isFixed, item.price]);
 
   const handleBlur = useCallback(() => {
     setEditing(false);
@@ -35,9 +35,10 @@ function PriceCell({ item, onUpdatePrice }: { item: LineItem; onUpdatePrice: (id
   return (
     <input
       type="text"
-      className="w-full text-right text-[13px] py-1.5 px-2 bg-white border border-[#ddd] rounded-md font-sans outline-none focus:border-brand focus:shadow-[0_0_0_3px_rgba(29,161,242,0.1)]"
+      className="w-full text-right text-[13px] text-[#2a2a2a] py-1.5 px-2 bg-white border border-[#ddd] rounded-md font-sans outline-none focus:border-brand focus:shadow-[0_0_0_3px_rgba(29,161,242,0.1)] placeholder:text-[#2a2a2a]"
       value={editing ? rawValue : displayPrice}
-      readOnly={item.isFree}
+      placeholder="$0"
+      readOnly={item.isFree && item.isFixed}
       onFocus={handleFocus}
       onBlur={handleBlur}
       onChange={handleChange}
@@ -72,14 +73,12 @@ export default function LineItemsTable({ items, onRemove, onUpdateName, onUpdate
                 <PriceCell item={item} onUpdatePrice={onUpdatePrice} />
               </td>
               <td className="py-1 px-1 align-middle">
-                {!item.isFixed && (
-                  <button
-                    onClick={() => onRemove(item.id)}
-                    className="bg-transparent border-none text-[#e55] text-lg cursor-pointer py-0.5 px-1.5 rounded-sm leading-none hover:bg-[rgba(238,85,85,0.15)]"
-                  >
-                    &times;
-                  </button>
-                )}
+                <button
+                  onClick={() => onRemove(item.id)}
+                  className="bg-transparent border-none text-[#e55] text-lg cursor-pointer py-0.5 px-1.5 rounded-sm leading-none hover:bg-[rgba(238,85,85,0.15)]"
+                >
+                  &times;
+                </button>
               </td>
             </tr>
           ))}
