@@ -24,6 +24,8 @@ export function parseBudgets(rawData: any[][]): Record<string, Budget[]> {
   const result: Record<string, Budget[]> = {};
   rawData.forEach((row, idx) => {
     if (!row[0]) return;
+    if (!row[2] || String(row[2]).trim() === '0' || String(row[2]).trim() === '') return;
+    if (row[0] === row[1] && row[1] === row[2]) return;
     const key = (row[3] || '') + '|' + (row[4] || '');
     if (!result[key]) result[key] = [];
     let items: BudgetItem[];
