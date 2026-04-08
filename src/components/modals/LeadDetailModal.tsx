@@ -1,4 +1,4 @@
-import { useContext, useState, useCallback, useEffect, useMemo } from 'react';
+import { useContext, useState, useCallback, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ModalContext } from '../../contexts/ModalContext';
 import { getEstadoBadgeClass } from '../../lib/mappers';
@@ -51,18 +51,18 @@ export default function LeadDetailModal() {
 
   if (!lead) return null;
 
-  const waNumber = lead.whatsapp ? lead.whatsapp.toString().replace(/\D/g, '') : '';
+  const waNumber = lead.whatsapp ? String(lead.whatsapp).replace(/\D/g, '') : '';
   const waLink = waNumber ? 'https://wa.me/' + waNumber : '';
   const budgetKey = (lead.nombre || '') + '|' + (lead.whatsapp || '');
   const badgeClass = getEstadoBadgeClass(lead.stage);
   const badgeColor = BADGE_COLORS[badgeClass] || BADGE_COLORS['estado-nuevo-lead'];
 
-  const diasDesdeContacto = useMemo(() => {
+  const diasDesdeContacto = (() => {
     try {
       const d = getDaysFromDate(lead.fecha);
       return d >= 0 ? d : null;
     } catch { return null; }
-  }, [lead.fecha]);
+  })();
 
   const rows: [string, React.ReactNode][] = [
     ['Ciudad', lead.ciudad || '-'],
