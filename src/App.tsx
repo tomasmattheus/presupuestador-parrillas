@@ -14,9 +14,9 @@ import ErrorBoundary from './components/common/ErrorBoundary';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5,
+      staleTime: 30 * 1000,
       retry: 2,
-      refetchOnWindowFocus: false,
+      refetchOnWindowFocus: true,
     },
   },
 });
