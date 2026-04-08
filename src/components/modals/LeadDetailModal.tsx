@@ -58,8 +58,10 @@ export default function LeadDetailModal() {
   const badgeColor = BADGE_COLORS[badgeClass] || BADGE_COLORS['estado-nuevo-lead'];
 
   const diasDesdeContacto = useMemo(() => {
-    const d = getDaysFromDate(lead.fecha);
-    return d >= 0 ? d : null;
+    try {
+      const d = getDaysFromDate(lead.fecha);
+      return d >= 0 ? d : null;
+    } catch { return null; }
   }, [lead.fecha]);
 
   const rows: [string, React.ReactNode][] = [
