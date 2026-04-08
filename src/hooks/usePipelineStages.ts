@@ -1,16 +1,22 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useContext } from 'react';
 import {
   getPipelineStages,
   savePipelineStages,
 } from '../services/settings.service';
 import { pushSingleKey } from '../services/sync.service';
 import { CACHE_KEYS } from '../lib/cache';
+import { AuthContext } from '../contexts/AuthContext';
 import type { PipelineStage } from '../types';
 
 function syncStages() { pushSingleKey(CACHE_KEYS.pipelineStages).catch(() => {}); }
 
 export function usePipelineStages() {
   const [stages, setStages] = useState<PipelineStage[]>(getPipelineStages);
+  const { syncing } = useContext(AuthContext);
+
+  useEffect(() => {
+    if (!syncing) setStages(getPipelineStages());
+  }, [syncing]);
 
   const saveStages = useCallback((updated: PipelineStage[]) => {
     savePipelineStages(updated);
