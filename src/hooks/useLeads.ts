@@ -9,6 +9,6 @@ export function useLeads() {
     queryKey: ['leads'],
     queryFn: () => fetchAllLeads(stages),
     placeholderData: getCachedLeads(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 30 * 1000,
   });
 }

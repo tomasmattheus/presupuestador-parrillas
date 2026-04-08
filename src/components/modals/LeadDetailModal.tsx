@@ -1,8 +1,8 @@
-import { useContext, useState, useCallback, useEffect } from 'react';
+import { useContext, useState, useCallback, useEffect, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ModalContext } from '../../contexts/ModalContext';
 import { getEstadoBadgeClass } from '../../lib/mappers';
-import { formatDateAR, parseGoogleDate } from '../../lib/dates';
+import { formatDateAR, parseGoogleDate, getDaysFromDate } from '../../lib/dates';
 import { updateLeadField } from '../../services/leads.service';
 import BudgetHistorySection from './BudgetHistorySection';
 import NotesSection from './NotesSection';
@@ -57,12 +57,17 @@ export default function LeadDetailModal() {
   const badgeClass = getEstadoBadgeClass(lead.stage);
   const badgeColor = BADGE_COLORS[badgeClass] || BADGE_COLORS['estado-nuevo-lead'];
 
+  const diasDesdeContacto = useMemo(() => {
+    const d = getDaysFromDate(lead.fecha);
+    return d >= 0 ? d : null;
+  }, [lead.fecha]);
+
   const rows: [string, React.ReactNode][] = [
     ['Ciudad', lead.ciudad || '-'],
     ['WhatsApp', waLink
       ? <a href={waLink} target="_blank" rel="noopener noreferrer" className="text-[#1DA1F2] no-underline font-semibold hover:underline">{lead.whatsapp}</a>
       : (lead.whatsapp || '-')],
-    ['Fecha', formatDateAR(lead.fecha) || '-'],
+    ['Fecha contacto', <span>{formatDateAR(lead.fecha) || '-'}{diasDesdeContacto !== null && <span className="text-[#888] text-[11px] ml-2">({diasDesdeContacto === 0 ? 'hoy' : `hace ${diasDesdeContacto} dias`})</span>}</span>],
     ['Estado', <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-bold ${badgeColor}`}>{lead.stage}</span>],
     ['Sistema', lead.sistema || '-'],
     ['Material', lead.material || '-'],
