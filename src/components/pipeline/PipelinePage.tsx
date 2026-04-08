@@ -48,6 +48,7 @@ export default function PipelinePage() {
       updateLeadField(lead.rowIndex, STAGE_COL, newStage)
         .then(() => {
           showToast(`Actualizado: ${lead.nombre} → ${newStage}`, 'success');
+          setTimeout(() => queryClient.invalidateQueries({ queryKey: ['leads'] }), 2000);
         })
         .catch(() => {
           queryClient.setQueryData<Lead[]>(['leads'], (old) =>

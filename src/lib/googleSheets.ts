@@ -4,7 +4,7 @@ import { mapEstadoToStage } from './mappers';
 
 export async function fetchLeadsGviz(stages: PipelineStage[]): Promise<Lead[]> {
   try {
-    const response = await fetch(GVIZ_URL);
+    const response = await fetch(GVIZ_URL + '&_t=' + Date.now());
     const text = await response.text();
     const jsonStr = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);?/);
     if (!jsonStr) return [];
