@@ -5,9 +5,10 @@ import { ModalContext } from '../../contexts/ModalContext';
 
 interface Props {
   leads: Lead[];
+  loading?: boolean;
 }
 
-export default function FollowUpList({ leads }: Props) {
+export default function FollowUpList({ leads, loading }: Props) {
   const { openLeadModal } = useContext(ModalContext);
 
   const pending = useMemo(() => {
@@ -54,7 +55,7 @@ export default function FollowUpList({ leads }: Props) {
       <div className="flex-1 overflow-y-auto">
         {pending.length === 0 && (
           <div className="py-10 text-center text-[#ccc] text-[13px]">
-            Sin seguimientos pendientes
+            {loading ? 'Cargando...' : 'Sin seguimientos pendientes'}
           </div>
         )}
         {pending.map(({ lead, daysOverdue }) => (

@@ -17,7 +17,7 @@ const MESES = [
 
 export default function HomePage({ onNavigate }: HomePageProps) {
   const { user } = useAuth();
-  const { data: leads = [] } = useLeads();
+  const { data: leads = [], isLoading: leadsLoading } = useLeads();
   const displayName = useMemo(() => {
     const name = user || 'usuario';
     return name.charAt(0).toUpperCase() + name.slice(1);
@@ -41,7 +41,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
 
       <div className="grid grid-cols-2 gap-5 flex-1 min-h-0">
         <div className="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col">
-          <FollowUpList leads={leads} />
+          <FollowUpList leads={leads} loading={leadsLoading} />
         </div>
         <div className="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col">
           <TodoList />

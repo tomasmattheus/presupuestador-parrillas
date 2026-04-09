@@ -10,9 +10,10 @@ interface HomeCardsProps {
 }
 
 export default function HomeCards({ onNavigate }: HomeCardsProps) {
-  const { data: leads = [] } = useLeads();
-  const { budgetsFlat = [] } = usePresupuestos();
+  const { data: leads = [], isLoading: leadsLoading } = useLeads();
+  const { budgetsFlat = [], loading: budgetsLoading } = usePresupuestos();
   const { ventasMap = {} } = useVentas();
+  const loading = leadsLoading || budgetsLoading;
 
   const activeLeads = useMemo(
     () => leads.filter((l) => l.stage !== 'Cerrado Ganado' && l.stage !== 'Cerrado Perdido').length,
@@ -54,12 +55,13 @@ export default function HomeCards({ onNavigate }: HomeCardsProps) {
     ? Math.round((ganados.length / leads.length) * 100)
     : 0;
 
+  const dot = loading ? '...' : '';
   const cards: { id: TabId; label: string; value: string; color: string }[] = [
-    { id: 'pipeline', label: 'Pipeline', value: `${activeLeads}`, color: '#1DA1F2' },
-    { id: 'presupuestos', label: 'Presupuestos', value: `${budgetsThisMonth}`, color: '#f59e0b' },
-    { id: 'contactos', label: 'Contactos', value: `${leads.length}`, color: '#8b5cf6' },
-    { id: 'ventas', label: 'Ventas', value: facDisplay, color: '#22c55e' },
-    { id: 'estadisticas', label: 'Estadisticas', value: `${tasaCierre}%`, color: '#ef4444' },
+    { id: 'pipeline', label: 'Pipeline', value: dot || `${activeLeads}`, color: '#1DA1F2' },
+    { id: 'presupuestos', label: 'Presupuestos', value: dot || `${budgetsThisMonth}`, color: '#f59e0b' },
+    { id: 'contactos', label: 'Contactos', value: dot || `${leads.length}`, color: '#8b5cf6' },
+    { id: 'ventas', label: 'Ventas', value: dot || facDisplay, color: '#22c55e' },
+    { id: 'estadisticas', label: 'Estadisticas', value: dot || `${tasaCierre}%`, color: '#ef4444' },
     { id: 'ajustes', label: 'Ajustes', value: '', color: '#6b7280' },
   ];
 
