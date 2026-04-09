@@ -21,6 +21,12 @@ interface ClientGroup {
   versions: BudgetFlat[];
 }
 
+function clientKey(b: BudgetFlat): string {
+  const name = (b.cliente || '').toLowerCase().trim();
+  const phone = String(b.telefono || '').replace(/\D/g, '').slice(-10);
+  return name + '|' + phone;
+}
+
 function shortenMaterial(m: string): string {
   return (m || '').replace('Acero inoxidable esmerilado', 'Inox').replace('Chapa pintada epoxi negro', 'Epoxi');
 }
@@ -45,7 +51,7 @@ export default function PresupuestosTable({
   const groups: ClientGroup[] = useMemo(() => {
     const map = new Map<string, BudgetFlat[]>();
     budgets.forEach((b) => {
-      const key = b.cliente.toLowerCase().trim();
+      const key = clientKey(b);
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(b);
     });
@@ -151,6 +157,10 @@ export default function PresupuestosTable({
                 <td className="py-2.5 px-3.5 border-b border-[#f0f0f0] align-middle text-[#2a2a2a]">{formatDateAR(group.latest.fecha)}</td>
                 <td className="py-2.5 px-3.5 border-b border-[#f0f0f0] align-middle font-semibold text-brand">
                   {group.cliente}
+                  {(() => {
+                    const ph = String(group.latest.telefono || '').replace(/\D/g, '').slice(-4);
+                    return ph ? <span className="text-[10px] text-[#aaa] font-normal ml-1">...{ph}</span> : null;
+                  })()}
                   {hasMultiple && (
                     <span className="ml-2 text-[10px] bg-[#f0f2f5] text-[#888] px-1.5 py-0.5 rounded font-bold">{group.versions.length} vers.</span>
                   )}

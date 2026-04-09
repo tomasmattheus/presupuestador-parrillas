@@ -28,7 +28,7 @@ export default function PresupuestosDashboard({ onCreateNew, onEdit, onDuplicate
   const { uniqueClients, latestTotal, avgPerClient } = useMemo(() => {
     const byClient = new Map<string, BudgetFlat>();
     budgetsFlat.forEach((b) => {
-      const key = b.cliente.toLowerCase().trim();
+      const key = b.cliente.toLowerCase().trim() + '|' + String(b.telefono || '').replace(/\D/g, '').slice(-10);
       const existing = byClient.get(key);
       if (!existing || parseInt(b.nro) > parseInt(existing.nro)) {
         byClient.set(key, b);
