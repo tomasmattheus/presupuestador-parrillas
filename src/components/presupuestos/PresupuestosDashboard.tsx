@@ -19,7 +19,7 @@ interface Props {
 }
 
 export default function PresupuestosDashboard({ onCreateNew, onEdit, onDuplicate }: Props) {
-  const { budgetsFlat, loading } = usePresupuestos();
+  const { budgetsFlat, loading, fetching } = usePresupuestos();
   const { selectedIds, toggle, toggleAll, clear, count } = useBulkSelect<string>();
   const { showConfirm, showToast } = useContext(ModalContext);
   const queryClient = useQueryClient();
@@ -65,7 +65,8 @@ export default function PresupuestosDashboard({ onCreateNew, onEdit, onDuplicate
 
   const allIds = useMemo(() => budgetsFlat.map((b) => b.id), [budgetsFlat]);
 
-  if (loading) return <div className="flex-1 flex items-center justify-center"><LoadingOverlay /></div>;
+  const showLoading = loading || (fetching && budgetsFlat.length === 0);
+  if (showLoading) return <div className="flex-1 flex items-center justify-center"><LoadingOverlay /></div>;
 
   return (
     <div className="flex-1 h-full bg-[#f0f2f5] overflow-y-auto p-7 flex flex-col">

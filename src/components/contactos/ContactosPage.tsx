@@ -17,7 +17,7 @@ import BulkBar from '../common/BulkBar';
 import LoadingOverlay from '../common/LoadingOverlay';
 
 export default function ContactosPage() {
-  const { data: leads = [], isLoading } = useLeads();
+  const { data: leads = [], isLoading, isFetching } = useLeads();
   const { stages } = usePipelineStages();
   const { showConfirm, showToast, openLeadModal } = useContext(ModalContext);
   const queryClient = useQueryClient();
@@ -105,7 +105,7 @@ export default function ContactosPage() {
     showToast('Excel exportado', 'success');
   }, [leads, showToast]);
 
-  if (isLoading) return <div className="flex-1 flex items-center justify-center"><LoadingOverlay /></div>;
+  if (isLoading || (isFetching && leads.length === 0)) return <div className="flex-1 flex items-center justify-center"><LoadingOverlay /></div>;
 
   return (
     <div className="flex flex-1 h-full bg-[#f0f2f5] overflow-hidden p-7 flex-col">

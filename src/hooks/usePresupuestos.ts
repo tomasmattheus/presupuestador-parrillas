@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchAllPresupuestos, getCachedPresupuestos, getAllBudgetsFlat, getNextPresupNumber } from '../services/presupuestos.service';
 
 export function usePresupuestos() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isFetching } = useQuery({
     queryKey: ['presupuestos'],
     queryFn: fetchAllPresupuestos,
     placeholderData: getCachedPresupuestos(),
@@ -21,5 +21,6 @@ export function usePresupuestos() {
     budgetsFlat,
     nextNumber,
     loading: isLoading,
+    fetching: isFetching,
   };
 }

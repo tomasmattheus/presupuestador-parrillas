@@ -133,7 +133,7 @@ export default function PipelinePage() {
     [updateStageOptimistic]
   );
 
-  if (isLoading) return <div className="flex-1 flex items-center justify-center"><LoadingOverlay /></div>;
+  if (isLoading || (isFetching && leads.length === 0)) return <div className="flex-1 flex items-center justify-center"><LoadingOverlay /></div>;
 
   return (
     <div className="flex flex-1 h-full overflow-hidden">
