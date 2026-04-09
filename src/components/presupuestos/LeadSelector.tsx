@@ -33,11 +33,14 @@ export default function LeadSelector({ onLeadSelect, onNewBlank }: Props) {
           className="flex-1 min-w-0 py-2 px-2.5 bg-white border border-[#ddd] rounded-md text-sm text-[#2a2a2a] font-sans outline-none focus:border-brand focus:shadow-[0_0_0_3px_rgba(29,161,242,0.1)]"
         >
           <option value="">-- Seleccionar lead --</option>
-          {filtered.map((l) => (
-            <option key={l.rowIndex} value={l.rowIndex}>
-              {l.nombre}{l.ciudad ? ' - ' + l.ciudad : ''}{l.hasMeasures ? ' (con medidas)' : ''}
-            </option>
-          ))}
+          {filtered.map((l) => {
+            const waShort = l.whatsapp ? String(l.whatsapp).replace(/\D/g, '').slice(-4) : '';
+            return (
+              <option key={l.rowIndex} value={l.rowIndex}>
+                {l.nombre}{l.ciudad ? ' - ' + l.ciudad : ''}{waShort ? ' (...' + waShort + ')' : ''}{l.hasMeasures ? ' *' : ''}
+              </option>
+            );
+          })}
         </select>
         <select
           value={filter}

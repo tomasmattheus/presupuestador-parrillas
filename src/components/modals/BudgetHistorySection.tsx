@@ -54,11 +54,24 @@ function BudgetCard({ budget }: { budget: BudgetFlat }) {
   );
 }
 
+function normalizePhone(phone: string): string {
+  return phone.replace(/\D/g, '').slice(-10);
+}
+
+function keysMatch(a: string, b: string): boolean {
+  if (a === b) return true;
+  const [nameA, phoneA] = a.split('|');
+  const [nameB, phoneB] = b.split('|');
+  if (nameA?.toLowerCase().trim() !== nameB?.toLowerCase().trim()) return false;
+  if (!phoneA || !phoneB) return nameA?.toLowerCase().trim() === nameB?.toLowerCase().trim();
+  return normalizePhone(phoneA) === normalizePhone(phoneB);
+}
+
 export default function BudgetHistorySection({ clienteKey }: Props) {
   const { budgetsFlat = [] } = usePresupuestos();
 
   const budgets = useMemo(
-    () => budgetsFlat.filter((b) => b.clientKey === clienteKey),
+    () => budgetsFlat.filter((b) => keysMatch(b.clientKey, clienteKey)),
     [budgetsFlat, clienteKey]
   );
 
