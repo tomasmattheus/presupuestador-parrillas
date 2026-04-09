@@ -18,7 +18,7 @@ export default function TodoList() {
   };
 
   return (
-    <div className="max-w-[420px] mx-auto mt-5 bg-white rounded-xl shadow-sm overflow-hidden">
+    <>
       <div className="flex items-center justify-between px-[18px] py-3.5 border-b border-[#f0f0f0]">
         <h3 className="text-sm font-bold text-[#2a2a2a] tracking-wide">Tareas del dia</h3>
         <span className="text-[11px] text-[#999] bg-[#f5f5f5] px-2.5 py-0.5 rounded-[10px] font-semibold">
@@ -76,6 +76,6 @@ export default function TodoList() {
           +
         </button>
       </div>
-    </div>
+    </>
   );
 }
