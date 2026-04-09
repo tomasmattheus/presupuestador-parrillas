@@ -37,7 +37,7 @@ export const DEFAULT_PIPELINE_STAGES: PipelineStage[] = [
 ];
 
 export const DEFAULT_MESSAGE_TEMPLATES: MessageTemplate[] = [
-  { name: 'Saludo inicial', text: 'Hola [nombre]! Soy de Quality Deco, frentes de parrillas. Vi tu consulta y queria contactarte para ayudarte. Tenes unos minutos?' },
-  { name: 'Seguimiento', text: 'Hola [nombre]! Te escribo de Quality Deco. Queria saber si pudiste revisar el presupuesto que te enviamos. Cualquier duda estamos a disposicion!' },
-  { name: 'Cierre', text: 'Hola [nombre]! Te escribo de Quality Deco. Queriamos saber si te interesa avanzar con el frente. Estamos con buena disponibilidad esta semana para coordinar.' },
+  { name: 'Envio de presupuesto', text: 'Hola [nombre]! Soy Gaston de Quality Deco 👋\n\nTe prepare el presupuesto para tu frente de parrilla. Te lo adjunto aca.\n\nIncluye la colocacion en obra y los accesorios de regalo (palita + atizador).\n\nCualquier duda o si queres ajustar algo del presupuesto, escribime tranquilo.' },
+  { name: 'Seguimiento 2-3 dias', text: '[nombre], pudiste ver el presupuesto? Si tenes alguna duda sobre medidas, material o formas de pago te lo explico sin compromiso.\n\nTambien te puedo armar una version en otro material si queres comparar.' },
+  { name: 'Seguimiento 7 dias', text: 'Hola [nombre], te escribo porque el presupuesto que te mande tiene validez de 10 dias y queria saber si estas avanzando con el proyecto.\n\nSi por ahora no es el momento, sin problema — queda el presupuesto guardado para cuando necesites.' },
 ];
