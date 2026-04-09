@@ -16,8 +16,12 @@ export function useNotas() {
   const { data, isLoading } = useQuery({
     queryKey: ['notas'],
     queryFn: fetchAllNotas,
-    placeholderData: getCachedNotas(),
-    staleTime: 5 * 60 * 1000,
+    initialData: () => {
+      const cached = getCachedNotas();
+      return cached.length > 0 ? cached : undefined;
+    },
+    initialDataUpdatedAt: 0,
+    staleTime: 30 * 1000,
   });
 
   const rawData = data ?? [];

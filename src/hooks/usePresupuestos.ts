@@ -6,7 +6,11 @@ export function usePresupuestos() {
   const { data, isLoading, isFetching } = useQuery({
     queryKey: ['presupuestos'],
     queryFn: fetchAllPresupuestos,
-    placeholderData: getCachedPresupuestos(),
+    initialData: () => {
+      const cached = getCachedPresupuestos();
+      return cached.length > 0 ? cached : undefined;
+    },
+    initialDataUpdatedAt: 0,
     staleTime: 30 * 1000,
   });
 

@@ -20,7 +20,11 @@ export function useLeads() {
   return useQuery({
     queryKey: ['leads'],
     queryFn: () => fetchAllLeads(stages),
-    placeholderData: getCachedLeads(),
+    initialData: () => {
+      const cached = getCachedLeads();
+      return cached.length > 0 ? cached : undefined;
+    },
+    initialDataUpdatedAt: 0,
     staleTime: 30 * 1000,
   });
 }
