@@ -25,8 +25,20 @@ export default function PresupuestosDashboard({ onCreateNew, onEdit, onDuplicate
   const queryClient = useQueryClient();
   const [detailBudget, setDetailBudget] = useState<BudgetFlat | null>(null);
 
-  const totalMonto = useMemo(() => budgetsFlat.reduce((s, b) => s + b.total, 0), [budgetsFlat]);
-  const promedio = useMemo(() => (budgetsFlat.length > 0 ? Math.round(totalMonto / budgetsFlat.length) : 0), [totalMonto, budgetsFlat.length]);
+  const { uniqueClients, latestTotal, avgPerClient } = useMemo(() => {
+    const byClient = new Map<string, BudgetFlat>();
+    budgetsFlat.forEach((b) => {
+      const key = b.cliente.toLowerCase().trim();
+      const existing = byClient.get(key);
+      if (!existing || parseInt(b.nro) > parseInt(existing.nro)) {
+        byClient.set(key, b);
+      }
+    });
+    const clients = byClient.size;
+    let total = 0;
+    byClient.forEach((b) => { total += b.total; });
+    return { uniqueClients: clients, latestTotal: total, avgPerClient: clients > 0 ? Math.round(total / clients) : 0 };
+  }, [budgetsFlat]);
 
   const handleDelete = useCallback((b: BudgetFlat) => {
     showConfirm('Eliminar presupuesto', 'Eliminar presupuesto #' + b.nro + '?', () => {
@@ -84,21 +96,26 @@ export default function PresupuestosDashboard({ onCreateNew, onEdit, onDuplicate
         </button>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-[10px] py-5 px-6 shadow-[0_1px_4px_rgba(0,0,0,0.06)] relative overflow-hidden">
           <div className="absolute top-0 left-0 w-1 h-full rounded-l-[10px] bg-brand" />
-          <div className="text-[28px] font-black text-[#2a2a2a] leading-none">{budgetsFlat.length}</div>
-          <div className="text-xs text-[#888] font-semibold uppercase tracking-wide mt-1.5">Presupuestos enviados</div>
+          <div className="text-[28px] font-black text-[#2a2a2a] leading-none">{uniqueClients}</div>
+          <div className="text-xs text-[#888] font-semibold uppercase tracking-wide mt-1.5">Clientes presupuestados</div>
         </div>
         <div className="bg-white rounded-[10px] py-5 px-6 shadow-[0_1px_4px_rgba(0,0,0,0.06)] relative overflow-hidden">
           <div className="absolute top-0 left-0 w-1 h-full rounded-l-[10px] bg-success" />
-          <div className="text-[28px] font-black text-[#2a2a2a] leading-none">{formatPrice(totalMonto)}</div>
-          <div className="text-xs text-[#888] font-semibold uppercase tracking-wide mt-1.5">Monto total presupuestado</div>
+          <div className="text-[28px] font-black text-[#2a2a2a] leading-none">{formatPrice(latestTotal)}</div>
+          <div className="text-xs text-[#888] font-semibold uppercase tracking-wide mt-1.5">Monto (ultimo por cliente)</div>
         </div>
         <div className="bg-white rounded-[10px] py-5 px-6 shadow-[0_1px_4px_rgba(0,0,0,0.06)] relative overflow-hidden">
           <div className="absolute top-0 left-0 w-1 h-full rounded-l-[10px] bg-warning" />
-          <div className="text-[28px] font-black text-[#2a2a2a] leading-none">{formatPrice(promedio)}</div>
-          <div className="text-xs text-[#888] font-semibold uppercase tracking-wide mt-1.5">Presupuesto promedio</div>
+          <div className="text-[28px] font-black text-[#2a2a2a] leading-none">{formatPrice(avgPerClient)}</div>
+          <div className="text-xs text-[#888] font-semibold uppercase tracking-wide mt-1.5">Promedio por cliente</div>
+        </div>
+        <div className="bg-white rounded-[10px] py-5 px-6 shadow-[0_1px_4px_rgba(0,0,0,0.06)] relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-1 h-full rounded-l-[10px] bg-[#8b5cf6]" />
+          <div className="text-[28px] font-black text-[#2a2a2a] leading-none">{budgetsFlat.length}</div>
+          <div className="text-xs text-[#888] font-semibold uppercase tracking-wide mt-1.5">PDFs generados</div>
         </div>
       </div>
 
