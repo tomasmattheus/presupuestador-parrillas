@@ -77,5 +77,7 @@ export async function pushSingleKey(localKey: string): Promise<void> {
   const localValue = localStorage.getItem(localKey);
   if (localValue) {
     await saveConfigKey(localKey, localValue);
+    await new Promise((r) => setTimeout(r, 1500));
+    await saveConfigKey(localKey, localValue);
   }
 }

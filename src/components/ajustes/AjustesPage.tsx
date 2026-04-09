@@ -1,8 +1,7 @@
 import { useState, useContext } from 'react';
 import { useSettings } from '../../hooks/useSettings';
 import { getMessageTemplates, saveMessageTemplates } from '../../services/settings.service';
-import { pushSingleKey } from '../../services/sync.service';
-import { CACHE_KEYS } from '../../lib/cache';
+import { pushToCloud } from '../../services/sync.service';
 import { ModalContext } from '../../contexts/ModalContext';
 import type { AppSettings, InfoServicioCard, MessageTemplate } from '../../types';
 import EmpresaSettings from './EmpresaSettings';
@@ -59,8 +58,12 @@ export default function AjustesPage() {
   const handleSave = () => {
     saveSettings(draft);
     saveMessageTemplates(templates);
-    pushSingleKey(CACHE_KEYS.messageTemplates).catch(() => {});
-    showToast('Guardado', 'success');
+    showToast('Guardando...', 'info');
+    pushToCloud().then(() => {
+      showToast('Guardado y sincronizado', 'success');
+    }).catch(() => {
+      showToast('Guardado local. Error al sincronizar.', 'error');
+    });
   };
 
   const handleRestore = () => {
