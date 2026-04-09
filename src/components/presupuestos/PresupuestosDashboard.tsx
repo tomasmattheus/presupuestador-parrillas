@@ -30,9 +30,11 @@ export default function PresupuestosDashboard({ onCreateNew, onEdit, onDuplicate
 
   const handleDelete = useCallback((b: BudgetFlat) => {
     showConfirm('Eliminar presupuesto', 'Eliminar presupuesto #' + b.nro + '?', () => {
-      queryClient.setQueryData(['presupuestos'], (old: any[][] | undefined) =>
-        (old || []).filter((_: any, i: number) => i + 2 !== b._rowIndex)
-      );
+      queryClient.setQueryData(['presupuestos'], (old: any[][] | undefined) => {
+        const updated = (old || []).filter((_: any, i: number) => i + 2 !== b._rowIndex);
+        try { localStorage.setItem('qd_cache_presupuestos', JSON.stringify(updated)); } catch {}
+        return updated;
+      });
       showToast('Presupuesto eliminado', 'success');
       deleteBudget(b._rowIndex).then(() => {
         setTimeout(() => queryClient.invalidateQueries({ queryKey: ['presupuestos'] }), 2000);
@@ -45,9 +47,11 @@ export default function PresupuestosDashboard({ onCreateNew, onEdit, onDuplicate
       const toDelete = budgetsFlat.filter((b) => selectedIds.has(b.id));
       const sorted = [...toDelete].sort((a, b) => b._rowIndex - a._rowIndex);
       const rowSet = new Set(sorted.map((b) => b._rowIndex));
-      queryClient.setQueryData(['presupuestos'], (old: any[][] | undefined) =>
-        (old || []).filter((_: any, i: number) => !rowSet.has(i + 2))
-      );
+      queryClient.setQueryData(['presupuestos'], (old: any[][] | undefined) => {
+        const updated = (old || []).filter((_: any, i: number) => !rowSet.has(i + 2));
+        try { localStorage.setItem('qd_cache_presupuestos', JSON.stringify(updated)); } catch {}
+        return updated;
+      });
       clear();
       showToast(sorted.length + ' presupuestos eliminados', 'success');
       let delay = 0;

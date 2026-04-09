@@ -35,13 +35,15 @@ export default function PipelinePage() {
     (lead: Lead, newStage: string) => {
       recordStageEntry(lead.rowIndex, newStage);
 
-      queryClient.setQueryData<Lead[]>(['leads'], (old) =>
-        (old || []).map((l) =>
+      queryClient.setQueryData<Lead[]>(['leads'], (old) => {
+        const updated = (old || []).map((l) =>
           l.rowIndex === lead.rowIndex
             ? { ...l, stage: newStage, estado: newStage }
             : l
-        )
-      );
+        );
+        try { localStorage.setItem('qd_cache_leads', JSON.stringify(updated)); } catch {}
+        return updated;
+      });
 
       showToast('Procesando...', 'info');
 
@@ -51,13 +53,15 @@ export default function PipelinePage() {
           setTimeout(() => queryClient.invalidateQueries({ queryKey: ['leads'] }), 2000);
         })
         .catch(() => {
-          queryClient.setQueryData<Lead[]>(['leads'], (old) =>
-            (old || []).map((l) =>
+          queryClient.setQueryData<Lead[]>(['leads'], (old) => {
+            const reverted = (old || []).map((l) =>
               l.rowIndex === lead.rowIndex
                 ? { ...l, stage: lead.stage, estado: lead.estado }
                 : l
-            )
-          );
+            );
+            try { localStorage.setItem('qd_cache_leads', JSON.stringify(reverted)); } catch {}
+            return reverted;
+          });
           showToast('Error al actualizar', 'error');
         });
     },
