@@ -117,9 +117,11 @@ export default function VentasPage() {
         'Eliminar venta',
         'Eliminar la venta de "' + lead.nombre + '"? El lead volvera a Nuevo Lead.',
         () => {
-          queryClient.setQueryData<Lead[]>(['leads'], (old) =>
-            (old || []).map((l) => l.rowIndex === lead.rowIndex ? { ...l, stage: 'Nuevo Lead', estado: 'Nuevo Lead' } : l)
-          );
+          queryClient.setQueryData<Lead[]>(['leads'], (old) => {
+            const updated = (old || []).map((l) => l.rowIndex === lead.rowIndex ? { ...l, stage: 'Nuevo Lead', estado: 'Nuevo Lead' } : l);
+            try { localStorage.setItem('qd_cache_leads', JSON.stringify(updated)); } catch {}
+            return updated;
+          });
           showToast('Venta eliminada', 'success');
           const key = getVentaKey(lead);
           const vdata = ventasMap[key];
@@ -147,9 +149,11 @@ export default function VentasPage() {
       'Eliminar ' + bulk.count + ' ventas seleccionadas?',
       () => {
         const ids = Array.from(bulk.selectedIds);
-        queryClient.setQueryData<Lead[]>(['leads'], (old) =>
-          (old || []).map((l) => ids.includes(l.rowIndex) ? { ...l, stage: 'Nuevo Lead', estado: 'Nuevo Lead' } : l)
-        );
+        queryClient.setQueryData<Lead[]>(['leads'], (old) => {
+          const updated = (old || []).map((l) => ids.includes(l.rowIndex) ? { ...l, stage: 'Nuevo Lead', estado: 'Nuevo Lead' } : l);
+          try { localStorage.setItem('qd_cache_leads', JSON.stringify(updated)); } catch {}
+          return updated;
+        });
         bulk.clear();
         showToast(ids.length + ' ventas eliminadas', 'success');
         (async () => {

@@ -66,9 +66,11 @@ export default function ContactosPage() {
   const handleDelete = useCallback(
     (lead: Lead) => {
       showConfirm('Eliminar contacto', `Eliminar "${lead.nombre}"? Esta accion no se puede deshacer.`, () => {
-        queryClient.setQueryData<Lead[]>(['leads'], (old) =>
-          (old || []).filter((l) => l.rowIndex !== lead.rowIndex)
-        );
+        queryClient.setQueryData<Lead[]>(['leads'], (old) => {
+          const updated = (old || []).filter((l) => l.rowIndex !== lead.rowIndex);
+          try { localStorage.setItem('qd_cache_leads', JSON.stringify(updated)); } catch {}
+          return updated;
+        });
         showToast('Contacto eliminado', 'success');
         deleteLead(lead.rowIndex)
           .then(() => queryClient.invalidateQueries({ queryKey: ['leads'] }))
@@ -85,9 +87,11 @@ export default function ContactosPage() {
     showConfirm('Eliminar contactos', `Eliminar ${count} contactos seleccionados?`, () => {
       const ids = Array.from(selectedIds);
       const idSet = new Set(ids);
-      queryClient.setQueryData<Lead[]>(['leads'], (old) =>
-        (old || []).filter((l) => !idSet.has(l.rowIndex))
-      );
+      queryClient.setQueryData<Lead[]>(['leads'], (old) => {
+        const updated = (old || []).filter((l) => !idSet.has(l.rowIndex));
+        try { localStorage.setItem('qd_cache_leads', JSON.stringify(updated)); } catch {}
+        return updated;
+      });
       clear();
       showToast(`${ids.length} contactos eliminados`, 'success');
       (async () => {

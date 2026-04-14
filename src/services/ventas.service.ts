@@ -1,7 +1,6 @@
 import type { Lead, VentaStore } from '../types';
 import { fetchSheet, postAction } from '../lib/googleSheets';
 import { CACHE_KEYS, getCache, setCache } from '../lib/cache';
-import { APPS_SCRIPT_URL } from '../config/api';
 
 let cachedVentas: any[][] | null = null;
 
@@ -53,19 +52,14 @@ export function saveVenta(key: string, ventaObj: VentaStore): Promise<void> {
       }
       const cliente = parts[0];
       const telefono = parts[1] || '';
-      fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({
-          action: 'findAndUpdate',
-          sheet: 'Ventas',
-          keyCol: 0,
-          keyVal: cliente,
-          headers: ['cliente', 'telefono', 'monto', 'forma_pago', 'estado_entrega', 'notas'],
-          values: [cliente, telefono, ventaObj.monto || 0, ventaObj.formaPago || '', ventaObj.estadoEntrega || '', ventaObj.notas || ''],
-        }),
-      }).then(() => resolve()).catch(reject);
+      postAction({
+        action: 'findAndUpdate',
+        sheet: 'Ventas',
+        keyCol: 0,
+        keyVal: cliente,
+        headers: ['cliente', 'telefono', 'monto', 'forma_pago', 'estado_entrega', 'notas'],
+        values: [cliente, telefono, ventaObj.monto || 0, ventaObj.formaPago || '', ventaObj.estadoEntrega || '', ventaObj.notas || ''],
+      }, true).then(() => resolve()).catch(reject);
     }, 800);
   });
 }
