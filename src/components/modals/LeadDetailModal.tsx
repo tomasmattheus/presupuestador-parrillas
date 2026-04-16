@@ -1,5 +1,6 @@
 import { useContext, useState, useCallback, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import type { Lead } from '../../types';
 import { ModalContext } from '../../contexts/ModalContext';
 import { getEstadoBadgeClass } from '../../lib/mappers';
 import { formatDateAR, parseGoogleDate, getDaysFromDate } from '../../lib/dates';
@@ -39,7 +40,14 @@ export default function LeadDetailModal() {
     if (!lead) return;
     setFollowUp(date);
     updateLeadField(lead.rowIndex, 13, date);
-    queryClient.invalidateQueries({ queryKey: ['leads'] });
+    setTimeout(() => updateLeadField(lead.rowIndex, 13, date), 2000);
+    queryClient.setQueryData<Lead[]>(['leads'], (old) => {
+      const updated = (old || []).map((l) =>
+        l.rowIndex === lead.rowIndex ? { ...l, seguimiento: date } : l
+      );
+      try { localStorage.setItem('qd_cache_leads', JSON.stringify(updated)); } catch {}
+      return updated;
+    });
   }, [lead, queryClient]);
 
   const addDays = useCallback((days: number) => {

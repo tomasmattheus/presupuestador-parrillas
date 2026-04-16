@@ -109,7 +109,10 @@ export default function StaleLeadsPanel({ leads }: Props) {
             >
               <div className="flex items-center gap-2 mb-1.5">
                 <span className={`w-2 h-2 rounded-full shrink-0 ${u.dot}`} />
-                <span className="text-[13px] font-bold text-[#2a2a2a] truncate flex-1">{lead.nombre}</span>
+                <span className="text-[13px] font-bold text-[#2a2a2a] truncate flex-1">
+                  {lead.nombre}
+                  {(() => { const ph = String(lead.whatsapp || '').replace(/\D/g, '').slice(-4); return ph ? <span className="text-[10px] text-[#aaa] font-normal ml-1">...{ph}</span> : null; })()}
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-[10px] text-[#888] bg-white/60 px-1.5 py-0.5 rounded">{lead.stage}</span>
