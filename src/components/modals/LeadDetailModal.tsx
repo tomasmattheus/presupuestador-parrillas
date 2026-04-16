@@ -130,6 +130,17 @@ export default function LeadDetailModal() {
                 onChange={(e) => saveFollowUp(e.target.value)}
                 className="text-sm py-1.5 px-2 border border-[#ddd] rounded-md font-sans outline-none focus:border-[#1DA1F2]"
               />
+              {followUp && (() => {
+                const d = parseGoogleDate(followUp);
+                if (!d || isNaN(d.getTime())) return null;
+                d.setHours(0, 0, 0, 0);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const diff = Math.round((d.getTime() - today.getTime()) / 86400000);
+                const label = diff === 0 ? 'Hoy' : diff > 0 ? `en ${diff} dias` : `hace ${Math.abs(diff)} dias`;
+                const color = diff < 0 ? 'text-[#dc2626]' : diff === 0 ? 'text-[#1DA1F2]' : 'text-[#059669]';
+                return <span className={`text-[11px] font-bold ${color}`}>{label}</span>;
+              })()}
               {followUp && (
                 <button
                   onClick={() => saveFollowUp('')}
@@ -140,20 +151,21 @@ export default function LeadDetailModal() {
               )}
             </div>
             <div className="flex gap-1.5 flex-wrap">
-              {[
-                ['En 3 dias', 3],
-                ['En 1 semana', 7],
-                ['En 15 dias', 15],
-                ['En 30 dias', 30],
-              ].map(([label, days]) => (
-                <button
-                  key={label as string}
-                  onClick={() => addDays(days as number)}
-                  className="bg-[#f0f2f5] text-[#555] border-none py-1 px-2.5 rounded text-[11px] font-semibold cursor-pointer hover:bg-[#e0e2e5] transition-colors"
-                >
-                  {label as string}
-                </button>
-              ))}
+              {[3, 7, 15, 30].map((days) => {
+                const d = new Date();
+                d.setDate(d.getDate() + days);
+                const dd = String(d.getDate()).padStart(2, '0');
+                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                return (
+                  <button
+                    key={days}
+                    onClick={() => addDays(days)}
+                    className="bg-[#f0f2f5] text-[#555] border-none py-1 px-2.5 rounded text-[11px] font-semibold cursor-pointer hover:bg-[#e0e2e5] transition-colors"
+                  >
+                    {days}d ({dd}/{mm})
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
