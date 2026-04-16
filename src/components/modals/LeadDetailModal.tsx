@@ -36,26 +36,48 @@ export default function LeadDetailModal() {
     if (lead) setFollowUp(parseSeguimientoToInput(lead.seguimiento));
   }, [lead]);
 
-  const saveFollowUp = useCallback((date: string) => {
-    if (!lead) return;
-    setFollowUp(date);
-    updateLeadField(lead.rowIndex, 13, date);
-    setTimeout(() => updateLeadField(lead.rowIndex, 13, date), 2000);
+  const [followUpSaved, setFollowUpSaved] = useState(true);
+
+  const confirmFollowUp = useCallback(() => {
+    if (!lead || !followUp) return;
+    updateLeadField(lead.rowIndex, 13, followUp);
+    setTimeout(() => updateLeadField(lead.rowIndex, 13, followUp), 2000);
     queryClient.setQueryData<Lead[]>(['leads'], (old) => {
       const updated = (old || []).map((l) =>
-        l.rowIndex === lead.rowIndex ? { ...l, seguimiento: date } : l
+        l.rowIndex === lead.rowIndex ? { ...l, seguimiento: followUp } : l
+      );
+      try { localStorage.setItem('qd_cache_leads', JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+    setFollowUpSaved(true);
+  }, [lead, followUp, queryClient]);
+
+  const clearFollowUp = useCallback(() => {
+    if (!lead) return;
+    setFollowUp('');
+    setFollowUpSaved(true);
+    updateLeadField(lead.rowIndex, 13, '');
+    setTimeout(() => updateLeadField(lead.rowIndex, 13, ''), 2000);
+    queryClient.setQueryData<Lead[]>(['leads'], (old) => {
+      const updated = (old || []).map((l) =>
+        l.rowIndex === lead.rowIndex ? { ...l, seguimiento: '' } : l
       );
       try { localStorage.setItem('qd_cache_leads', JSON.stringify(updated)); } catch {}
       return updated;
     });
   }, [lead, queryClient]);
 
+  const setFollowUpDate = useCallback((date: string) => {
+    setFollowUp(date);
+    setFollowUpSaved(false);
+  }, []);
+
   const addDays = useCallback((days: number) => {
     const d = new Date();
     d.setDate(d.getDate() + days);
     const val = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    saveFollowUp(val);
-  }, [saveFollowUp]);
+    setFollowUpDate(val);
+  }, [setFollowUpDate]);
 
   if (!lead) return null;
 
@@ -127,7 +149,7 @@ export default function LeadDetailModal() {
               <input
                 type="date"
                 value={followUp}
-                onChange={(e) => saveFollowUp(e.target.value)}
+                onChange={(e) => setFollowUpDate(e.target.value)}
                 className="text-sm py-1.5 px-2 border border-[#ddd] rounded-md font-sans outline-none focus:border-[#1DA1F2]"
               />
               {followUp && (() => {
@@ -141,9 +163,20 @@ export default function LeadDetailModal() {
                 const color = diff < 0 ? 'text-[#dc2626]' : diff === 0 ? 'text-[#1DA1F2]' : 'text-[#059669]';
                 return <span className={`text-[11px] font-bold ${color}`}>{label}</span>;
               })()}
+              {followUp && !followUpSaved && (
+                <button
+                  onClick={confirmFollowUp}
+                  className="bg-[#1DA1F2] text-white border-none py-1 px-3 rounded text-[11px] font-bold cursor-pointer hover:bg-[#0d8de0] transition-colors"
+                >
+                  Guardar
+                </button>
+              )}
+              {followUp && followUpSaved && (
+                <span className="text-[11px] text-[#059669] font-bold">&#10003;</span>
+              )}
               {followUp && (
                 <button
-                  onClick={() => saveFollowUp('')}
+                  onClick={clearFollowUp}
                   className="bg-transparent border-none text-[#e55] text-lg cursor-pointer px-1 leading-none hover:text-[#c33]"
                 >
                   &times;
