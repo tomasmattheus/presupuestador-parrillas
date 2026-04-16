@@ -23,9 +23,25 @@ export function usePrintPreview() {
     const printWin = preOpenedWin || window.open('', '_blank', 'width=800,height=600');
     if (!printWin) return;
 
-    const cssLinks = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
-      .map(el => el.outerHTML)
-      .join('\n');
+    const cssParts: string[] = [];
+    document.querySelectorAll('link[rel="stylesheet"], style').forEach(el => {
+      if (el.tagName === 'STYLE') {
+        cssParts.push(el.outerHTML);
+      } else {
+        try {
+          const sheet = Array.from(document.styleSheets).find(s => s.href === (el as HTMLLinkElement).href);
+          if (sheet) {
+            const rules = Array.from(sheet.cssRules).map(r => r.cssText).join('\n');
+            cssParts.push('<style>' + rules + '</style>');
+          } else {
+            cssParts.push(el.outerHTML);
+          }
+        } catch {
+          cssParts.push(el.outerHTML);
+        }
+      }
+    });
+    const cssLinks = cssParts.join('\n');
 
     let pagesHtml = '';
     pages.forEach(p => { pagesHtml += p.outerHTML; });
