@@ -2,6 +2,7 @@ import type { Lead, PipelineStage } from '../types';
 import { fetchSheet, postAction } from '../lib/googleSheets';
 import { mapEstadoToStage } from '../lib/mappers';
 import { CACHE_KEYS, getCache, setCache } from '../lib/cache';
+import { sendLeadEvent } from './meta-capi';
 
 const LEADS_SHEET = 'Leads QD';
 
@@ -43,6 +44,15 @@ export async function fetchAllLeads(stages: PipelineStage[]): Promise<Lead[]> {
       stage: mapEstadoToStage(String(cell(4)), stages),
     });
   });
+  if (cachedLeads && cachedLeads.length > 0) {
+    const knownPhones = new Set(cachedLeads.map((l) => String(l.whatsapp).replace(/\D/g, '').slice(-10)));
+    leads.forEach((l) => {
+      const phone = String(l.whatsapp).replace(/\D/g, '').slice(-10);
+      if (phone && !knownPhones.has(phone)) {
+        sendLeadEvent(String(l.whatsapp));
+      }
+    });
+  }
   cachedLeads = leads;
   setCache(CACHE_KEYS.leads, leads);
   return leads;
