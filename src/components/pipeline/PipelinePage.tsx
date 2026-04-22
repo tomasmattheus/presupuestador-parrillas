@@ -8,6 +8,7 @@ import { useDataRefresh } from '../../hooks/useDataRefresh';
 import { updateLeadField, deleteLead } from '../../services/leads.service';
 import { saveVenta } from '../../services/ventas.service';
 import { recordStageEntry, initStageTimestamps } from '../../lib/stageTimer';
+import { sendPurchaseEvent } from '../../services/meta-capi';
 import { ModalContext } from '../../contexts/ModalContext';
 import type { Lead } from '../../types';
 import KanbanBoard from './KanbanBoard';
@@ -101,6 +102,17 @@ export default function PipelinePage() {
             showToast('Venta registrada automaticamente', 'success');
           })
           .catch(() => { /* silent */ });
+
+        sendPurchaseEvent({
+          phone: String(lead.whatsapp || ''),
+          value: latestBudget.total,
+          clientName: lead.nombre,
+        });
+      } else {
+        sendPurchaseEvent({
+          phone: String(lead.whatsapp || ''),
+          clientName: lead.nombre,
+        });
       }
     },
     [updateStageOptimistic, budgetsFlat, queryClient, showToast]
