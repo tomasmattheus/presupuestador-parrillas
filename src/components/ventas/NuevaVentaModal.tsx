@@ -1,4 +1,4 @@
-import { useState, useContext, useMemo } from 'react';
+import { useState, useContext, useMemo, useRef, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLeads } from '../../hooks/useLeads';
 import { saveVenta } from '../../services/ventas.service';
@@ -24,24 +24,48 @@ export default function NuevaVentaModal({ isOpen, onClose }: Props) {
   const { showToast } = useContext(ModalContext);
   const queryClient = useQueryClient();
 
-  const [selectedIdx, setSelectedIdx] = useState('');
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [search, setSearch] = useState('');
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [monto, setMonto] = useState('');
   const [formaPago, setFormaPago] = useState('');
   const [estadoEntrega, setEstadoEntrega] = useState('Pendiente fabricacion');
   const [notas, setNotas] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
-  const selectedLead = useMemo(() => {
-    if (selectedIdx === '') return null;
-    return leads[parseInt(selectedIdx)] || null;
-  }, [selectedIdx, leads]);
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) setDropdownOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return leads;
+    const q = search.toLowerCase().trim();
+    return leads.filter((l) =>
+      (l.nombre || '').toLowerCase().includes(q) ||
+      (l.ciudad || '').toLowerCase().includes(q) ||
+      String(l.whatsapp || '').includes(q)
+    );
+  }, [leads, search]);
 
   function resetForm() {
-    setSelectedIdx('');
+    setSelectedLead(null);
+    setSearch('');
     setMonto('');
     setFormaPago('');
     setEstadoEntrega('Pendiente fabricacion');
     setNotas('');
+    setDropdownOpen(false);
+  }
+
+  function handleSelectLead(lead: Lead) {
+    setSelectedLead(lead);
+    setSearch('');
+    setDropdownOpen(false);
   }
 
   function handleMontoFocus() {
@@ -55,7 +79,7 @@ export default function NuevaVentaModal({ isOpen, onClose }: Props) {
   }
 
   async function handleSubmit() {
-    if (selectedIdx === '' || !selectedLead) {
+    if (!selectedLead) {
       showToast('Debe seleccionar un cliente', 'error');
       return;
     }
@@ -105,18 +129,53 @@ export default function NuevaVentaModal({ isOpen, onClose }: Props) {
         <h2 className="text-xl font-black text-[#2a2a2a] mb-4">Nueva venta</h2>
 
         <label className="block text-xs font-semibold text-[#888] uppercase tracking-wide mb-1">Cliente *</label>
-        <select
-          value={selectedIdx}
-          onChange={(e) => setSelectedIdx(e.target.value)}
-          className="w-full bg-white border border-[#ddd] text-[#2a2a2a] py-2 px-3 rounded-md text-sm font-sans mb-3 outline-none focus:border-brand"
-        >
-          <option value="">-- Seleccionar cliente --</option>
-          {leads.map((lead, idx) => (
-            <option key={lead.rowIndex} value={idx}>
-              {lead.nombre}{lead.ciudad ? ' - ' + lead.ciudad : ''}
-            </option>
-          ))}
-        </select>
+        {selectedLead ? (
+          <div className="flex items-center gap-2 bg-[#f0f7ff] border border-brand rounded-md py-2 px-3 mb-3">
+            <span className="flex-1 text-sm font-semibold text-[#2a2a2a]">
+              {selectedLead.nombre}
+              {selectedLead.ciudad ? <span className="text-[#888] font-normal"> - {selectedLead.ciudad}</span> : ''}
+            </span>
+            <button
+              onClick={() => setSelectedLead(null)}
+              className="bg-transparent border-none text-[#888] text-lg cursor-pointer hover:text-[#333]"
+            >
+              &times;
+            </button>
+          </div>
+        ) : (
+          <div className="relative mb-3" ref={wrapperRef}>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setDropdownOpen(true); }}
+              onFocus={() => setDropdownOpen(true)}
+              placeholder="Buscar por nombre, ciudad o telefono..."
+              className="w-full bg-white border border-[#ddd] text-[#2a2a2a] py-2 px-3 rounded-md text-sm font-sans outline-none focus:border-brand"
+            />
+            {dropdownOpen && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#ddd] rounded-md shadow-lg z-50 max-h-[200px] overflow-y-auto">
+                {filtered.length === 0 && (
+                  <div className="px-3 py-3 text-[12px] text-[#999] text-center">Sin resultados</div>
+                )}
+                {filtered.map((l) => {
+                  const waShort = l.whatsapp ? String(l.whatsapp).replace(/\D/g, '').slice(-4) : '';
+                  return (
+                    <div
+                      key={l.rowIndex}
+                      onClick={() => handleSelectLead(l)}
+                      className="px-3 py-2.5 cursor-pointer hover:bg-[#f0f7ff] transition-colors border-b border-[#f5f5f5] last:border-b-0"
+                    >
+                      <div className="text-[13px] font-semibold text-[#2a2a2a]">{l.nombre}</div>
+                      <div className="text-[11px] text-[#999] mt-0.5">
+                        {l.ciudad || 'Sin ciudad'}{waShort ? ` \u00b7 ...${waShort}` : ''}{l.sistema ? ` \u00b7 ${l.sistema}` : ''}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
 
         {selectedLead && (
           <div className="flex gap-3 mb-3 text-xs text-[#666] bg-[#fafafa] rounded-md py-2 px-3">
@@ -170,7 +229,7 @@ export default function NuevaVentaModal({ isOpen, onClose }: Props) {
 
         <button
           onClick={handleSubmit}
-          disabled={submitting || selectedIdx === ''}
+          disabled={submitting || !selectedLead}
           className="w-full bg-success text-white border-none py-2.5 rounded-md text-sm font-bold cursor-pointer font-sans hover:bg-[#059669] transition-colors disabled:opacity-50 disabled:pointer-events-none"
         >
           {submitting ? 'Registrando...' : 'Registrar venta'}
