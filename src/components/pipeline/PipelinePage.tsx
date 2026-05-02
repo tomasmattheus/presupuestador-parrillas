@@ -1,4 +1,4 @@
-import { useCallback, useContext, useMemo, useEffect } from 'react';
+import { useCallback, useContext, useMemo, useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLeads } from '../../hooks/useLeads';
 import { usePresupuestos } from '../../hooks/usePresupuestos';
@@ -11,9 +11,12 @@ import { recordStageEntry, initStageTimestamps } from '../../lib/stageTimer';
 import { sendPurchaseEvent } from '../../services/meta-capi';
 import { ModalContext } from '../../contexts/ModalContext';
 import type { Lead } from '../../types';
+import { useDateFilter, filterItemsByDate } from '../../hooks/useDateFilter';
+import { getDaysInStage } from '../../lib/stageTimer';
 import KanbanBoard from './KanbanBoard';
 import CerradosSection from './CerradosSection';
 import StaleLeadsPanel from './StaleLeadsPanel';
+import PeriodFilter from '../common/PeriodFilter';
 import LoadingOverlay from '../common/LoadingOverlay';
 
 const STAGE_COL = 4;
@@ -23,6 +26,8 @@ export default function PipelinePage() {
   const { budgetsFlat } = usePresupuestos();
   const { getActiveStages } = usePipelineStages();
   const { refreshAll } = useDataRefresh();
+  const dateFilter = useDateFilter('este-mes');
+  const [hideArchived, setHideArchived] = useState(true);
   const { showConfirm, openLeadModal, showToast } = useContext(ModalContext);
   const queryClient = useQueryClient();
 
@@ -149,6 +154,23 @@ export default function PipelinePage() {
     [updateStageOptimistic]
   );
 
+  const filteredLeads = useMemo(() => {
+    let result = filterItemsByDate(leads, (l) => l.fecha, dateFilter.dateFrom, dateFilter.dateTo);
+    if (hideArchived) {
+      result = result.filter((l) => {
+        if (l.stage === 'Cerrado Ganado' || l.stage === 'Cerrado Perdido') return true;
+        return getDaysInStage(l.rowIndex, l.stage) < 60;
+      });
+    }
+    return result;
+  }, [leads, dateFilter.dateFrom, dateFilter.dateTo, hideArchived]);
+
+  const archivedCount = useMemo(() => {
+    return leads.filter((l) =>
+      l.stage !== 'Cerrado Ganado' && l.stage !== 'Cerrado Perdido' && getDaysInStage(l.rowIndex, l.stage) >= 60
+    ).length;
+  }, [leads]);
+
   if (isLoading || (isFetching && leads.length === 0)) return <div className="flex-1 flex items-center justify-center"><LoadingOverlay /></div>;
 
   return (
@@ -166,13 +188,29 @@ export default function PipelinePage() {
             &#8635; Refrescar
           </button>
           <span className="text-[13px] text-[#888] ml-auto">
-            {leads.length} leads cargados
+            {filteredLeads.length} de {leads.length} leads
           </span>
+        </div>
+
+        <div className="flex items-center gap-3 mb-4 shrink-0 flex-wrap">
+          <PeriodFilter
+            activePreset={dateFilter.activePreset}
+            onPreset={dateFilter.setPreset}
+            onCustomRange={dateFilter.setCustomRange}
+            dateFrom={dateFilter.dateFrom}
+            dateTo={dateFilter.dateTo}
+          />
+          {archivedCount > 0 && (
+            <label className="flex items-center gap-1.5 text-xs text-[#888] cursor-pointer ml-auto">
+              <input type="checkbox" checked={hideArchived} onChange={() => setHideArchived(!hideArchived)} className="accent-brand" />
+              Ocultar archivados ({archivedCount})
+            </label>
+          )}
         </div>
 
         <KanbanBoard
           stages={activeStages}
-          leads={leads}
+          leads={filteredLeads}
           onDrop={onDrop}
           onDragStart={onDragStart}
           onOpenModal={openLeadModal}

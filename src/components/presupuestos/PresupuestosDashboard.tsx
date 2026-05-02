@@ -1,16 +1,17 @@
-import { useContext, useCallback, useMemo } from 'react';
+import { useContext, useCallback, useMemo, useState } from 'react';
 import type { BudgetFlat } from '../../types';
 import { usePresupuestos } from '../../hooks/usePresupuestos';
 import { useBulkSelect } from '../../hooks/useBulkSelect';
+import { useDateFilter, filterItemsByDate } from '../../hooks/useDateFilter';
 import { deleteBudget } from '../../services/presupuestos.service';
 import { formatPrice } from '../../lib/formatters';
 import { ModalContext } from '../../contexts/ModalContext';
 import { useQueryClient } from '@tanstack/react-query';
 import PresupuestosTable from './PresupuestosTable';
 import PresupuestoDetailModal from './PresupuestoDetailModal';
+import PeriodFilter from '../common/PeriodFilter';
 import BulkBar from '../common/BulkBar';
 import LoadingOverlay from '../common/LoadingOverlay';
-import { useState } from 'react';
 
 interface Props {
   onCreateNew: () => void;
@@ -20,14 +21,20 @@ interface Props {
 
 export default function PresupuestosDashboard({ onCreateNew, onEdit, onDuplicate }: Props) {
   const { budgetsFlat, loading, fetching } = usePresupuestos();
+  const dateFilter = useDateFilter('este-mes');
   const { selectedIds, toggle, toggleAll, clear, count } = useBulkSelect<string>();
   const { showConfirm, showToast } = useContext(ModalContext);
   const queryClient = useQueryClient();
   const [detailBudget, setDetailBudget] = useState<BudgetFlat | null>(null);
 
+  const filteredBudgets = useMemo(() =>
+    filterItemsByDate(budgetsFlat, (b) => b.fecha, dateFilter.dateFrom, dateFilter.dateTo),
+    [budgetsFlat, dateFilter.dateFrom, dateFilter.dateTo]
+  );
+
   const { uniqueClients, latestTotal, avgPerClient } = useMemo(() => {
     const byClient = new Map<string, BudgetFlat>();
-    budgetsFlat.forEach((b) => {
+    filteredBudgets.forEach((b) => {
       const key = b.cliente.toLowerCase().trim() + '|' + String(b.telefono || '').replace(/\D/g, '').slice(-10);
       const existing = byClient.get(key);
       if (!existing || parseInt(b.nro) > parseInt(existing.nro)) {
@@ -38,7 +45,7 @@ export default function PresupuestosDashboard({ onCreateNew, onEdit, onDuplicate
     let total = 0;
     byClient.forEach((b) => { total += b.total; });
     return { uniqueClients: clients, latestTotal: total, avgPerClient: clients > 0 ? Math.round(total / clients) : 0 };
-  }, [budgetsFlat]);
+  }, [filteredBudgets]);
 
   const handleDelete = useCallback((b: BudgetFlat) => {
     showConfirm('Eliminar presupuesto', 'Eliminar presupuesto #' + b.nro + '?', () => {
@@ -79,7 +86,7 @@ export default function PresupuestosDashboard({ onCreateNew, onEdit, onDuplicate
     setDetailBudget(b);
   }, []);
 
-  const allIds = useMemo(() => budgetsFlat.map((b) => b.id), [budgetsFlat]);
+  const allIds = useMemo(() => filteredBudgets.map((b) => b.id), [filteredBudgets]);
 
   const showLoading = loading || (fetching && budgetsFlat.length === 0);
   if (showLoading) return <div className="flex-1 flex items-center justify-center"><LoadingOverlay /></div>;
@@ -94,6 +101,16 @@ export default function PresupuestosDashboard({ onCreateNew, onEdit, onDuplicate
         >
           + Crear nuevo presupuesto
         </button>
+      </div>
+
+      <div className="mb-4 shrink-0">
+        <PeriodFilter
+          activePreset={dateFilter.activePreset}
+          onPreset={dateFilter.setPreset}
+          onCustomRange={dateFilter.setCustomRange}
+          dateFrom={dateFilter.dateFrom}
+          dateTo={dateFilter.dateTo}
+        />
       </div>
 
       <div className="grid grid-cols-4 gap-4 mb-6">
@@ -114,13 +131,13 @@ export default function PresupuestosDashboard({ onCreateNew, onEdit, onDuplicate
         </div>
         <div className="bg-white rounded-[10px] py-5 px-6 shadow-[0_1px_4px_rgba(0,0,0,0.06)] relative overflow-hidden">
           <div className="absolute top-0 left-0 w-1 h-full rounded-l-[10px] bg-[#8b5cf6]" />
-          <div className="text-[28px] font-black text-[#2a2a2a] leading-none">{budgetsFlat.length}</div>
+          <div className="text-[28px] font-black text-[#2a2a2a] leading-none">{filteredBudgets.length}</div>
           <div className="text-xs text-[#888] font-semibold uppercase tracking-wide mt-1.5">PDFs generados</div>
         </div>
       </div>
 
       <div className="flex-1 overflow-auto bg-white rounded-[10px] shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
-        {budgetsFlat.length === 0 ? (
+        {filteredBudgets.length === 0 ? (
           <div className="text-center py-15 px-5 text-[#999] text-[15px]">
             <div className="text-5xl mb-3 opacity-50">&#128196;</div>
             <div className="mb-5">No hay presupuestos generados todavia.<br />Crea tu primer presupuesto para verlo aqui.</div>
@@ -133,7 +150,7 @@ export default function PresupuestosDashboard({ onCreateNew, onEdit, onDuplicate
           </div>
         ) : (
           <PresupuestosTable
-            budgets={budgetsFlat}
+            budgets={filteredBudgets}
             selectedIds={selectedIds}
             onToggle={toggle}
             onToggleAll={() => toggleAll(allIds)}

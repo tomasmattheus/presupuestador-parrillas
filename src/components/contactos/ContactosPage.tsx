@@ -9,16 +9,19 @@ import { updateLeadField, deleteLead } from '../../services/leads.service';
 import { exportContactosExcel } from '../../services/export.service';
 import { normalizeCiudad } from '../../lib/text';
 import type { Lead } from '../../types';
+import { useDateFilter, filterItemsByDate } from '../../hooks/useDateFilter';
 import ContactosFilters from './ContactosFilters';
 import ContactosTable from './ContactosTable';
 import NuevoContactoModal from './NuevoContactoModal';
 import EditContactModal from './EditContactModal';
+import PeriodFilter from '../common/PeriodFilter';
 import BulkBar from '../common/BulkBar';
 import LoadingOverlay from '../common/LoadingOverlay';
 
 export default function ContactosPage() {
   const { data: leads = [], isLoading, isFetching } = useLeads();
   const { stages } = usePipelineStages();
+  const dateFilter = useDateFilter('all');
   const { showConfirm, showToast, openLeadModal } = useContext(ModalContext);
   const queryClient = useQueryClient();
 
@@ -31,7 +34,10 @@ export default function ContactosPage() {
     sortBy,
     setSearchTerm,
     setFilters,
-  } = useContactos(leads);
+  } = useContactos(useMemo(() =>
+    filterItemsByDate(leads, (l) => l.fecha, dateFilter.dateFrom, dateFilter.dateTo),
+    [leads, dateFilter.dateFrom, dateFilter.dateTo]
+  ));
 
   const { selectedIds, toggle, toggleAll, clear, count } = useBulkSelect<number>();
 
@@ -121,6 +127,15 @@ export default function ContactosPage() {
         stages={stages}
         ciudades={ciudades}
       />
+      <div className="mb-3 shrink-0">
+        <PeriodFilter
+          activePreset={dateFilter.activePreset}
+          onPreset={dateFilter.setPreset}
+          onCustomRange={dateFilter.setCustomRange}
+          dateFrom={dateFilter.dateFrom}
+          dateTo={dateFilter.dateTo}
+        />
+      </div>
       <div className="flex items-center gap-3 mb-4 flex-shrink-0 flex-wrap justify-end -mt-2">
         <button
           className="bg-brand text-white border-none py-2 px-[18px] rounded-md cursor-pointer text-sm font-bold font-sans transition-colors duration-200 hover:bg-brand-hover"
