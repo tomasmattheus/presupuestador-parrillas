@@ -7,16 +7,13 @@ import { usePipelineDragDrop } from '../../hooks/usePipelineDragDrop';
 import { useDataRefresh } from '../../hooks/useDataRefresh';
 import { updateLeadField, deleteLead } from '../../services/leads.service';
 import { saveVenta } from '../../services/ventas.service';
-import { recordStageEntry, initStageTimestamps } from '../../lib/stageTimer';
+import { recordStageEntry, initStageTimestamps, getDaysInStage } from '../../lib/stageTimer';
 import { sendPurchaseEvent } from '../../services/meta-capi';
 import { ModalContext } from '../../contexts/ModalContext';
 import type { Lead } from '../../types';
-import { useDateFilter, filterItemsByDate } from '../../hooks/useDateFilter';
-import { getDaysInStage } from '../../lib/stageTimer';
 import KanbanBoard from './KanbanBoard';
 import CerradosSection from './CerradosSection';
 import StaleLeadsPanel from './StaleLeadsPanel';
-import PeriodFilter from '../common/PeriodFilter';
 import LoadingOverlay from '../common/LoadingOverlay';
 
 const STAGE_COL = 4;
@@ -26,7 +23,6 @@ export default function PipelinePage() {
   const { budgetsFlat } = usePresupuestos();
   const { getActiveStages } = usePipelineStages();
   const { refreshAll } = useDataRefresh();
-  const dateFilter = useDateFilter('este-mes');
   const [hideArchived, setHideArchived] = useState(true);
   const { showConfirm, openLeadModal, showToast } = useContext(ModalContext);
   const queryClient = useQueryClient();
@@ -155,15 +151,12 @@ export default function PipelinePage() {
   );
 
   const filteredLeads = useMemo(() => {
-    let result = filterItemsByDate(leads, (l) => l.fecha, dateFilter.dateFrom, dateFilter.dateTo);
-    if (hideArchived) {
-      result = result.filter((l) => {
-        if (l.stage === 'Cerrado Ganado' || l.stage === 'Cerrado Perdido') return true;
-        return getDaysInStage(l.rowIndex, l.stage) < 60;
-      });
-    }
-    return result;
-  }, [leads, dateFilter.dateFrom, dateFilter.dateTo, hideArchived]);
+    if (!hideArchived) return leads;
+    return leads.filter((l) => {
+      if (l.stage === 'Cerrado Ganado' || l.stage === 'Cerrado Perdido') return true;
+      return getDaysInStage(l.rowIndex, l.stage) < 60;
+    });
+  }, [leads, hideArchived]);
 
   const archivedCount = useMemo(() => {
     return leads.filter((l) =>
@@ -192,21 +185,14 @@ export default function PipelinePage() {
           </span>
         </div>
 
-        <div className="flex items-center gap-3 mb-4 shrink-0 flex-wrap">
-          <PeriodFilter
-            activePreset={dateFilter.activePreset}
-            onPreset={dateFilter.setPreset}
-            onCustomRange={dateFilter.setCustomRange}
-            dateFrom={dateFilter.dateFrom}
-            dateTo={dateFilter.dateTo}
-          />
-          {archivedCount > 0 && (
+        {archivedCount > 0 && (
+          <div className="flex items-center gap-3 mb-4 shrink-0 flex-wrap">
             <label className="flex items-center gap-1.5 text-xs text-[#888] cursor-pointer ml-auto">
               <input type="checkbox" checked={hideArchived} onChange={() => setHideArchived(!hideArchived)} className="accent-brand" />
               Ocultar archivados ({archivedCount})
             </label>
-          )}
-        </div>
+          </div>
+        )}
 
         <KanbanBoard
           stages={activeStages}
