@@ -1,5 +1,18 @@
 import type { Lead, PipelineStage } from '../../types';
 import { formatDateAR } from '../../lib/dates';
+import { getInitials, getAvatarColor } from '../../lib/avatar';
+
+const STAGE_PILL_COLORS: Record<string, { bg: string; text: string; border: string }> = {
+  'Nuevo Lead': { bg: '#e8f5fd', text: '#0d6fb3', border: '#bce0f7' },
+  'Presupuesto Enviado': { bg: '#fef3e2', text: '#92400e', border: '#fcd9a8' },
+  'En Seguimiento': { bg: '#f3e8ff', text: '#6b21a8', border: '#e1c8f5' },
+  'Cerrado Ganado': { bg: '#d1fae5', text: '#047857', border: '#a7f3d0' },
+  'Cerrado Perdido': { bg: '#fee2e2', text: '#b91c1c', border: '#fca5a5' },
+};
+
+function getStagePillColor(stage: string) {
+  return STAGE_PILL_COLORS[stage] || { bg: '#f0f0f0', text: '#555', border: '#ddd' };
+}
 
 interface Props {
   leads: Lead[];
@@ -51,7 +64,7 @@ export default function ContactosTable({
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr>
-            <th className="sticky top-0 bg-[#fafafa] py-2.5 px-3.5 text-left text-[11px] font-bold text-[#888] uppercase tracking-[0.5px] border-b-2 border-[#eee] z-[1] w-[30px]">
+            <th className="sticky top-0 bg-white py-3 px-3.5 text-left text-[10px] font-bold text-[#888] uppercase tracking-[0.8px] border-b border-[#eee] z-[1] w-[30px]">
               <input
                 type="checkbox"
                 checked={allChecked}
@@ -60,26 +73,26 @@ export default function ContactosTable({
               />
             </th>
             {([
-              { key: 'nombre' as keyof Lead, label: 'Nombre', sortable: true },
-              { key: 'whatsapp' as keyof Lead, label: 'WhatsApp', sortable: false },
-              { key: 'ciudad' as keyof Lead, label: 'Ciudad', sortable: true },
-              { key: 'fecha' as keyof Lead, label: 'Fecha', sortable: true },
-              { key: 'estado' as keyof Lead, label: 'Estado', sortable: true },
-              { key: 'sistema' as keyof Lead, label: 'Sistema', sortable: false },
-              { key: 'material' as keyof Lead, label: 'Material', sortable: false },
+              { key: 'nombre' as keyof Lead, label: 'Nombre', sortable: true, width: '' },
+              { key: 'whatsapp' as keyof Lead, label: 'WhatsApp', sortable: false, width: 'w-[140px]' },
+              { key: 'ciudad' as keyof Lead, label: 'Ciudad', sortable: true, width: 'w-[120px]' },
+              { key: 'fecha' as keyof Lead, label: 'Fecha', sortable: true, width: 'w-[110px]' },
+              { key: 'estado' as keyof Lead, label: 'Estado', sortable: true, width: 'w-[150px]' },
+              { key: 'sistema' as keyof Lead, label: 'Sistema', sortable: false, width: 'w-[120px]' },
+              { key: 'material' as keyof Lead, label: 'Material', sortable: false, width: 'w-[130px]' },
             ]).map((col) => (
               <th
                 key={col.key}
-                className={`sticky top-0 bg-[#fafafa] py-2.5 px-3.5 text-left text-[11px] font-bold text-[#888] uppercase tracking-[0.5px] border-b-2 border-[#eee] z-[1] ${col.sortable ? 'cursor-pointer select-none hover:text-brand' : ''}`}
+                className={`sticky top-0 bg-white py-3 px-3.5 text-left text-[10px] font-bold text-[#888] uppercase tracking-[0.8px] border-b border-[#eee] z-[1] ${col.width} ${col.sortable ? 'cursor-pointer select-none hover:text-brand' : ''}`}
                 onClick={col.sortable ? () => onSort(col.key) : undefined}
               >
                 {col.label}
                 {col.sortable && <SortIndicator col={col.key} sortCol={sortCol} sortDir={sortDir} />}
               </th>
             ))}
-            <th className="sticky top-0 bg-[#fafafa] py-2.5 px-3.5 text-left text-[11px] font-bold text-[#888] uppercase tracking-[0.5px] border-b-2 border-[#eee] z-[1]">Medidas</th>
-            <th className="sticky top-0 bg-[#fafafa] py-2.5 px-3.5 text-left text-[11px] font-bold text-[#888] uppercase tracking-[0.5px] border-b-2 border-[#eee] z-[1]">Adicionales</th>
-            <th className="sticky top-0 bg-[#fafafa] py-2.5 px-3.5 text-left text-[11px] font-bold text-[#888] uppercase tracking-[0.5px] border-b-2 border-[#eee] z-[1] w-[40px]" />
+            <th className="sticky top-0 bg-white py-3 px-3.5 text-left text-[10px] font-bold text-[#888] uppercase tracking-[0.8px] border-b border-[#eee] z-[1] w-[110px]">Medidas</th>
+            <th className="sticky top-0 bg-white py-3 px-3.5 text-left text-[10px] font-bold text-[#888] uppercase tracking-[0.8px] border-b border-[#eee] z-[1]">Adicionales</th>
+            <th className="sticky top-0 bg-white py-3 px-3.5 text-left text-[10px] font-bold text-[#888] uppercase tracking-[0.8px] border-b border-[#eee] z-[1] w-[80px]" />
           </tr>
         </thead>
         <tbody>
@@ -91,10 +104,10 @@ export default function ContactosTable({
             return (
               <tr
                 key={lead.rowIndex}
-                className="cursor-pointer transition-colors duration-150 hover:bg-[#f0f7ff] even:bg-[#fafafa] even:hover:bg-[#f0f7ff]"
+                className="h-[56px] cursor-pointer transition-colors duration-150 hover:bg-[#f8fafc]"
                 onClick={(e) => handleRowClick(e, lead)}
               >
-                <td className="py-2.5 px-3.5 border-b border-[#f0f0f0] text-[#2a2a2a] align-middle">
+                <td className="py-3 px-3.5 border-b border-[#f0f0f0] text-[#444] align-middle whitespace-nowrap text-[13px]">
                   <input
                     type="checkbox"
                     checked={selectedIds.has(lead.rowIndex)}
@@ -102,10 +115,23 @@ export default function ContactosTable({
                     className="cursor-pointer"
                   />
                 </td>
-                <td className="py-2.5 px-3.5 border-b border-[#f0f0f0] text-[#2a2a2a] align-middle font-bold">
-                  {lead.nombre}
+                <td className="py-3 px-3.5 border-b border-[#f0f0f0] text-[#2a2a2a] align-middle whitespace-nowrap text-[13px] font-semibold">
+                  {(() => {
+                    const color = getAvatarColor(lead.nombre || String(lead.rowIndex));
+                    return (
+                      <div className="flex items-center gap-2.5">
+                        <div
+                          className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0"
+                          style={{ background: color.bg, color: color.text }}
+                        >
+                          {getInitials(lead.nombre || '?')}
+                        </div>
+                        <span>{lead.nombre || '-'}</span>
+                      </div>
+                    );
+                  })()}
                 </td>
-                <td className="py-2.5 px-3.5 border-b border-[#f0f0f0] text-[#2a2a2a] align-middle">
+                <td className="py-3 px-3.5 border-b border-[#f0f0f0] text-[#444] align-middle whitespace-nowrap text-[13px]">
                   {waLink ? (
                     <a href={waLink} target="_blank" rel="noopener noreferrer" className="text-brand font-semibold no-underline hover:underline">
                       {waNumber || '-'}
@@ -114,42 +140,63 @@ export default function ContactosTable({
                     '-'
                   )}
                 </td>
-                <td className="py-2.5 px-3.5 border-b border-[#f0f0f0] text-[#2a2a2a] align-middle">
+                <td className="py-3 px-3.5 border-b border-[#f0f0f0] text-[#444] align-middle whitespace-nowrap text-[13px]">
                   {lead.ciudad || '-'}
                 </td>
-                <td className="py-2.5 px-3.5 border-b border-[#f0f0f0] text-[#2a2a2a] align-middle">
+                <td className="py-3 px-3.5 border-b border-[#f0f0f0] text-[#444] align-middle whitespace-nowrap text-[13px]">
                   {formatDateAR(lead.fecha) || '-'}
                 </td>
-                <td className="py-2.5 px-3.5 border-b border-[#f0f0f0] text-[#2a2a2a] align-middle">
-                  <select
-                    className="py-[3px] px-2 border border-[#ddd] rounded-md text-xs font-sans bg-white cursor-pointer outline-none font-semibold focus:border-brand"
-                    value={lead.stage || 'Nuevo Lead'}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      onEstadoChange(lead, e.target.value);
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {stages.map((s) => (
-                      <option key={s.name} value={s.name}>
-                        {s.name}
-                      </option>
-                    ))}
-                  </select>
+                <td className="py-3 px-3.5 border-b border-[#f0f0f0] align-middle whitespace-nowrap">
+                  {(() => {
+                    const stage = lead.stage || 'Nuevo Lead';
+                    const c = getStagePillColor(stage);
+                    return (
+                      <div
+                        className="relative inline-flex items-center rounded-full border"
+                        style={{ backgroundColor: c.bg, borderColor: c.border }}
+                      >
+                        <select
+                          className="appearance-none bg-transparent border-none py-1 pl-2.5 pr-6 text-[11px] font-bold font-sans cursor-pointer outline-none"
+                          style={{ color: c.text }}
+                          value={stage}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            onEstadoChange(lead, e.target.value);
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {stages.map((s) => (
+                            <option key={s.name} value={s.name} className="bg-white text-[#2a2a2a]">
+                              {s.name}
+                            </option>
+                          ))}
+                        </select>
+                        <svg
+                          className="absolute right-1.5 pointer-events-none"
+                          width="8"
+                          height="5"
+                          viewBox="0 0 8 5"
+                          fill={c.text}
+                        >
+                          <path d="M0 0l4 5 4-5z" />
+                        </svg>
+                      </div>
+                    );
+                  })()}
                 </td>
-                <td className="py-2.5 px-3.5 border-b border-[#f0f0f0] text-[#2a2a2a] align-middle">
+                <td className="py-3 px-3.5 border-b border-[#f0f0f0] text-[#444] align-middle whitespace-nowrap text-[13px]">
                   {lead.sistema || '-'}
                 </td>
-                <td className="py-2.5 px-3.5 border-b border-[#f0f0f0] text-[#2a2a2a] align-middle">
+                <td className="py-3 px-3.5 border-b border-[#f0f0f0] text-[#444] align-middle whitespace-nowrap text-[13px]">
                   {lead.material || '-'}
                 </td>
-                <td className="py-2.5 px-3.5 border-b border-[#f0f0f0] text-[#2a2a2a] align-middle">
+                <td className="py-3 px-3.5 border-b border-[#f0f0f0] text-[#444] align-middle whitespace-nowrap text-[13px]">
                   {medidas}
                 </td>
-                <td className="py-2.5 px-3.5 border-b border-[#f0f0f0] text-[#2a2a2a] align-middle">
+                <td className="py-3 px-3.5 border-b border-[#f0f0f0] text-[#444] align-middle whitespace-nowrap text-[13px]">
                   {lead.adicionales || '-'}
                 </td>
-                <td className="py-2.5 px-3.5 border-b border-[#f0f0f0] text-[#2a2a2a] align-middle text-center whitespace-nowrap">
+                <td className="py-3 px-3.5 border-b border-[#f0f0f0] align-middle text-center whitespace-nowrap">
                   <button
                     className="btn-edit bg-none border-none text-brand text-base cursor-pointer py-0.5 px-1.5 rounded leading-none opacity-50 transition-opacity duration-200 hover:opacity-100 hover:bg-brand/10 mr-1"
                     title="Editar contacto"

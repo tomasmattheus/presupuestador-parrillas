@@ -1,8 +1,10 @@
 import { useMemo } from 'react';
+import { Workflow, FileText, Users, ShoppingCart, TrendingUp, Settings } from 'lucide-react';
 import { useLeads } from '../../hooks/useLeads';
 import { usePresupuestos } from '../../hooks/usePresupuestos';
 import { useVentas } from '../../hooks/useVentas';
 import { formatPrice } from '../../lib/formatters';
+import { cn } from '../../lib/utils';
 import type { TabId } from '../../types';
 
 interface HomeCardsProps {
@@ -55,39 +57,51 @@ export default function HomeCards({ onNavigate }: HomeCardsProps) {
     ? Math.round((ganados.length / leads.length) * 100)
     : 0;
 
-  const dot = loading ? '...' : '';
-  const cards: { id: TabId; label: string; value: string; color: string }[] = [
-    { id: 'pipeline', label: 'Pipeline', value: dot || `${activeLeads}`, color: '#1DA1F2' },
-    { id: 'presupuestos', label: 'Presupuestos', value: dot || `${budgetsThisMonth}`, color: '#f59e0b' },
-    { id: 'contactos', label: 'Contactos', value: dot || `${leads.length}`, color: '#8b5cf6' },
-    { id: 'ventas', label: 'Ventas', value: dot || facDisplay, color: '#22c55e' },
-    { id: 'estadisticas', label: 'Estadisticas', value: dot || `${tasaCierre}%`, color: '#ef4444' },
-    { id: 'ajustes', label: 'Ajustes', value: '', color: '#6b7280' },
+  const cards: {
+    id: TabId;
+    label: string;
+    value: string;
+    color: string;
+    icon: React.ComponentType<{ size?: number; strokeWidth?: number }>;
+  }[] = [
+    { id: 'pipeline', label: 'Pipeline activo', value: loading ? '…' : String(activeLeads), color: '#0ea5e9', icon: Workflow },
+    { id: 'presupuestos', label: 'Presupuestos del mes', value: loading ? '…' : String(budgetsThisMonth), color: '#f59e0b', icon: FileText },
+    { id: 'contactos', label: 'Contactos', value: loading ? '…' : String(leads.length), color: '#8b5cf6', icon: Users },
+    { id: 'ventas', label: 'Facturación', value: loading ? '…' : facDisplay, color: '#10b981', icon: ShoppingCart },
+    { id: 'estadisticas', label: 'Tasa de cierre', value: loading ? '…' : `${tasaCierre}%`, color: '#ef4444', icon: TrendingUp },
+    { id: 'ajustes', label: 'Ajustes', value: '', color: '#64748b', icon: Settings },
   ];
 
   return (
     <div className="grid grid-cols-6 gap-3 mb-5">
-      {cards.map((card) => (
-        <button
-          key={card.id}
-          onClick={() => onNavigate(card.id)}
-          className="bg-white rounded-xl py-3 px-2 shadow-sm border-none cursor-pointer
-            flex flex-col items-center text-center transition-all duration-150
-            hover:-translate-y-0.5 hover:shadow-md"
-        >
-          {card.value && (
-            <div className="text-xl font-black leading-none mb-1" style={{ color: card.color }}>
-              {card.value}
+      {cards.map((card) => {
+        const Icon = card.icon;
+        return (
+          <button
+            key={card.id}
+            onClick={() => onNavigate(card.id)}
+            className={cn(
+              'group bg-white rounded-xl border border-border shadow-[var(--shadow-card)] p-4 cursor-pointer text-left',
+              'transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[var(--shadow-pop)] hover:border-text-subtle/30',
+            )}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[10px] text-text-muted font-semibold uppercase tracking-wider">{card.label}</span>
+              <span
+                className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
+                style={{ backgroundColor: card.color + '15', color: card.color }}
+              >
+                <Icon size={14} strokeWidth={2} />
+              </span>
             </div>
-          )}
-          {!card.value && (
-            <div className="text-xl leading-none mb-1" style={{ color: card.color }}>&#9881;</div>
-          )}
-          <div className="text-[10px] text-[#888] font-semibold uppercase tracking-wide">
-            {card.label}
-          </div>
-        </button>
-      ))}
+            {card.value ? (
+              <div className="text-[22px] font-bold tracking-tight text-text leading-none">{card.value}</div>
+            ) : (
+              <div className="text-[13px] text-text-subtle italic">Configuración</div>
+            )}
+          </button>
+        );
+      })}
     </div>
   );
 }

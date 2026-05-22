@@ -12,6 +12,7 @@ interface Props {
   onEdit: (b: BudgetFlat) => void;
   onDuplicate: (b: BudgetFlat) => void;
   onDelete: (b: BudgetFlat) => void;
+  onClientClick?: (b: BudgetFlat) => void;
 }
 
 interface ClientGroup {
@@ -44,6 +45,7 @@ export default function PresupuestosTable({
   onEdit,
   onDuplicate,
   onDelete,
+  onClientClick,
 }: Props) {
   const allSelected = budgets.length > 0 && selectedIds.size === budgets.length;
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -92,7 +94,18 @@ export default function PresupuestosTable({
           {b.nro}
         </td>
         <td className="py-2.5 px-3.5 border-b border-[#f0f0f0] align-middle text-[#2a2a2a]">{formatDateAR(b.fecha)}</td>
-        <td className="py-2.5 px-3.5 border-b border-[#f0f0f0] align-middle font-semibold text-brand">{b.cliente}</td>
+        <td className="py-2.5 px-3.5 border-b border-[#f0f0f0] align-middle font-semibold">
+          {onClientClick ? (
+            <button
+              onClick={(e) => { e.stopPropagation(); onClientClick(b); }}
+              className="bg-transparent border-none p-0 text-brand cursor-pointer font-semibold font-sans text-sm hover:underline"
+            >
+              {b.cliente}
+            </button>
+          ) : (
+            <span className="text-brand">{b.cliente}</span>
+          )}
+        </td>
         <td className="py-2.5 px-3.5 border-b border-[#f0f0f0] align-middle text-[#2a2a2a]">{shortenSistema(b.sistema)}</td>
         <td className="py-2.5 px-3.5 border-b border-[#f0f0f0] align-middle text-[#2a2a2a]">{shortenMaterial(b.material)}</td>
         <td className="py-2.5 px-3.5 border-b border-[#f0f0f0] align-middle font-black text-brand">{formatPrice(b.total)}</td>
@@ -155,14 +168,23 @@ export default function PresupuestosTable({
                   {group.latest.nro}
                 </td>
                 <td className="py-2.5 px-3.5 border-b border-[#f0f0f0] align-middle text-[#2a2a2a]">{formatDateAR(group.latest.fecha)}</td>
-                <td className="py-2.5 px-3.5 border-b border-[#f0f0f0] align-middle font-semibold text-brand">
-                  {group.cliente}
+                <td className="py-2.5 px-3.5 border-b border-[#f0f0f0] align-middle font-semibold">
+                  {onClientClick ? (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onClientClick(group.latest); }}
+                      className="bg-transparent border-none p-0 text-brand cursor-pointer font-semibold font-sans text-sm hover:underline"
+                    >
+                      {group.cliente}
+                    </button>
+                  ) : (
+                    <span className="text-brand">{group.cliente}</span>
+                  )}
                   {(() => {
                     const ph = String(group.latest.telefono || '').replace(/\D/g, '').slice(-4);
                     return ph ? <span className="text-[10px] text-[#aaa] font-normal ml-1">...{ph}</span> : null;
                   })()}
                   {hasMultiple && (
-                    <span className="ml-2 text-[10px] bg-[#f0f2f5] text-[#888] px-1.5 py-0.5 rounded font-bold">{group.versions.length} vers.</span>
+                    <span className="ml-2 text-[10px] bg-bg text-[#888] px-1.5 py-0.5 rounded font-bold">{group.versions.length} vers.</span>
                   )}
                 </td>
                 <td className="py-2.5 px-3.5 border-b border-[#f0f0f0] align-middle text-[#2a2a2a]">{shortenSistema(group.latest.sistema)}</td>

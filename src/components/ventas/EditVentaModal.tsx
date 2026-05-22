@@ -2,8 +2,16 @@ import { useState, useEffect, useContext } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { saveVenta } from '../../services/ventas.service';
 import { formatPrice, parsePriceInput } from '../../lib/formatters';
+import { parseGoogleDate } from '../../lib/dates';
 import { ModalContext } from '../../contexts/ModalContext';
 import type { VentaStore } from '../../types';
+
+function toISODate(raw: string | null | undefined): string {
+  if (!raw) return '';
+  const d = parseGoogleDate(raw);
+  if (!d || isNaN(d.getTime())) return '';
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
 
 interface Props {
   isOpen: boolean;
@@ -23,6 +31,8 @@ export default function EditVentaModal({ isOpen, onClose, ventaKey, ventaData }:
   const [formaPago, setFormaPago] = useState('');
   const [estadoEntrega, setEstadoEntrega] = useState('');
   const [notas, setNotas] = useState('');
+  const [fechaCierre, setFechaCierre] = useState('');
+  const [fechaEntrega, setFechaEntrega] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -31,6 +41,8 @@ export default function EditVentaModal({ isOpen, onClose, ventaKey, ventaData }:
       setFormaPago(ventaData.formaPago || '');
       setEstadoEntrega(ventaData.estadoEntrega || '');
       setNotas(ventaData.notas || '');
+      setFechaCierre(toISODate(ventaData.fechaCierre));
+      setFechaEntrega(toISODate(ventaData.fechaEntrega));
     }
   }, [isOpen, ventaData]);
 
@@ -53,6 +65,8 @@ export default function EditVentaModal({ isOpen, onClose, ventaKey, ventaData }:
         formaPago,
         estadoEntrega,
         notas,
+        fechaCierre,
+        fechaEntrega,
       });
       queryClient.invalidateQueries({ queryKey: ['ventas'] });
       showToast('Venta actualizada', 'success');
@@ -91,6 +105,27 @@ export default function EditVentaModal({ isOpen, onClose, ventaKey, ventaData }:
           placeholder="$ 0"
           className="w-full bg-white border border-[#ddd] text-[#2a2a2a] py-2 px-3 rounded-md text-sm font-sans mb-3 outline-none focus:border-brand"
         />
+
+        <div className="grid grid-cols-2 gap-3 mb-3">
+          <div>
+            <label className="block text-xs font-semibold text-[#888] uppercase tracking-wide mb-1">Fecha cierre</label>
+            <input
+              type="date"
+              value={fechaCierre}
+              onChange={(e) => setFechaCierre(e.target.value)}
+              className="w-full bg-white border border-[#ddd] text-[#2a2a2a] py-2 px-3 rounded-md text-sm font-sans outline-none focus:border-brand"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-[#888] uppercase tracking-wide mb-1">Fecha entrega</label>
+            <input
+              type="date"
+              value={fechaEntrega}
+              onChange={(e) => setFechaEntrega(e.target.value)}
+              className="w-full bg-white border border-[#ddd] text-[#2a2a2a] py-2 px-3 rounded-md text-sm font-sans outline-none focus:border-brand"
+            />
+          </div>
+        </div>
 
         <label className="block text-xs font-semibold text-[#888] uppercase tracking-wide mb-1">Forma de pago</label>
         <select

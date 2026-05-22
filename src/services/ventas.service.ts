@@ -33,6 +33,8 @@ export function parseVentas(
       formaPago: String(row[3] || ''),
       estadoEntrega: String(row[4] || ''),
       notas: String(row[5] || ''),
+      fechaCierre: String(row[6] || ''),
+      fechaEntrega: String(row[7] || ''),
       _rowIndex: idx,
     };
   });
@@ -57,8 +59,8 @@ export function saveVenta(key: string, ventaObj: VentaStore): Promise<void> {
         sheet: 'Ventas',
         keyCol: 0,
         keyVal: cliente,
-        headers: ['cliente', 'telefono', 'monto', 'forma_pago', 'estado_entrega', 'notas'],
-        values: [cliente, telefono, ventaObj.monto || 0, ventaObj.formaPago || '', ventaObj.estadoEntrega || '', ventaObj.notas || ''],
+        headers: ['cliente', 'telefono', 'monto', 'forma_pago', 'estado_entrega', 'notas', 'fecha_cierre', 'fecha_entrega'],
+        values: [cliente, telefono, ventaObj.monto || 0, ventaObj.formaPago || '', ventaObj.estadoEntrega || '', ventaObj.notas || '', ventaObj.fechaCierre || '', ventaObj.fechaEntrega || ''],
       }, true).then(() => resolve()).catch(reject);
     }, 800);
   });

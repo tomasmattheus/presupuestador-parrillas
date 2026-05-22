@@ -10,6 +10,8 @@ import type { Lead } from '../../types';
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  initialLead?: Lead | null;
+  initialMonto?: number;
 }
 
 const PAGO_OPTIONS = ['', '100% anticipado', '50/50', '3 cuotas', 'Otro'];
@@ -19,7 +21,12 @@ function getVentaKey(lead: Lead): string {
   return (lead.nombre || '') + '|' + (lead.whatsapp || '');
 }
 
-export default function NuevaVentaModal({ isOpen, onClose }: Props) {
+function todayISO(): string {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+export default function NuevaVentaModal({ isOpen, onClose, initialLead, initialMonto }: Props) {
   const { data: leads = [] } = useLeads();
   const { showToast } = useContext(ModalContext);
   const queryClient = useQueryClient();
@@ -31,6 +38,8 @@ export default function NuevaVentaModal({ isOpen, onClose }: Props) {
   const [formaPago, setFormaPago] = useState('');
   const [estadoEntrega, setEstadoEntrega] = useState('Pendiente fabricacion');
   const [notas, setNotas] = useState('');
+  const [fechaCierre, setFechaCierre] = useState(todayISO());
+  const [fechaEntrega, setFechaEntrega] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -41,6 +50,14 @@ export default function NuevaVentaModal({ isOpen, onClose }: Props) {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      if (initialLead) setSelectedLead(initialLead);
+      if (initialMonto && initialMonto > 0) setMonto(formatPrice(initialMonto));
+      setFechaCierre(todayISO());
+    }
+  }, [isOpen, initialLead, initialMonto]);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return leads;
@@ -59,6 +76,8 @@ export default function NuevaVentaModal({ isOpen, onClose }: Props) {
     setFormaPago('');
     setEstadoEntrega('Pendiente fabricacion');
     setNotas('');
+    setFechaCierre(todayISO());
+    setFechaEntrega('');
     setDropdownOpen(false);
   }
 
@@ -99,6 +118,8 @@ export default function NuevaVentaModal({ isOpen, onClose }: Props) {
         formaPago: formaPago.trim(),
         estadoEntrega: estadoEntrega.trim(),
         notas: notas.trim(),
+        fechaCierre,
+        fechaEntrega,
       });
       queryClient.invalidateQueries({ queryKey: ['leads'] });
       queryClient.invalidateQueries({ queryKey: ['ventas'] });
@@ -195,6 +216,27 @@ export default function NuevaVentaModal({ isOpen, onClose }: Props) {
           placeholder="$ 0"
           className="w-full bg-white border border-[#ddd] text-[#2a2a2a] py-2 px-3 rounded-md text-sm font-sans mb-3 outline-none focus:border-brand"
         />
+
+        <div className="grid grid-cols-2 gap-3 mb-3">
+          <div>
+            <label className="block text-xs font-semibold text-[#888] uppercase tracking-wide mb-1">Fecha cierre</label>
+            <input
+              type="date"
+              value={fechaCierre}
+              onChange={(e) => setFechaCierre(e.target.value)}
+              className="w-full bg-white border border-[#ddd] text-[#2a2a2a] py-2 px-3 rounded-md text-sm font-sans outline-none focus:border-brand"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-[#888] uppercase tracking-wide mb-1">Fecha entrega</label>
+            <input
+              type="date"
+              value={fechaEntrega}
+              onChange={(e) => setFechaEntrega(e.target.value)}
+              className="w-full bg-white border border-[#ddd] text-[#2a2a2a] py-2 px-3 rounded-md text-sm font-sans outline-none focus:border-brand"
+            />
+          </div>
+        </div>
 
         <label className="block text-xs font-semibold text-[#888] uppercase tracking-wide mb-1">Forma de pago</label>
         <select

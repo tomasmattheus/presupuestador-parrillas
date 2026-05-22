@@ -107,8 +107,8 @@ export default function GlobalSearch() {
   const presupResults = results.filter((r) => r.type === 'presupuesto');
 
   return (
-    <div ref={wrapRef} className="relative ml-auto mr-3">
-      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#666] text-sm pointer-events-none">
+    <div ref={wrapRef} className="relative w-full">
+      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-subtle text-xs pointer-events-none">
         &#128269;
       </span>
       <input
@@ -116,8 +116,8 @@ export default function GlobalSearch() {
         value={query}
         onChange={(e) => handleChange(e.target.value)}
         onFocus={() => { if (results.length > 0) setOpen(true); }}
-        placeholder="Buscar contacto o presupuesto..."
-        className="bg-surface-card border border-[#444] text-[#eee] py-1.5 pl-8 pr-3 rounded-md text-[13px] w-[260px] outline-none font-sans focus:border-brand"
+        placeholder="Buscar contacto..."
+        className="bg-bg-muted border border-transparent text-text py-2 pl-8 pr-3 rounded-md text-[12px] w-full outline-none font-sans focus:bg-white focus:border-brand placeholder:text-text-subtle transition-colors"
       />
       {open && (
         <div className="absolute top-full left-0 right-0 bg-white rounded-lg shadow-[0_8px_24px_rgba(0,0,0,0.15)] max-h-[360px] overflow-y-auto z-[100] mt-1">

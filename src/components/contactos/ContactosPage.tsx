@@ -17,11 +17,13 @@ import EditContactModal from './EditContactModal';
 import PeriodFilter from '../common/PeriodFilter';
 import BulkBar from '../common/BulkBar';
 import LoadingOverlay from '../common/LoadingOverlay';
+import { MetricCard } from '../ui/card';
+import { Users, UserPlus, Trophy, TrendingUp } from 'lucide-react';
 
 export default function ContactosPage() {
   const { data: leads = [], isLoading, isFetching } = useLeads();
   const { stages } = usePipelineStages();
-  const dateFilter = useDateFilter('all');
+  const dateFilter = useDateFilter('este-mes');
   const { showConfirm, showToast, openLeadModal } = useContext(ModalContext);
   const queryClient = useQueryClient();
 
@@ -115,10 +117,38 @@ export default function ContactosPage() {
     showToast('Excel exportado', 'success');
   }, [leads, showToast]);
 
+  const metrics = useMemo(() => {
+    const total = leads.length;
+    const nuevosSemana = leads.filter((l) => {
+      if (!l.fecha) return false;
+      const d = new Date(l.fecha);
+      if (isNaN(d.getTime())) return false;
+      const diff = (Date.now() - d.getTime()) / 86400000;
+      return diff <= 7;
+    }).length;
+    const ganados = leads.filter((l) => l.stage === 'Cerrado Ganado').length;
+    const tasaCierre = total > 0 ? Math.round((ganados / total) * 100) : 0;
+    return { total, nuevosSemana, ganados, tasaCierre };
+  }, [leads]);
+
   if (isLoading || (isFetching && leads.length === 0)) return <div className="flex-1 flex items-center justify-center"><LoadingOverlay /></div>;
 
   return (
-    <div className="flex flex-1 h-full bg-[#f0f2f5] overflow-hidden p-7 flex-col">
+    <div className="flex flex-1 h-full bg-bg overflow-hidden p-8 flex-col">
+      <div className="flex items-center justify-between mb-6 shrink-0">
+        <div>
+          <h1 className="text-[24px] font-bold tracking-tight text-text m-0 leading-tight">Contactos</h1>
+          <div className="text-[13px] text-text-muted mt-1">{metrics.total} contactos · {metrics.ganados} ganados este mes</div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-4 gap-4 mb-6">
+        <MetricCard label="Total contactos" value={String(metrics.total)} accent="#0ea5e9" icon={<Users size={14} strokeWidth={2} />} />
+        <MetricCard label="Nuevos esta semana" value={'+' + metrics.nuevosSemana} accent="#10b981" icon={<UserPlus size={14} strokeWidth={2} />} />
+        <MetricCard label="Cerrados ganados" value={String(metrics.ganados)} accent="#8b5cf6" icon={<Trophy size={14} strokeWidth={2} />} />
+        <MetricCard label="Tasa de cierre" value={metrics.tasaCierre + '%'} accent="#f59e0b" icon={<TrendingUp size={14} strokeWidth={2} />} />
+      </div>
+
       <ContactosFilters
         searchTerm={searchTerm}
         onSearch={setSearchTerm}

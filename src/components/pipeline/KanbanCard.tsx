@@ -2,6 +2,7 @@ import { useCallback, useState, type DragEvent, type MouseEvent } from 'react';
 import type { Lead } from '../../types';
 import { formatDateAR } from '../../lib/dates';
 import { getDaysInStage } from '../../lib/stageTimer';
+import { useLeadActivityDate } from '../../hooks/useLeadActivityDates';
 
 interface KanbanCardProps {
   lead: Lead;
@@ -36,6 +37,7 @@ export default function KanbanCard({
   const detailText = detailParts.join(' / ');
 
   const daysInStage = getDaysInStage(lead.rowIndex, lead.stage);
+  const activityDate = useLeadActivityDate(lead);
 
   const waNum = lead.whatsapp ? lead.whatsapp.toString().replace(/\D/g, '') : '';
 
@@ -148,7 +150,7 @@ export default function KanbanCard({
       )}
 
       <div className="text-[11px] text-[#bbb] mt-1.5">
-        {lead.fecha ? formatDateAR(lead.fecha) : ''}
+        {activityDate ? formatDateAR(activityDate) : ''}
         {daysInStage >= 0 && (
           <span className={`font-semibold ${daysInStage > 7 ? 'text-[#ef4444]' : daysInStage > 3 ? 'text-[#f59e0b]' : 'text-[#10b981]'}`}>
             {' '}· {daysInStage === 0 ? 'hoy' : daysInStage === 1 ? 'hace 1 dia' : `hace ${daysInStage} dias`}

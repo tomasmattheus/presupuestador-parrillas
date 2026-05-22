@@ -24,17 +24,16 @@ export default function ContactosFilters({
   ciudades,
 }: Props) {
   return (
-    <div className="flex items-center gap-3 mb-4 flex-shrink-0 flex-wrap">
-      <h1 className="text-[22px] font-black text-[#2a2a2a] tracking-wide m-0">Contactos</h1>
+    <div className="flex items-center gap-2.5 mb-3 flex-shrink-0 flex-wrap">
       <input
         type="text"
-        className="py-2 px-3.5 border border-[#ddd] rounded-md text-sm font-sans outline-none w-[220px] bg-white text-[#2a2a2a] focus:border-brand"
+        className="py-2 px-3.5 border border-[#e5e5e5] rounded-md text-[13px] font-sans outline-none w-[240px] bg-white text-[#2a2a2a] focus:border-brand placeholder:text-[#aaa]"
         placeholder="Buscar por nombre..."
         value={searchTerm}
         onChange={(e) => onSearch(e.target.value)}
       />
       <select
-        className="py-2 px-3 border border-[#ddd] rounded-md text-[13px] font-sans outline-none bg-white text-[#2a2a2a] cursor-pointer focus:border-brand"
+        className="py-2 px-3 border border-[#e5e5e5] rounded-md text-[13px] font-sans outline-none bg-white text-[#2a2a2a] cursor-pointer focus:border-brand"
         value={filters.estado}
         onChange={(e) => onFilterChange({ ...filters, estado: e.target.value })}
       >
@@ -46,7 +45,7 @@ export default function ContactosFilters({
         ))}
       </select>
       <select
-        className="py-2 px-3 border border-[#ddd] rounded-md text-[13px] font-sans outline-none bg-white text-[#2a2a2a] cursor-pointer focus:border-brand"
+        className="py-2 px-3 border border-[#e5e5e5] rounded-md text-[13px] font-sans outline-none bg-white text-[#2a2a2a] cursor-pointer focus:border-brand"
         value={filters.material}
         onChange={(e) => onFilterChange({ ...filters, material: e.target.value })}
       >
@@ -55,7 +54,7 @@ export default function ContactosFilters({
         <option value="Acero Inoxidable">Acero Inoxidable</option>
       </select>
       <select
-        className="py-2 px-3 border border-[#ddd] rounded-md text-[13px] font-sans outline-none bg-white text-[#2a2a2a] cursor-pointer focus:border-brand"
+        className="py-2 px-3 border border-[#e5e5e5] rounded-md text-[13px] font-sans outline-none bg-white text-[#2a2a2a] cursor-pointer focus:border-brand"
         value={filters.ciudad}
         onChange={(e) => onFilterChange({ ...filters, ciudad: e.target.value })}
       >

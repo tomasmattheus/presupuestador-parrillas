@@ -3,18 +3,19 @@ import type { TabId } from '../../types';
 import { useAuth } from '../../hooks/useAuth';
 import { useDataRefresh } from '../../hooks/useDataRefresh';
 import { ModalContext } from '../../contexts/ModalContext';
-import TopTabBar from './TopTabBar';
+import Sidebar from './Sidebar';
 import HomePage from '../home/HomePage';
 import PipelinePage from '../pipeline/PipelinePage';
 import PresupuestosPage from '../presupuestos/PresupuestosPage';
 import ContactosPage from '../contactos/ContactosPage';
+import ProduccionPage from '../produccion/ProduccionPage';
 import VentasPage from '../ventas/VentasPage';
 import EstadisticasPage from '../estadisticas/EstadisticasPage';
 import AjustesPage from '../ajustes/AjustesPage';
 import HelpOverlay from '../common/HelpOverlay';
 import ErrorBoundary from '../common/ErrorBoundary';
 
-const VALID_TABS: TabId[] = ['home', 'pipeline', 'presupuestos', 'contactos', 'ventas', 'estadisticas', 'ajustes'];
+const VALID_TABS: TabId[] = ['home', 'pipeline', 'presupuestos', 'contactos', 'produccion', 'ventas', 'estadisticas', 'ajustes'];
 
 function getTabFromHash(): TabId {
   const hash = window.location.hash.replace('#', '');
@@ -58,6 +59,8 @@ export default function AppShell() {
         return <PresupuestosPage />;
       case 'contactos':
         return <ContactosPage />;
+      case 'produccion':
+        return <ProduccionPage />;
       case 'ventas':
         return <VentasPage />;
       case 'estadisticas':
@@ -70,15 +73,14 @@ export default function AppShell() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-[#111] text-[#ccc] overflow-hidden font-sans">
-      <TopTabBar
+    <div className="flex h-screen bg-bg text-text overflow-hidden font-sans">
+      <Sidebar
         activeTab={activeTab}
         onTabChange={setActiveTab}
         onRefresh={refreshAll}
         onLogout={logout}
         onHelp={() => setHelpOpen(true)}
       />
-      {/* no-print class hides non-presupuesto tabs during print */}
       <main className="flex flex-1 overflow-hidden relative">
         <ErrorBoundary key={activeTab}>
           {renderTab()}

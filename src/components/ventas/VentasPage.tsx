@@ -6,10 +6,10 @@ import { useBulkSelect } from '../../hooks/useBulkSelect';
 import { saveVenta, deleteVenta } from '../../services/ventas.service';
 import { updateLeadField } from '../../services/leads.service';
 import { exportVentasCSV, exportVentasExcel } from '../../services/export.service';
-import { parseGoogleDate } from '../../lib/dates';
+import { useDateFilter, filterItemsByDate } from '../../hooks/useDateFilter';
 import { ModalContext } from '../../contexts/ModalContext';
 import type { Lead, VentaStore } from '../../types';
-import DatePresetBar from '../common/DatePresetBar';
+import PeriodFilter from '../common/PeriodFilter';
 import BulkBar from '../common/BulkBar';
 import VentasMetrics from './VentasMetrics';
 import VentasTable from './VentasTable';
@@ -17,10 +17,20 @@ import NuevaVentaModal from './NuevaVentaModal';
 import EditVentaModal from './EditVentaModal';
 import LoadingOverlay from '../common/LoadingOverlay';
 
-type Preset = 'all' | '7d' | '15d' | '30d' | '60d' | '90d' | 'custom';
-
 function getVentaKey(lead: Lead): string {
   return (lead.nombre || '') + '|' + (lead.whatsapp || '');
+}
+
+function computeMetrics(leads: Lead[], ventasMap: Record<string, VentaStore>) {
+  let totalMonto = 0;
+  leads.forEach((lead) => {
+    const key = getVentaKey(lead);
+    const vdata = ventasMap[key];
+    if (vdata?.monto) totalMonto += vdata.monto;
+  });
+  const count = leads.length;
+  const ticketPromedio = count > 0 ? totalMonto / count : 0;
+  return { totalMonto, count, ticketPromedio };
 }
 
 export default function VentasPage() {
@@ -30,9 +40,7 @@ export default function VentasPage() {
   const queryClient = useQueryClient();
   const bulk = useBulkSelect<number>();
 
-  const [activePreset, setActivePreset] = useState<Preset>('all');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
+  const dateFilter = useDateFilter('este-mes');
   const [nuevaOpen, setNuevaOpen] = useState(false);
   const [editKey, setEditKey] = useState('');
   const [editOpen, setEditOpen] = useState(false);
@@ -42,63 +50,30 @@ export default function VentasPage() {
     [leads]
   );
 
-  const filtered = useMemo(() => {
-    if (!dateFrom && !dateTo) return ganados;
-    return ganados.filter((l) => {
-      const d = parseGoogleDate(l.fecha);
-      if (!d) return true;
-      d.setHours(0, 0, 0, 0);
-      if (dateFrom) {
-        const from = new Date(dateFrom + 'T00:00:00');
-        if (d < from) return false;
-      }
-      if (dateTo) {
-        const to = new Date(dateTo + 'T23:59:59');
-        if (d > to) return false;
-      }
-      return true;
-    });
-  }, [ganados, dateFrom, dateTo]);
+  const getVentaFecha = useCallback(
+    (l: Lead) => ventasMap[getVentaKey(l)]?.fechaCierre || l.fecha,
+    [ventasMap]
+  );
 
-  const metrics = useMemo(() => {
-    let totalMonto = 0;
-    filtered.forEach((lead) => {
-      const key = getVentaKey(lead);
-      const vdata = ventasMap[key];
-      if (vdata?.monto) totalMonto += vdata.monto;
-    });
-    const count = filtered.length;
-    const ticketPromedio = count > 0 ? totalMonto / count : 0;
-    return { totalMonto, count, ticketPromedio };
-  }, [filtered, ventasMap]);
+  const filtered = useMemo(
+    () => filterItemsByDate(ganados, getVentaFecha, dateFilter.dateFrom, dateFilter.dateTo),
+    [ganados, getVentaFecha, dateFilter.dateFrom, dateFilter.dateTo]
+  );
 
-  const handlePreset = useCallback((preset: Preset) => {
-    setActivePreset(preset);
-    if (preset === 'all') {
-      setDateFrom('');
-      setDateTo('');
-      return;
-    }
-    const days = parseInt(preset);
-    if (isNaN(days)) return;
-    const today = new Date();
-    const from = new Date(today);
-    from.setDate(from.getDate() - days);
-    const toStr = today.toISOString().slice(0, 10);
-    const fromStr = from.toISOString().slice(0, 10);
-    setDateFrom(fromStr);
-    setDateTo(toStr);
-  }, []);
+  const filteredPrev = useMemo(
+    () => filterItemsByDate(ganados, getVentaFecha, dateFilter.prevFrom, dateFilter.prevTo),
+    [ganados, getVentaFecha, dateFilter.prevFrom, dateFilter.prevTo]
+  );
 
-  const handleCustomRange = useCallback((from: string, to: string) => {
-    setActivePreset('custom');
-    setDateFrom(from);
-    setDateTo(to);
-  }, []);
+  const metrics = useMemo(() => computeMetrics(filtered, ventasMap), [filtered, ventasMap]);
+  const prevMetrics = useMemo(
+    () => (dateFilter.prevFrom ? computeMetrics(filteredPrev, ventasMap) : null),
+    [filteredPrev, ventasMap, dateFilter.prevFrom]
+  );
 
   const handleSaveField = useCallback(
     (key: string, field: keyof VentaStore, value: string | number) => {
-      const current = ventasMap[key] || { monto: 0, formaPago: '', estadoEntrega: '', notas: '' };
+      const current = ventasMap[key] || { monto: 0, formaPago: '', estadoEntrega: '', notas: '', fechaCierre: '', fechaEntrega: '' };
       const updated = { ...current, [field]: value };
       saveVenta(key, updated);
       queryClient.invalidateQueries({ queryKey: ['ventas'] });
@@ -184,9 +159,9 @@ export default function VentasPage() {
   if (loading) return <div className="flex-1 flex items-center justify-center"><LoadingOverlay /></div>;
 
   return (
-    <div className="flex-1 h-full overflow-y-auto p-7 flex flex-col bg-[#f0f2f5]">
+    <div className="flex-1 h-full overflow-y-auto p-7 flex flex-col bg-bg">
       <div className="flex items-center gap-3 mb-5 flex-shrink-0 flex-wrap">
-        <h1 className="text-[22px] font-black text-[#2a2a2a] tracking-wide m-0">Ventas</h1>
+        <h1 className="text-[24px] font-bold tracking-tight text-text m-0 leading-tight">Ventas</h1>
         <button
           onClick={() => setNuevaOpen(true)}
           className="bg-success text-white border-none py-2 px-[18px] rounded-md cursor-pointer text-sm font-bold font-sans transition-colors hover:bg-[#059669]"
@@ -216,14 +191,16 @@ export default function VentasPage() {
       </div>
 
       <div className="mb-3.5 flex-shrink-0">
-        <DatePresetBar
-          activePreset={activePreset}
-          onPreset={handlePreset}
-          onCustomRange={handleCustomRange}
+        <PeriodFilter
+          activePreset={dateFilter.activePreset}
+          onPreset={dateFilter.setPreset}
+          onCustomRange={dateFilter.setCustomRange}
+          dateFrom={dateFilter.dateFrom}
+          dateTo={dateFilter.dateTo}
         />
       </div>
 
-      <VentasMetrics metrics={metrics} />
+      <VentasMetrics metrics={metrics} prev={prevMetrics} />
 
       <VentasTable
         ganados={filtered}

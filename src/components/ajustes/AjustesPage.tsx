@@ -107,10 +107,10 @@ export default function AjustesPage() {
   };
 
   return (
-    <div className="flex-1 h-full bg-[#f0f2f5] overflow-y-auto p-7 flex flex-col">
+    <div className="flex-1 h-full bg-bg overflow-y-auto p-7 flex flex-col">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-[22px] font-black text-[#2a2a2a] tracking-wide m-0">Ajustes</h1>
+          <h1 className="text-[24px] font-bold tracking-tight text-text m-0 leading-tight">Ajustes</h1>
           <p className="text-sm text-[#888] mt-1 m-0">Configuracion general del sistema</p>
         </div>
         <div className="flex gap-2.5">

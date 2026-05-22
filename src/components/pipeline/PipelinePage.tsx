@@ -6,7 +6,6 @@ import { usePipelineStages } from '../../hooks/usePipelineStages';
 import { usePipelineDragDrop } from '../../hooks/usePipelineDragDrop';
 import { useDataRefresh } from '../../hooks/useDataRefresh';
 import { updateLeadField, deleteLead } from '../../services/leads.service';
-import { saveVenta } from '../../services/ventas.service';
 import { recordStageEntry, initStageTimestamps, getDaysInStage } from '../../lib/stageTimer';
 import { sendPurchaseEvent } from '../../services/meta-capi';
 import { ModalContext } from '../../contexts/ModalContext';
@@ -15,6 +14,7 @@ import KanbanBoard from './KanbanBoard';
 import CerradosSection from './CerradosSection';
 import StaleLeadsPanel from './StaleLeadsPanel';
 import LoadingOverlay from '../common/LoadingOverlay';
+import NuevaVentaModal from '../ventas/NuevaVentaModal';
 
 const STAGE_COL = 4;
 
@@ -24,6 +24,8 @@ export default function PipelinePage() {
   const { getActiveStages } = usePipelineStages();
   const { refreshAll } = useDataRefresh();
   const [hideArchived, setHideArchived] = useState(true);
+  const [wonModalOpen, setWonModalOpen] = useState(false);
+  const [wonPrefill, setWonPrefill] = useState<{ lead: Lead | null; monto: number }>({ lead: null, monto: 0 });
   const { showConfirm, openLeadModal, showToast } = useContext(ModalContext);
   const queryClient = useQueryClient();
 
@@ -85,38 +87,22 @@ export default function PipelinePage() {
     (lead: Lead) => {
       updateStageOptimistic(lead, 'Cerrado Ganado');
 
-      /* AUTO-ACTION 3: Auto-fill venta from latest budget */
       const leadName = (lead.nombre || '').trim().toLowerCase();
       const latestBudget = budgetsFlat.find(
         (b) => b.cliente.trim().toLowerCase() === leadName
       );
-      if (latestBudget && latestBudget.total > 0) {
-        const ventaKey = (lead.nombre || '') + '|' + (lead.whatsapp || '');
-        saveVenta(ventaKey, {
-          monto: latestBudget.total,
-          formaPago: '',
-          estadoEntrega: 'Pendiente fabricacion',
-          notas: '',
-        })
-          .then(() => {
-            queryClient.invalidateQueries({ queryKey: ['ventas'] });
-            showToast('Venta registrada automaticamente', 'success');
-          })
-          .catch(() => { /* silent */ });
+      const prefillMonto = latestBudget && latestBudget.total > 0 ? latestBudget.total : 0;
 
-        sendPurchaseEvent({
-          phone: String(lead.whatsapp || ''),
-          value: latestBudget.total,
-          clientName: lead.nombre,
-        });
-      } else {
-        sendPurchaseEvent({
-          phone: String(lead.whatsapp || ''),
-          clientName: lead.nombre,
-        });
-      }
+      setWonPrefill({ lead, monto: prefillMonto });
+      setWonModalOpen(true);
+
+      sendPurchaseEvent({
+        phone: String(lead.whatsapp || ''),
+        value: prefillMonto || undefined,
+        clientName: lead.nombre,
+      });
     },
-    [updateStageOptimistic, budgetsFlat, queryClient, showToast]
+    [updateStageOptimistic, budgetsFlat]
   );
 
   const handleMarkLost = useCallback(
@@ -168,9 +154,9 @@ export default function PipelinePage() {
 
   return (
     <div className="flex flex-1 h-full overflow-hidden">
-      <div className="flex flex-col flex-1 h-full bg-[#f0f2f5] overflow-x-auto overflow-y-auto p-7">
+      <div className="flex flex-col flex-1 h-full bg-bg overflow-x-auto overflow-y-auto p-7">
         <div className="flex items-center gap-3 mb-4 shrink-0">
-          <h1 className="text-[22px] font-black text-[#2a2a2a] tracking-wide m-0">
+          <h1 className="text-[24px] font-bold tracking-tight text-text m-0 leading-tight">
             Pipeline CRM
           </h1>
           <button
@@ -209,6 +195,13 @@ export default function PipelinePage() {
       </div>
 
       <StaleLeadsPanel leads={leads} />
+
+      <NuevaVentaModal
+        isOpen={wonModalOpen}
+        onClose={() => setWonModalOpen(false)}
+        initialLead={wonPrefill.lead}
+        initialMonto={wonPrefill.monto}
+      />
     </div>
   );
 }

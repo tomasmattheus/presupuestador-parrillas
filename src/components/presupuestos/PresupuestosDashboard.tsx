@@ -1,6 +1,7 @@
 import { useContext, useCallback, useMemo, useState } from 'react';
 import type { BudgetFlat } from '../../types';
 import { usePresupuestos } from '../../hooks/usePresupuestos';
+import { useLeads } from '../../hooks/useLeads';
 import { useBulkSelect } from '../../hooks/useBulkSelect';
 import { useDateFilter, filterItemsByDate } from '../../hooks/useDateFilter';
 import { deleteBudget } from '../../services/presupuestos.service';
@@ -12,6 +13,9 @@ import PresupuestoDetailModal from './PresupuestoDetailModal';
 import PeriodFilter from '../common/PeriodFilter';
 import BulkBar from '../common/BulkBar';
 import LoadingOverlay from '../common/LoadingOverlay';
+import { MetricCard } from '../ui/card';
+import { Button } from '../ui/button';
+import { Plus, Users, DollarSign, TrendingUp, FileText } from 'lucide-react';
 
 interface Props {
   onCreateNew: () => void;
@@ -21,20 +25,40 @@ interface Props {
 
 export default function PresupuestosDashboard({ onCreateNew, onEdit, onDuplicate }: Props) {
   const { budgetsFlat, loading, fetching } = usePresupuestos();
+  const { data: leads = [] } = useLeads();
   const dateFilter = useDateFilter('este-mes');
   const { selectedIds, toggle, toggleAll, clear, count } = useBulkSelect<string>();
-  const { showConfirm, showToast } = useContext(ModalContext);
+  const { showConfirm, showToast, openLeadModal } = useContext(ModalContext);
   const queryClient = useQueryClient();
   const [detailBudget, setDetailBudget] = useState<BudgetFlat | null>(null);
+
+  const handleClientClick = useCallback((b: BudgetFlat) => {
+    const bName = (b.cliente || '').trim().toLowerCase();
+    const bPhone = String(b.telefono || '').replace(/\D/g, '').slice(-10);
+    const match = leads.find((l) => {
+      const lName = (l.nombre || '').trim().toLowerCase();
+      const lPhone = String(l.whatsapp || '').replace(/\D/g, '').slice(-10);
+      if (lName && bName && lName === bName) return true;
+      if (lPhone && bPhone && lPhone === bPhone) return true;
+      return false;
+    });
+    if (match) openLeadModal(match);
+    else showToast('No se encontró el contacto', 'error');
+  }, [leads, openLeadModal, showToast]);
 
   const filteredBudgets = useMemo(() =>
     filterItemsByDate(budgetsFlat, (b) => b.fecha, dateFilter.dateFrom, dateFilter.dateTo),
     [budgetsFlat, dateFilter.dateFrom, dateFilter.dateTo]
   );
 
-  const { uniqueClients, latestTotal, avgPerClient } = useMemo(() => {
+  const filteredBudgetsPrev = useMemo(() =>
+    dateFilter.prevFrom ? filterItemsByDate(budgetsFlat, (b) => b.fecha, dateFilter.prevFrom, dateFilter.prevTo) : null,
+    [budgetsFlat, dateFilter.prevFrom, dateFilter.prevTo]
+  );
+
+  const computeBudgetMetrics = (budgets: BudgetFlat[]) => {
     const byClient = new Map<string, BudgetFlat>();
-    filteredBudgets.forEach((b) => {
+    budgets.forEach((b) => {
       const key = b.cliente.toLowerCase().trim() + '|' + String(b.telefono || '').replace(/\D/g, '').slice(-10);
       const existing = byClient.get(key);
       if (!existing || parseInt(b.nro) > parseInt(existing.nro)) {
@@ -44,8 +68,31 @@ export default function PresupuestosDashboard({ onCreateNew, onEdit, onDuplicate
     const clients = byClient.size;
     let total = 0;
     byClient.forEach((b) => { total += b.total; });
-    return { uniqueClients: clients, latestTotal: total, avgPerClient: clients > 0 ? Math.round(total / clients) : 0 };
-  }, [filteredBudgets]);
+    return {
+      uniqueClients: clients,
+      latestTotal: total,
+      avgPerClient: clients > 0 ? Math.round(total / clients) : 0,
+      pdfCount: budgets.length,
+    };
+  };
+
+  const { uniqueClients, latestTotal, avgPerClient } = useMemo(
+    () => computeBudgetMetrics(filteredBudgets),
+    [filteredBudgets]
+  );
+
+  const prevMetrics = useMemo(
+    () => filteredBudgetsPrev ? computeBudgetMetrics(filteredBudgetsPrev) : null,
+    [filteredBudgetsPrev]
+  );
+
+  const deltaPct = (current: number, previous: number): { pct: number; sign: 'up' | 'down' | 'flat' } | null => {
+    if (previous === 0) return current === 0 ? { pct: 0, sign: 'flat' } : null;
+    const pct = Math.round(((current - previous) / previous) * 100);
+    if (Math.abs(pct) > 500) return null;
+    if (pct === 0) return { pct: 0, sign: 'flat' };
+    return { pct, sign: pct > 0 ? 'up' : 'down' };
+  };
 
   const handleDelete = useCallback((b: BudgetFlat) => {
     showConfirm('Eliminar presupuesto', 'Eliminar presupuesto #' + b.nro + '?', () => {
@@ -92,15 +139,16 @@ export default function PresupuestosDashboard({ onCreateNew, onEdit, onDuplicate
   if (showLoading) return <div className="flex-1 flex items-center justify-center"><LoadingOverlay /></div>;
 
   return (
-    <div className="flex-1 h-full bg-[#f0f2f5] overflow-y-auto p-7 flex flex-col">
-      <div className="flex items-center gap-4 mb-5 shrink-0">
-        <h1 className="text-[22px] font-black text-[#2a2a2a] tracking-wide m-0">Presupuestos</h1>
-        <button
-          onClick={onCreateNew}
-          className="ml-auto bg-brand text-white border-none py-2.5 px-6 rounded-md cursor-pointer text-[15px] font-bold font-sans flex items-center gap-2 hover:bg-brand-hover transition-colors"
-        >
-          + Crear nuevo presupuesto
-        </button>
+    <div className="flex-1 h-full bg-bg overflow-y-auto p-8 flex flex-col">
+      <div className="flex items-center justify-between gap-4 mb-6 shrink-0">
+        <div>
+          <h1 className="text-[24px] font-bold tracking-tight text-text m-0 leading-tight">Presupuestos</h1>
+          <div className="text-[13px] text-text-muted mt-1">{uniqueClients} clientes · {filteredBudgets.length} PDFs generados</div>
+        </div>
+        <Button onClick={onCreateNew} size="lg">
+          <Plus size={16} strokeWidth={2.2} />
+          Crear nuevo presupuesto
+        </Button>
       </div>
 
       <div className="mb-4 shrink-0">
@@ -114,26 +162,22 @@ export default function PresupuestosDashboard({ onCreateNew, onEdit, onDuplicate
       </div>
 
       <div className="grid grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-[10px] py-5 px-6 shadow-[0_1px_4px_rgba(0,0,0,0.06)] relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-1 h-full rounded-l-[10px] bg-brand" />
-          <div className="text-[28px] font-black text-[#2a2a2a] leading-none">{uniqueClients}</div>
-          <div className="text-xs text-[#888] font-semibold uppercase tracking-wide mt-1.5">Clientes presupuestados</div>
-        </div>
-        <div className="bg-white rounded-[10px] py-5 px-6 shadow-[0_1px_4px_rgba(0,0,0,0.06)] relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-1 h-full rounded-l-[10px] bg-success" />
-          <div className="text-[28px] font-black text-[#2a2a2a] leading-none">{formatPrice(latestTotal)}</div>
-          <div className="text-xs text-[#888] font-semibold uppercase tracking-wide mt-1.5">Monto (ultimo por cliente)</div>
-        </div>
-        <div className="bg-white rounded-[10px] py-5 px-6 shadow-[0_1px_4px_rgba(0,0,0,0.06)] relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-1 h-full rounded-l-[10px] bg-warning" />
-          <div className="text-[28px] font-black text-[#2a2a2a] leading-none">{formatPrice(avgPerClient)}</div>
-          <div className="text-xs text-[#888] font-semibold uppercase tracking-wide mt-1.5">Promedio por cliente</div>
-        </div>
-        <div className="bg-white rounded-[10px] py-5 px-6 shadow-[0_1px_4px_rgba(0,0,0,0.06)] relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-1 h-full rounded-l-[10px] bg-[#8b5cf6]" />
-          <div className="text-[28px] font-black text-[#2a2a2a] leading-none">{filteredBudgets.length}</div>
-          <div className="text-xs text-[#888] font-semibold uppercase tracking-wide mt-1.5">PDFs generados</div>
-        </div>
+        {([
+          { label: 'Clientes presupuestados', value: String(uniqueClients), key: 'uniqueClients' as const, accent: '#0ea5e9', icon: <Users size={14} strokeWidth={2} /> },
+          { label: 'Monto último por cliente', value: formatPrice(latestTotal), key: 'latestTotal' as const, accent: '#10b981', icon: <DollarSign size={14} strokeWidth={2} /> },
+          { label: 'Promedio por cliente', value: formatPrice(avgPerClient), key: 'avgPerClient' as const, accent: '#f59e0b', icon: <TrendingUp size={14} strokeWidth={2} /> },
+          { label: 'PDFs generados', value: String(filteredBudgets.length), key: 'pdfCount' as const, accent: '#8b5cf6', icon: <FileText size={14} strokeWidth={2} /> },
+        ] as const).map((card) => {
+          const currentNum = card.key === 'uniqueClients' ? uniqueClients
+            : card.key === 'latestTotal' ? latestTotal
+            : card.key === 'avgPerClient' ? avgPerClient
+            : filteredBudgets.length;
+          const d = prevMetrics ? deltaPct(currentNum, prevMetrics[card.key]) : null;
+          const delta = d ? { value: Math.abs(d.pct) + '%', sign: d.sign } : null;
+          return (
+            <MetricCard key={card.label} label={card.label} value={card.value} accent={card.accent} icon={card.icon} delta={delta} />
+          );
+        })}
       </div>
 
       <div className="flex-1 overflow-auto bg-white rounded-[10px] shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
@@ -158,6 +202,7 @@ export default function PresupuestosDashboard({ onCreateNew, onEdit, onDuplicate
             onEdit={onEdit}
             onDuplicate={onDuplicate}
             onDelete={handleDelete}
+            onClientClick={handleClientClick}
           />
         )}
       </div>

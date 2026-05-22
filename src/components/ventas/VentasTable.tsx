@@ -1,8 +1,26 @@
 import { useRef, useCallback, useContext } from 'react';
 import type { Lead, VentaStore } from '../../types';
-import { formatDateAR } from '../../lib/dates';
+import { parseGoogleDate } from '../../lib/dates';
 import { formatPrice, parsePriceInput } from '../../lib/formatters';
 import { ModalContext } from '../../contexts/ModalContext';
+
+function toISODate(raw: string | null | undefined): string {
+  if (!raw) return '';
+  const d = parseGoogleDate(raw);
+  if (!d || isNaN(d.getTime())) return '';
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function InlineDate({ value, onSave }: { value: string; onSave: (val: string) => void }) {
+  return (
+    <input
+      type="date"
+      defaultValue={toISODate(value)}
+      onChange={(e) => onSave(e.target.value)}
+      className="bg-white border border-[#ddd] py-1 px-2 text-[12px] font-sans text-[#2a2a2a] rounded hover:border-[#bbb] focus:border-brand outline-none transition-all"
+    />
+  );
+}
 
 interface Props {
   ganados: Lead[];
@@ -147,7 +165,14 @@ export default function VentasTable({
             </th>
             <th className="sticky top-0 bg-[#fafafa] py-2.5 px-3 text-left text-[11px] font-bold text-[#888] uppercase tracking-wide border-b-2 border-[#eee] z-10 whitespace-nowrap">Cliente</th>
             <th className="sticky top-0 bg-[#fafafa] py-2.5 px-3 text-left text-[11px] font-bold text-[#888] uppercase tracking-wide border-b-2 border-[#eee] z-10 whitespace-nowrap">Ciudad</th>
-            <th className="sticky top-0 bg-[#fafafa] py-2.5 px-3 text-left text-[11px] font-bold text-[#888] uppercase tracking-wide border-b-2 border-[#eee] z-10 whitespace-nowrap">Fecha cierre</th>
+            <th className="sticky top-0 bg-[#fafafa] py-2.5 px-3 text-left text-[11px] font-bold text-[#888] uppercase tracking-wide border-b-2 border-[#eee] z-10 whitespace-nowrap">
+              Fecha cierre
+              <span className="ml-1.5 bg-[#ef4444] text-white text-[8px] font-black px-1 py-0.5 rounded leading-none tracking-wider align-middle">NUEVO</span>
+            </th>
+            <th className="sticky top-0 bg-[#fafafa] py-2.5 px-3 text-left text-[11px] font-bold text-[#888] uppercase tracking-wide border-b-2 border-[#eee] z-10 whitespace-nowrap">
+              Fecha entrega
+              <span className="ml-1.5 bg-[#ef4444] text-white text-[8px] font-black px-1 py-0.5 rounded leading-none tracking-wider align-middle">NUEVO</span>
+            </th>
             <th className="sticky top-0 bg-[#fafafa] py-2.5 px-3 text-left text-[11px] font-bold text-[#888] uppercase tracking-wide border-b-2 border-[#eee] z-10 whitespace-nowrap">Sistema</th>
             <th className="sticky top-0 bg-[#fafafa] py-2.5 px-3 text-left text-[11px] font-bold text-[#888] uppercase tracking-wide border-b-2 border-[#eee] z-10 whitespace-nowrap">Material</th>
             <th className="sticky top-0 bg-[#fafafa] py-2.5 px-3 text-left text-[11px] font-bold text-[#888] uppercase tracking-wide border-b-2 border-[#eee] z-10 whitespace-nowrap">Medidas</th>
@@ -186,8 +211,17 @@ export default function VentasTable({
                 <td className="py-2 px-3 border-b border-[#eee] align-middle text-[#888]">
                   {lead.ciudad || '-'}
                 </td>
-                <td className="py-2 px-3 border-b border-[#eee] align-middle text-[#888]">
-                  {formatDateAR(lead.fecha) || '-'}
+                <td className="py-2 px-3 border-b border-[#eee] align-middle">
+                  <InlineDate
+                    value={vdata.fechaCierre || lead.fecha || ''}
+                    onSave={(val) => onSaveField(key, 'fechaCierre', val)}
+                  />
+                </td>
+                <td className="py-2 px-3 border-b border-[#eee] align-middle">
+                  <InlineDate
+                    value={vdata.fechaEntrega || ''}
+                    onSave={(val) => onSaveField(key, 'fechaEntrega', val)}
+                  />
                 </td>
                 <td className="py-2 px-3 border-b border-[#eee] align-middle text-[#888]">
                   {lead.sistema || '-'}
@@ -250,7 +284,7 @@ export default function VentasTable({
           })}
           {ganados.length === 0 && (
             <tr>
-              <td colSpan={12} className="py-10 px-3 text-center text-[#888] text-sm">
+              <td colSpan={13} className="py-10 px-3 text-center text-[#888] text-sm">
                 No hay ventas en el periodo seleccionado
               </td>
             </tr>

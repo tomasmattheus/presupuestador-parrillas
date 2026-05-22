@@ -10,13 +10,19 @@ interface Props {
 }
 
 const PRESETS: { key: PeriodPreset; label: string }[] = [
-  { key: 'all', label: 'Todo' },
-  { key: 'esta-semana', label: 'Esta semana' },
   { key: 'este-mes', label: 'Este mes' },
   { key: 'mes-pasado', label: 'Mes pasado' },
+  { key: 'esta-semana', label: 'Esta semana' },
+  { key: 'all', label: 'Todo' },
 ];
 
-export default function PeriodFilter({ activePreset, onPreset, onCustomRange, dateFrom, dateTo }: Props) {
+export default function PeriodFilter({
+  activePreset,
+  onPreset,
+  onCustomRange,
+  dateFrom,
+  dateTo,
+}: Props) {
   const [customFrom, setCustomFrom] = useState('');
   const [customTo, setCustomTo] = useState('');
 
@@ -39,6 +45,7 @@ export default function PeriodFilter({ activePreset, onPreset, onCustomRange, da
           {p.label}
         </button>
       ))}
+
       <span className="text-[#ccc] text-xs">|</span>
       <input
         type="date"

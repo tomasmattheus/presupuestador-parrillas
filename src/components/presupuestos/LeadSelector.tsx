@@ -117,7 +117,7 @@ export default function LeadSelector({ onLeadSelect, onNewBlank }: Props) {
           onClick={() => setShowAll(!showAll)}
           className={`flex-1 border py-1.5 px-3 rounded text-[11px] font-semibold cursor-pointer font-sans transition-colors ${
             showAll
-              ? 'bg-[#f0f2f5] text-[#555] border-[#ddd] hover:bg-[#e5e7eb]'
+              ? 'bg-bg text-[#555] border-[#ddd] hover:bg-[#e5e7eb]'
               : 'bg-white text-brand border-brand hover:bg-[#f0f7ff]'
           }`}
         >

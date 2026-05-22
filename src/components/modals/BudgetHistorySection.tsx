@@ -8,6 +8,21 @@ interface Props {
   clienteKey: string;
 }
 
+function normalizePhone(p: string): string {
+  return p.replace(/\D/g, '').slice(-10);
+}
+
+function budgetMatches(b: BudgetFlat, clienteKey: string): boolean {
+  const [keyName = '', keyPhone = ''] = clienteKey.split('|');
+  const normKeyName = keyName.trim().toLowerCase();
+  const normKeyPhone = normalizePhone(keyPhone);
+  const normBName = (b.cliente || '').trim().toLowerCase();
+  const normBPhone = normalizePhone(String(b.telefono || ''));
+  if (normKeyName && normBName && normKeyName === normBName) return true;
+  if (normKeyPhone && normBPhone && normKeyPhone === normBPhone) return true;
+  return false;
+}
+
 function BudgetCard({ budget }: { budget: BudgetFlat }) {
   const [open, setOpen] = useState(false);
 
@@ -54,34 +69,26 @@ function BudgetCard({ budget }: { budget: BudgetFlat }) {
   );
 }
 
-function normalizePhone(phone: string): string {
-  return phone.replace(/\D/g, '').slice(-10);
-}
-
-function keysMatch(a: string, b: string): boolean {
-  if (a === b) return true;
-  const [nameA, phoneA] = a.split('|');
-  const [nameB, phoneB] = b.split('|');
-  if (nameA?.toLowerCase().trim() !== nameB?.toLowerCase().trim()) return false;
-  if (!phoneA || !phoneB) return nameA?.toLowerCase().trim() === nameB?.toLowerCase().trim();
-  return normalizePhone(phoneA) === normalizePhone(phoneB);
-}
-
 export default function BudgetHistorySection({ clienteKey }: Props) {
   const { budgetsFlat = [] } = usePresupuestos();
 
   const budgets = useMemo(
-    () => budgetsFlat.filter((b) => keysMatch(b.clientKey, clienteKey)),
+    () => budgetsFlat
+      .filter((b) => budgetMatches(b, clienteKey))
+      .sort((a, b) => parseInt(b.nro) - parseInt(a.nro)),
     [budgetsFlat, clienteKey]
   );
 
-  if (budgets.length === 0) return null;
+  if (budgets.length === 0) {
+    return (
+      <div className="text-[13px] text-[#888] py-6 text-center">
+        Este cliente no tiene presupuestos enviados todavía.
+      </div>
+    );
+  }
 
   return (
-    <div className="mt-5 pt-4 border-t-2 border-[#f0f0f0]">
-      <h3 className="text-[13px] font-bold text-[#1DA1F2] uppercase tracking-wide mb-3">
-        Presupuestos enviados
-      </h3>
+    <div>
       {budgets.map((b, idx) => (
         <BudgetCard key={b.id || idx} budget={b} />
       ))}

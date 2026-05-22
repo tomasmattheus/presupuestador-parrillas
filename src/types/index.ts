@@ -63,6 +63,8 @@ export interface Venta {
   cliente: string;
   telefono: string;
   fecha: string;
+  fechaCierre: string;
+  fechaEntrega: string;
   monto: number;
   formaPago: string;
   estadoEntrega: string;
@@ -74,6 +76,8 @@ export interface VentaStore {
   formaPago: string;
   estadoEntrega: string;
   notas: string;
+  fechaCierre: string;
+  fechaEntrega: string;
   _rowIndex?: number;
 }
 
@@ -126,7 +130,7 @@ export interface TodoItem {
   date: string;
 }
 
-export type TabId = 'home' | 'pipeline' | 'presupuestos' | 'contactos' | 'ventas' | 'estadisticas' | 'ajustes';
+export type TabId = 'home' | 'pipeline' | 'presupuestos' | 'contactos' | 'produccion' | 'ventas' | 'estadisticas' | 'ajustes';
 
 export type SheetAction =
   | { action: 'addRow'; values: string[] }
