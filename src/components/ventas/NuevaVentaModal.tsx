@@ -6,6 +6,7 @@ import { updateLeadField } from '../../services/leads.service';
 import { formatPrice, parsePriceInput } from '../../lib/formatters';
 import { ModalContext } from '../../contexts/ModalContext';
 import type { Lead } from '../../types';
+import { Select } from '../ui/select';
 
 interface Props {
   isOpen: boolean;
@@ -239,26 +240,23 @@ export default function NuevaVentaModal({ isOpen, onClose, initialLead, initialM
         </div>
 
         <label className="block text-xs font-semibold text-[#888] uppercase tracking-wide mb-1">Forma de pago</label>
-        <select
-          value={formaPago}
-          onChange={(e) => setFormaPago(e.target.value)}
-          className="w-full bg-white border border-[#ddd] text-[#2a2a2a] py-2 px-3 rounded-md text-sm font-sans mb-3 outline-none focus:border-brand"
-        >
-          {PAGO_OPTIONS.map((opt) => (
-            <option key={opt} value={opt}>{opt || '-- Seleccionar --'}</option>
-          ))}
-        </select>
+        <div className="mb-3">
+          <Select
+            value={formaPago}
+            onChange={setFormaPago}
+            placeholder="-- Seleccionar --"
+            options={PAGO_OPTIONS.filter((o) => o).map((opt) => ({ value: opt, label: opt }))}
+          />
+        </div>
 
         <label className="block text-xs font-semibold text-[#888] uppercase tracking-wide mb-1">Estado entrega</label>
-        <select
-          value={estadoEntrega}
-          onChange={(e) => setEstadoEntrega(e.target.value)}
-          className="w-full bg-white border border-[#ddd] text-[#2a2a2a] py-2 px-3 rounded-md text-sm font-sans mb-3 outline-none focus:border-brand"
-        >
-          {ENTREGA_OPTIONS.map((opt) => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
+        <div className="mb-3">
+          <Select
+            value={estadoEntrega}
+            onChange={setEstadoEntrega}
+            options={ENTREGA_OPTIONS.map((opt) => ({ value: opt, label: opt }))}
+          />
+        </div>
 
         <label className="block text-xs font-semibold text-[#888] uppercase tracking-wide mb-1">Notas</label>
         <textarea

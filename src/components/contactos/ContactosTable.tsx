@@ -1,6 +1,7 @@
 import type { Lead, PipelineStage } from '../../types';
 import { formatDateAR } from '../../lib/dates';
 import { getInitials, getAvatarColor } from '../../lib/avatar';
+import { Select } from '../ui/select';
 
 const STAGE_PILL_COLORS: Record<string, { bg: string; text: string; border: string }> = {
   'Nuevo Lead': { bg: '#e8f5fd', text: '#0d6fb3', border: '#bce0f7' },
@@ -60,8 +61,8 @@ export default function ContactosTable({
   };
 
   return (
-    <div className="flex-1 overflow-auto bg-white rounded-[10px] shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
-      <table className="w-full border-collapse text-sm">
+    <div className="flex-1 overflow-auto bg-white rounded-xl border border-border shadow-[var(--shadow-card)]">
+      <table className="w-full border-collapse text-sm table-fixed">
         <thead>
           <tr>
             <th className="sticky top-0 bg-white py-3 px-3.5 text-left text-[10px] font-bold text-[#888] uppercase tracking-[0.8px] border-b border-[#eee] z-[1] w-[30px]">
@@ -146,41 +147,25 @@ export default function ContactosTable({
                 <td className="py-3 px-3.5 border-b border-[#f0f0f0] text-[#444] align-middle whitespace-nowrap text-[13px]">
                   {formatDateAR(lead.fecha) || '-'}
                 </td>
-                <td className="py-3 px-3.5 border-b border-[#f0f0f0] align-middle whitespace-nowrap">
+                <td className="py-3 px-3.5 border-b border-[#f0f0f0] align-middle whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                   {(() => {
                     const stage = lead.stage || 'Nuevo Lead';
                     const c = getStagePillColor(stage);
                     return (
-                      <div
-                        className="relative inline-flex items-center rounded-full border"
-                        style={{ backgroundColor: c.bg, borderColor: c.border }}
-                      >
-                        <select
-                          className="appearance-none bg-transparent border-none py-1 pl-2.5 pr-6 text-[11px] font-bold font-sans cursor-pointer outline-none"
-                          style={{ color: c.text }}
-                          value={stage}
-                          onChange={(e) => {
-                            e.stopPropagation();
-                            onEstadoChange(lead, e.target.value);
-                          }}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {stages.map((s) => (
-                            <option key={s.name} value={s.name} className="bg-white text-[#2a2a2a]">
-                              {s.name}
-                            </option>
-                          ))}
-                        </select>
-                        <svg
-                          className="absolute right-1.5 pointer-events-none"
-                          width="8"
-                          height="5"
-                          viewBox="0 0 8 5"
-                          fill={c.text}
-                        >
-                          <path d="M0 0l4 5 4-5z" />
-                        </svg>
-                      </div>
+                      <Select
+                        size="pill"
+                        value={stage}
+                        onChange={(v) => onEstadoChange(lead, v)}
+                        options={stages.map((s) => ({ value: s.name, label: s.name }))}
+                        triggerStyle={{
+                          backgroundColor: c.bg,
+                          color: c.text,
+                          borderColor: c.border,
+                          borderWidth: 1,
+                          borderStyle: 'solid',
+                        }}
+                        triggerClassName="inline-flex"
+                      />
                     );
                   })()}
                 </td>

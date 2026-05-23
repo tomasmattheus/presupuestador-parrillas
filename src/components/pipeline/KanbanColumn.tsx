@@ -48,30 +48,31 @@ export default function KanbanColumn({
 
   return (
     <div
-      className={`min-w-[300px] w-[300px] bg-[#f5f5f5] rounded-[10px] flex flex-col shrink-0 max-h-full border-2 transition-all duration-200 ${dragOver ? 'border-[#1DA1F2] shadow-[0_0_0_3px_rgba(29,161,242,0.15)]' : 'border-transparent'}`}
+      className={`min-w-[290px] w-[290px] bg-bg-muted rounded-xl flex flex-col shrink-0 max-h-full border transition-all duration-200 ${
+        dragOver
+          ? 'border-brand bg-brand-soft/40 shadow-[0_0_0_3px_rgba(14,165,233,0.12)]'
+          : 'border-border'
+      }`}
     >
-      <div
-        className="px-3.5 pt-3 pb-2.5 rounded-t-[10px] shrink-0 flex items-center justify-between"
-        style={{ background: stage.color }}
-      >
-        <span className="text-[13px] font-bold uppercase tracking-wide text-white">
+      <div className="flex items-center gap-2 px-3.5 py-3 border-b border-border shrink-0">
+        <span className="w-2 h-2 rounded-full shrink-0" style={{ background: stage.color }} />
+        <span className="text-[11px] font-bold uppercase tracking-wider text-text">
           {stage.name}
         </span>
-        <span className="bg-white/30 text-white text-xs font-bold px-2 py-0.5 rounded-[10px] min-w-[24px] text-center">
+        <span className="ml-auto text-[11px] text-text-muted font-semibold">
           {leads.length}
         </span>
       </div>
 
       <div
-        className="flex-1 overflow-y-auto p-2 px-2.5 min-h-[60px] scrollbar-thin scrollbar-thumb-[#ccc] scrollbar-track-transparent"
+        className="flex-1 overflow-y-auto p-2 px-2.5 min-h-[60px]"
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
         {leads.length === 0 ? (
-          <div className="py-5 px-2.5 text-center">
-            <div className="text-[28px] opacity-30">&#9744;</div>
-            <div className="text-xs text-[#bbb] mt-1.5">Sin leads en esta etapa</div>
+          <div className="py-6 px-2.5 text-center">
+            <div className="text-xs text-text-subtle italic">Sin leads</div>
           </div>
         ) : (
           leads.map((lead) => (

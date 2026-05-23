@@ -1,5 +1,6 @@
 import { useState, useCallback, useContext, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { Plus, Download, FileSpreadsheet } from 'lucide-react';
 import { useLeads } from '../../hooks/useLeads';
 import { useVentas } from '../../hooks/useVentas';
 import { useBulkSelect } from '../../hooks/useBulkSelect';
@@ -16,6 +17,7 @@ import VentasTable from './VentasTable';
 import NuevaVentaModal from './NuevaVentaModal';
 import EditVentaModal from './EditVentaModal';
 import LoadingOverlay from '../common/LoadingOverlay';
+import { Button } from '../ui/button';
 
 function getVentaKey(lead: Lead): string {
   return (lead.nombre || '') + '|' + (lead.whatsapp || '');
@@ -159,38 +161,29 @@ export default function VentasPage() {
   if (loading) return <div className="flex-1 flex items-center justify-center"><LoadingOverlay /></div>;
 
   return (
-    <div className="flex-1 h-full overflow-y-auto p-7 flex flex-col bg-bg">
-      <div className="flex items-center gap-3 mb-5 flex-shrink-0 flex-wrap">
-        <h1 className="text-[24px] font-bold tracking-tight text-text m-0 leading-tight">Ventas</h1>
-        <button
-          onClick={() => setNuevaOpen(true)}
-          className="bg-success text-white border-none py-2 px-[18px] rounded-md cursor-pointer text-sm font-bold font-sans transition-colors hover:bg-[#059669]"
-        >
-          + Nueva venta
-        </button>
-        <button
-          onClick={handleExportCSV}
-          className="bg-success text-white border-none py-2 px-[18px] rounded-md cursor-pointer text-[13px] font-bold font-sans transition-colors hover:bg-[#059669] flex items-center gap-1.5 ml-auto"
-        >
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-            <path d="M8 12l-4-4h2.5V2h3v6H12L8 12z" fill="currentColor" />
-            <path d="M14 14H2v-3H0v4a1 1 0 001 1h14a1 1 0 001-1v-4h-2v3z" fill="currentColor" />
-          </svg>
-          Exportar CSV
-        </button>
-        <button
-          onClick={handleExportExcel}
-          className="bg-brand text-white border-none py-2 px-[18px] rounded-md cursor-pointer text-[13px] font-bold font-sans transition-colors hover:bg-brand-hover flex items-center gap-1.5"
-        >
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-            <path d="M8 12l-4-4h2.5V2h3v6H12L8 12z" fill="currentColor" />
-            <path d="M14 14H2v-3H0v4a1 1 0 001 1h14a1 1 0 001-1v-4h-2v3z" fill="currentColor" />
-          </svg>
-          Exportar Excel
-        </button>
+    <div className="flex-1 h-full overflow-y-auto p-8 flex flex-col bg-bg">
+      <div className="flex items-center justify-between gap-3 mb-6 shrink-0">
+        <div>
+          <h1 className="text-[24px] font-bold tracking-tight text-text m-0 leading-tight">Ventas</h1>
+          <div className="text-[13px] text-text-muted mt-1">{filtered.length} ventas · {metrics.count > 0 ? `ticket promedio ${Math.round(metrics.ticketPromedio).toLocaleString('es-AR')}` : ''}</div>
+        </div>
+        <div className="flex gap-2.5">
+          <Button variant="outline" size="md" onClick={handleExportCSV}>
+            <Download size={14} strokeWidth={2} />
+            CSV
+          </Button>
+          <Button variant="outline" size="md" onClick={handleExportExcel}>
+            <FileSpreadsheet size={14} strokeWidth={2} />
+            Excel
+          </Button>
+          <Button variant="success" size="md" onClick={() => setNuevaOpen(true)}>
+            <Plus size={14} strokeWidth={2.2} />
+            Nueva venta
+          </Button>
+        </div>
       </div>
 
-      <div className="mb-3.5 flex-shrink-0">
+      <div className="mb-5 shrink-0">
         <PeriodFilter
           activePreset={dateFilter.activePreset}
           onPreset={dateFilter.setPreset}

@@ -154,31 +154,19 @@ export default function PipelinePage() {
 
   return (
     <div className="flex flex-1 h-full overflow-hidden">
-      <div className="flex flex-col flex-1 h-full bg-bg overflow-x-auto overflow-y-auto p-7">
-        <div className="flex items-center gap-3 mb-4 shrink-0">
-          <h1 className="text-[24px] font-bold tracking-tight text-text m-0 leading-tight">
-            Pipeline CRM
-          </h1>
-          <button
-            onClick={refreshAll}
-            disabled={isFetching}
-            className={`bg-[#1DA1F2] text-white border-none px-4 py-2 rounded-md text-[13px] font-semibold font-[inherit] flex items-center gap-1.5 cursor-pointer transition-colors duration-200 hover:bg-[#0d8de0] ${isFetching ? 'opacity-60 pointer-events-none' : ''}`}
-          >
-            &#8635; Refrescar
-          </button>
-          <span className="text-[13px] text-[#888] ml-auto">
-            {filteredLeads.length} de {leads.length} leads
-          </span>
-        </div>
-
-        {archivedCount > 0 && (
-          <div className="flex items-center gap-3 mb-4 shrink-0 flex-wrap">
-            <label className="flex items-center gap-1.5 text-xs text-[#888] cursor-pointer ml-auto">
+      <div className="flex flex-col flex-1 h-full bg-bg overflow-x-auto overflow-y-auto p-8">
+        <div className="flex items-center justify-between gap-3 mb-6 shrink-0">
+          <div>
+            <h1 className="text-[24px] font-bold tracking-tight text-text m-0 leading-tight">Pipeline</h1>
+            <div className="text-[13px] text-text-muted mt-1">{filteredLeads.length} de {leads.length} leads</div>
+          </div>
+          {archivedCount > 0 && (
+            <label className="flex items-center gap-2 text-[12px] text-text-muted cursor-pointer">
               <input type="checkbox" checked={hideArchived} onChange={() => setHideArchived(!hideArchived)} className="accent-brand" />
               Ocultar archivados ({archivedCount})
             </label>
-          </div>
-        )}
+          )}
+        </div>
 
         <KanbanBoard
           stages={activeStages}

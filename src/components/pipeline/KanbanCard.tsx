@@ -132,7 +132,10 @@ export default function KanbanCard({
       </div>
 
       <div className="text-sm font-bold text-[#2a2a2a] mb-1 flex items-center gap-1.5">
-        <span className={`w-2 h-2 rounded-full shrink-0 ${dotClass}`} />
+        <span
+          className={`w-2 h-2 rounded-full shrink-0 ${dotClass}`}
+          title={lead.hasMeasures ? 'Tiene medidas cargadas' : 'Sin medidas'}
+        />
         {lead.nombre}
         {(() => { const ph = String(lead.whatsapp || '').replace(/\D/g, '').slice(-4); return ph ? <span className="text-[10px] text-[#bbb] font-normal">...{ph}</span> : null; })()}
       </div>

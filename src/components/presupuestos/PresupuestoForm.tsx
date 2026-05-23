@@ -11,6 +11,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import LeadSelector from './LeadSelector';
 import LineItemsTable from './LineItemsTable';
 import ClientNotes from './ClientNotes';
+import { Select } from '../ui/select';
 
 import type { PresupuestoFormHook } from '../../hooks/usePresupuestoForm';
 
@@ -299,16 +300,24 @@ export default function PresupuestoForm({ onBack, editBudget, formHook, onPrint 
       </div>
 
       <h2 className="text-brand text-sm uppercase tracking-[1.5px] mt-5 mb-2.5 border-b border-[#eee] pb-1.5">Producto</h2>
-      <label className="block text-xs text-[#888] mb-0.5 mt-2.5 uppercase tracking-wide">Sistema</label>
-      <select value={formData.sistema} onChange={(e) => updateField('sistema', e.target.value)} className="w-full py-2 px-2.5 bg-white border border-[#ddd] rounded-md text-sm text-[#2a2a2a] font-sans outline-none focus:border-brand focus:shadow-[0_0_0_3px_rgba(29,161,242,0.1)]">
-        <option value="Guillotina contrapesado">Guillotina contrapesado</option>
-        <option value="Levadizo con pistones">Levadizo con pistones</option>
-      </select>
-      <label className="block text-xs text-[#888] mb-0.5 mt-2.5 uppercase tracking-wide">Material</label>
-      <select value={formData.material} onChange={(e) => updateField('material', e.target.value)} className="w-full py-2 px-2.5 bg-white border border-[#ddd] rounded-md text-sm text-[#2a2a2a] font-sans outline-none focus:border-brand focus:shadow-[0_0_0_3px_rgba(29,161,242,0.1)]">
-        <option value="Acero inoxidable esmerilado">Acero inoxidable esmerilado</option>
-        <option value="Chapa pintada epoxi negro">Chapa pintada epoxi negro</option>
-      </select>
+      <label className="block text-xs text-[#888] mb-1 mt-2.5 uppercase tracking-wide">Sistema</label>
+      <Select
+        value={formData.sistema}
+        onChange={(v) => updateField('sistema', v)}
+        options={[
+          { value: 'Guillotina contrapesado', label: 'Guillotina contrapesado' },
+          { value: 'Levadizo con pistones', label: 'Levadizo con pistones' },
+        ]}
+      />
+      <label className="block text-xs text-[#888] mb-1 mt-2.5 uppercase tracking-wide">Material</label>
+      <Select
+        value={formData.material}
+        onChange={(v) => updateField('material', v)}
+        options={[
+          { value: 'Acero inoxidable esmerilado', label: 'Acero inoxidable esmerilado' },
+          { value: 'Chapa pintada epoxi negro', label: 'Chapa pintada epoxi negro' },
+        ]}
+      />
       <div className="flex gap-2.5">
         <div className="flex-1 min-w-0">
           <label className="block text-xs text-[#888] mb-0.5 mt-2.5 uppercase tracking-wide">Ancho total (mm)</label>
@@ -330,12 +339,17 @@ export default function PresupuestoForm({ onBack, editBudget, formHook, onPrint 
           Bajo parrilla
         </label>
         {formData.cbBajo && (
-          <div className="ml-7 mt-1">
-            <select value={formData.bajoPuertas} onChange={(e) => updateField('bajoPuertas', e.target.value)} className="w-auto py-1 px-2 text-xs bg-white border border-[#ddd] rounded-md font-sans">
-              <option value="2">2 puertas</option>
-              <option value="3">3 puertas</option>
-              <option value="4">4 puertas</option>
-            </select>
+          <div className="ml-7 mt-1 w-32">
+            <Select
+              size="sm"
+              value={formData.bajoPuertas}
+              onChange={(v) => updateField('bajoPuertas', v)}
+              options={[
+                { value: '2', label: '2 puertas' },
+                { value: '3', label: '3 puertas' },
+                { value: '4', label: '4 puertas' },
+              ]}
+            />
           </div>
         )}
         <label className="flex items-center gap-2 text-[#444] text-[13px] cursor-pointer mt-1.5">

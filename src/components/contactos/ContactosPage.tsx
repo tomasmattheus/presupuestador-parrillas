@@ -23,7 +23,7 @@ import { Users, UserPlus, Trophy, TrendingUp } from 'lucide-react';
 export default function ContactosPage() {
   const { data: leads = [], isLoading, isFetching } = useLeads();
   const { stages } = usePipelineStages();
-  const dateFilter = useDateFilter('este-mes');
+  const dateFilter = useDateFilter('all');
   const { showConfirm, showToast, openLeadModal } = useContext(ModalContext);
   const queryClient = useQueryClient();
 

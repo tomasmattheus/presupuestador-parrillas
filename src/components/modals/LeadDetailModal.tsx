@@ -14,6 +14,7 @@ import BudgetHistorySection from './BudgetHistorySection';
 import NotesSection from './NotesSection';
 import MessageTemplatesSection from './MessageTemplatesSection';
 import StageTracker from './StageTracker';
+import { Select } from '../ui/select';
 
 const PAGO_OPTIONS = ['', '100% anticipado', '50/50', '3 cuotas', 'Otro'];
 const ENTREGA_OPTIONS = ['Pendiente fabricacion', 'En fabricacion', 'Listo para entregar', 'Entregado e instalado'];
@@ -520,27 +521,22 @@ export default function LeadDetailModal() {
                   </div>
                   <div>
                     <label className="block text-[9px] font-semibold text-[#666] uppercase tracking-wider mb-1">Forma de pago</label>
-                    <select
+                    <Select
+                      size="sm"
                       value={formaPago}
-                      onChange={(e) => { setFormaPago(e.target.value); persistVenta({ formaPago: e.target.value }); }}
-                      className="w-full bg-white border border-[#ddd] text-[#2a2a2a] py-1 px-1.5 rounded text-[12px] font-sans outline-none focus:border-[#059669]"
-                    >
-                      {PAGO_OPTIONS.map((opt) => (
-                        <option key={opt} value={opt}>{opt || '-- Seleccionar --'}</option>
-                      ))}
-                    </select>
+                      onChange={(v) => { setFormaPago(v); persistVenta({ formaPago: v }); }}
+                      placeholder="-- Seleccionar --"
+                      options={PAGO_OPTIONS.filter((o) => o).map((opt) => ({ value: opt, label: opt }))}
+                    />
                   </div>
                   <div>
                     <label className="block text-[9px] font-semibold text-[#666] uppercase tracking-wider mb-1">Estado entrega</label>
-                    <select
+                    <Select
+                      size="sm"
                       value={estadoEntrega}
-                      onChange={(e) => { setEstadoEntrega(e.target.value); persistVenta({ estadoEntrega: e.target.value }); }}
-                      className="w-full bg-white border border-[#ddd] text-[#2a2a2a] py-1 px-1.5 rounded text-[12px] font-sans outline-none focus:border-[#059669]"
-                    >
-                      {ENTREGA_OPTIONS.map((opt) => (
-                        <option key={opt} value={opt}>{opt}</option>
-                      ))}
-                    </select>
+                      onChange={(v) => { setEstadoEntrega(v); persistVenta({ estadoEntrega: v }); }}
+                      options={ENTREGA_OPTIONS.map((opt) => ({ value: opt, label: opt }))}
+                    />
                   </div>
                 </div>
               </>

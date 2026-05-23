@@ -4,6 +4,7 @@ import { addLead } from '../../services/leads.service';
 import { usePipelineStages } from '../../hooks/usePipelineStages';
 import { ModalContext } from '../../contexts/ModalContext';
 import { getTodayStr } from '../../lib/dates';
+import { Select } from '../ui/select';
 
 interface Props {
   isOpen: boolean;
@@ -144,27 +145,27 @@ export default function NuevoContactoModal({ isOpen, onClose }: Props) {
           </div>
         </div>
 
-        <label className="block text-xs text-[#888] mb-[3px] mt-3 uppercase tracking-[0.5px] font-semibold">Sistema</label>
-        <select
-          className="w-full py-2 px-3 border border-[#ddd] rounded-md text-sm font-sans outline-none text-[#2a2a2a] bg-white focus:border-brand"
+        <label className="block text-xs text-[#888] mb-1 mt-3 uppercase tracking-[0.5px] font-semibold">Sistema</label>
+        <Select
           value={sistema}
-          onChange={(e) => setSistema(e.target.value)}
-        >
-          <option value="">-- Sin definir --</option>
-          <option value="Guillotina">Guillotina</option>
-          <option value="Levadizo">Levadizo</option>
-        </select>
+          onChange={setSistema}
+          placeholder="-- Sin definir --"
+          options={[
+            { value: 'Guillotina', label: 'Guillotina' },
+            { value: 'Levadizo', label: 'Levadizo' },
+          ]}
+        />
 
-        <label className="block text-xs text-[#888] mb-[3px] mt-3 uppercase tracking-[0.5px] font-semibold">Material</label>
-        <select
-          className="w-full py-2 px-3 border border-[#ddd] rounded-md text-sm font-sans outline-none text-[#2a2a2a] bg-white focus:border-brand"
+        <label className="block text-xs text-[#888] mb-1 mt-3 uppercase tracking-[0.5px] font-semibold">Material</label>
+        <Select
           value={material}
-          onChange={(e) => setMaterial(e.target.value)}
-        >
-          <option value="">-- Sin definir --</option>
-          <option value="Epoxi">Epoxi</option>
-          <option value="Acero Inoxidable">Acero Inoxidable</option>
-        </select>
+          onChange={setMaterial}
+          placeholder="-- Sin definir --"
+          options={[
+            { value: 'Epoxi', label: 'Epoxi' },
+            { value: 'Acero Inoxidable', label: 'Acero Inoxidable' },
+          ]}
+        />
 
         <div className="flex gap-3">
           <div className="flex-1">
@@ -230,18 +231,12 @@ export default function NuevoContactoModal({ isOpen, onClose }: Props) {
           + Agregar producto
         </button>
 
-        <label className="block text-xs text-[#888] mb-[3px] mt-3 uppercase tracking-[0.5px] font-semibold">Estado proyecto</label>
-        <select
-          className="w-full py-2 px-3 border border-[#ddd] rounded-md text-sm font-sans outline-none text-[#2a2a2a] bg-white focus:border-brand"
+        <label className="block text-xs text-[#888] mb-1 mt-3 uppercase tracking-[0.5px] font-semibold">Estado proyecto</label>
+        <Select
           value={estado}
-          onChange={(e) => setEstado(e.target.value)}
-        >
-          {stages.map((s) => (
-            <option key={s.name} value={s.name}>
-              {s.name}
-            </option>
-          ))}
-        </select>
+          onChange={setEstado}
+          options={stages.map((s) => ({ value: s.name, label: s.name }))}
+        />
 
         <button
           className="bg-brand text-white border-none py-3 px-5 rounded-md cursor-pointer text-[15px] font-bold font-sans w-full mt-5 transition-colors duration-200 hover:bg-brand-hover disabled:opacity-50 disabled:pointer-events-none"

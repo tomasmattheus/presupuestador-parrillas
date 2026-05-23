@@ -5,6 +5,7 @@ import { formatPrice, parsePriceInput } from '../../lib/formatters';
 import { parseGoogleDate } from '../../lib/dates';
 import { ModalContext } from '../../contexts/ModalContext';
 import type { VentaStore } from '../../types';
+import { Select } from '../ui/select';
 
 function toISODate(raw: string | null | undefined): string {
   if (!raw) return '';
@@ -128,26 +129,24 @@ export default function EditVentaModal({ isOpen, onClose, ventaKey, ventaData }:
         </div>
 
         <label className="block text-xs font-semibold text-[#888] uppercase tracking-wide mb-1">Forma de pago</label>
-        <select
-          value={formaPago}
-          onChange={(e) => setFormaPago(e.target.value)}
-          className="w-full bg-white border border-[#ddd] text-[#2a2a2a] py-2 px-3 rounded-md text-sm font-sans mb-3 outline-none focus:border-brand"
-        >
-          {PAGO_OPTIONS.map((opt) => (
-            <option key={opt} value={opt}>{opt || '-- Seleccionar --'}</option>
-          ))}
-        </select>
+        <div className="mb-3">
+          <Select
+            value={formaPago}
+            onChange={setFormaPago}
+            placeholder="-- Seleccionar --"
+            options={PAGO_OPTIONS.filter((o) => o).map((opt) => ({ value: opt, label: opt }))}
+          />
+        </div>
 
         <label className="block text-xs font-semibold text-[#888] uppercase tracking-wide mb-1">Estado entrega</label>
-        <select
-          value={estadoEntrega}
-          onChange={(e) => setEstadoEntrega(e.target.value)}
-          className="w-full bg-white border border-[#ddd] text-[#2a2a2a] py-2 px-3 rounded-md text-sm font-sans mb-3 outline-none focus:border-brand"
-        >
-          {ENTREGA_OPTIONS.map((opt) => (
-            <option key={opt} value={opt}>{opt || '-- Seleccionar --'}</option>
-          ))}
-        </select>
+        <div className="mb-3">
+          <Select
+            value={estadoEntrega}
+            onChange={setEstadoEntrega}
+            placeholder="-- Seleccionar --"
+            options={ENTREGA_OPTIONS.filter((o) => o).map((opt) => ({ value: opt, label: opt }))}
+          />
+        </div>
 
         <label className="block text-xs font-semibold text-[#888] uppercase tracking-wide mb-1">Notas</label>
         <textarea

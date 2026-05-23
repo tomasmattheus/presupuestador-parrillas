@@ -21,17 +21,17 @@ function classifyFollowUp(lead: Lead): { urgency: Exclude<UrgencyKey, 'all'>; da
 
 function getUrgencyStyle(key: Exclude<UrgencyKey, 'all'>) {
   switch (key) {
-    case 'vencido': return { bg: 'bg-[#fef2f2]', border: 'border-[#fca5a5]', dot: 'bg-[#ef4444]', text: 'text-[#dc2626]' };
-    case 'hoy': return { bg: 'bg-[#eff6ff]', border: 'border-[#93c5fd]', dot: 'bg-[#3b82f6]', text: 'text-[#2563eb]' };
-    case 'proximo': return { bg: 'bg-[#f0fdf4]', border: 'border-[#86efac]', dot: 'bg-[#22c55e]', text: 'text-[#16a34a]' };
+    case 'vencido': return { dot: 'bg-danger', text: 'text-danger' };
+    case 'hoy': return { dot: 'bg-brand', text: 'text-brand' };
+    case 'proximo': return { dot: 'bg-success', text: 'text-success' };
   }
 }
 
-const FILTERS: { key: UrgencyKey; label: string; color: string; activeColor: string }[] = [
-  { key: 'all', label: 'Todos', color: 'text-[#666] bg-[#f0f0f0]', activeColor: 'text-white bg-[#2a2a2a]' },
-  { key: 'vencido', label: 'Vencido', color: 'text-[#dc2626] bg-[#fef2f2]', activeColor: 'text-white bg-[#ef4444]' },
-  { key: 'hoy', label: 'Hoy', color: 'text-[#2563eb] bg-[#eff6ff]', activeColor: 'text-white bg-[#3b82f6]' },
-  { key: 'proximo', label: 'Proximo', color: 'text-[#16a34a] bg-[#f0fdf4]', activeColor: 'text-white bg-[#22c55e]' },
+const FILTERS: { key: UrgencyKey; label: string }[] = [
+  { key: 'all', label: 'Todos' },
+  { key: 'vencido', label: 'Vencido' },
+  { key: 'hoy', label: 'Hoy' },
+  { key: 'proximo', label: 'Próximo' },
 ];
 
 interface Props {
@@ -77,9 +77,9 @@ export default function StaleLeadsPanel({ leads }: Props) {
   if (allFollowUps.length === 0) return null;
 
   return (
-    <div className="w-[260px] min-w-[260px] h-full overflow-hidden bg-white border-l border-[#e5e5e5] flex flex-col">
-      <div className="px-4 py-3.5 border-b border-[#eee] shrink-0">
-        <h3 className="text-xs font-bold text-[#2a2a2a] uppercase tracking-wider m-0 mb-2.5">Seguimientos</h3>
+    <div className="w-[280px] min-w-[280px] h-full overflow-hidden bg-white border-l border-border flex flex-col">
+      <div className="px-4 py-4 border-b border-border shrink-0">
+        <h3 className="text-[11px] font-bold text-text-muted uppercase tracking-wider m-0 mb-3">Seguimientos</h3>
         <div className="flex flex-wrap gap-1.5">
           {FILTERS.map((f) => {
             const count = counts[f.key];
@@ -89,45 +89,48 @@ export default function StaleLeadsPanel({ leads }: Props) {
               <button
                 key={f.key}
                 onClick={() => setFilter(f.key)}
-                className={`text-[10px] font-bold px-2 py-1 rounded-full border-none cursor-pointer transition-colors ${active ? f.activeColor : f.color}`}
+                className={`text-[11px] font-semibold px-2.5 py-1 rounded-md border cursor-pointer transition-colors ${
+                  active
+                    ? 'bg-text text-white border-text'
+                    : 'bg-white text-text-muted border-border hover:border-text-muted hover:text-text'
+                }`}
               >
-                {f.label} {count > 0 ? `(${count})` : ''}
+                {f.label}{count > 0 ? ` · ${count}` : ''}
               </button>
             );
           })}
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-2.5 py-2.5 flex flex-col gap-2">
+      <div className="flex-1 overflow-y-auto px-3 py-3 flex flex-col gap-2">
         {filtered.map((lead) => {
           const u = getUrgencyStyle(lead.urgency);
           return (
             <div
               key={lead.rowIndex}
               onClick={() => openLeadModal(lead)}
-              className={`${u.bg} border ${u.border} rounded-lg p-3 cursor-pointer hover:shadow-md transition-all`}
+              className="bg-white border border-border rounded-lg p-3 cursor-pointer hover:border-text-subtle hover:shadow-[var(--shadow-card)] transition-all"
             >
               <div className="flex items-center gap-2 mb-1.5">
-                <span className={`w-2 h-2 rounded-full shrink-0 ${u.dot}`} />
-                <span className="text-[13px] font-bold text-[#2a2a2a] truncate flex-1">
+                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${u.dot}`} />
+                <span className="text-[13px] font-semibold text-text truncate flex-1">
                   {lead.nombre}
-                  {(() => { const ph = String(lead.whatsapp || '').replace(/\D/g, '').slice(-4); return ph ? <span className="text-[10px] text-[#aaa] font-normal ml-1">...{ph}</span> : null; })()}
                 </span>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] text-[#888] bg-white/60 px-1.5 py-0.5 rounded">{lead.stage}</span>
-                <span className={`text-[11px] font-bold ${u.text}`}>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] text-text-muted truncate">{lead.stage}</span>
+                <span className={`text-[11px] font-semibold ${u.text} shrink-0`}>
                   {lead.urgency === 'hoy' ? 'Hoy' : lead.urgency === 'vencido' ? `${lead.days}d atraso` : `en ${lead.days}d`}
                 </span>
               </div>
               {lead.ciudad && (
-                <div className="text-[10px] text-[#999] mt-1">{lead.ciudad}</div>
+                <div className="text-[10px] text-text-subtle mt-1">{lead.ciudad}</div>
               )}
             </div>
           );
         })}
         {filtered.length === 0 && (
-          <div className="text-center text-[12px] text-[#bbb] py-6">Sin seguimientos en esta categoria</div>
+          <div className="text-center text-[12px] text-text-subtle py-8 italic">Sin seguimientos en esta categoría</div>
         )}
       </div>
     </div>

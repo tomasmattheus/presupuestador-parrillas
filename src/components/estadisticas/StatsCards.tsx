@@ -1,5 +1,7 @@
-import type { Lead } from '../../types';
 import { useMemo } from 'react';
+import { Users, FileSignature, Trophy, Target } from 'lucide-react';
+import type { Lead } from '../../types';
+import { MetricCard } from '../ui/card';
 
 interface Props {
   leads: Lead[];
@@ -18,26 +20,15 @@ function computeStats(leads: Lead[], ganados: Lead[]) {
   return { totalLeads, ganadosCount, perdidos, presupEnviados, presupTotal, tasaCierre, tasaPresup };
 }
 
-function computeDelta(current: number, previous: number): { pct: number; sign: 'up' | 'down' | 'flat' } | null {
+function computeDelta(current: number, previous: number): { value: string; sign: 'up' | 'down' | 'flat' } | null {
   if (previous === 0) {
-    if (current === 0) return { pct: 0, sign: 'flat' };
+    if (current === 0) return { value: '0%', sign: 'flat' };
     return null;
   }
   const pct = Math.round(((current - previous) / previous) * 100);
   if (Math.abs(pct) > 500) return null;
-  if (pct === 0) return { pct: 0, sign: 'flat' };
-  return { pct, sign: pct > 0 ? 'up' : 'down' };
-}
-
-function DeltaBadge({ delta }: { delta: ReturnType<typeof computeDelta> }) {
-  if (!delta) return null;
-  const color = delta.sign === 'up' ? 'text-[#10b981]' : delta.sign === 'down' ? 'text-[#ef4444]' : 'text-[#888]';
-  const arrow = delta.sign === 'up' ? '▲' : delta.sign === 'down' ? '▼' : '–';
-  return (
-    <div className={`text-[11px] font-semibold mt-1.5 ${color}`}>
-      {arrow} {Math.abs(delta.pct)}% vs período anterior
-    </div>
-  );
+  if (pct === 0) return { value: '0%', sign: 'flat' };
+  return { value: Math.abs(pct) + '%', sign: pct > 0 ? 'up' : 'down' };
 }
 
 export default function StatsCards({ leads, ganados, prevLeads }: Props) {
@@ -49,34 +40,32 @@ export default function StatsCards({ leads, ganados, prevLeads }: Props) {
     return computeStats(prevLeads, prevGanados);
   }, [prevLeads]);
 
-  const cards: { number: string; label: string; color: string; deltaKey: keyof ReturnType<typeof computeStats> }[] = [
-    { number: String(stats.totalLeads), label: 'Total leads', color: '#1DA1F2', deltaKey: 'totalLeads' },
-    { number: stats.tasaPresup + '%', label: 'Presupuestados (' + stats.presupTotal + ' de ' + stats.totalLeads + ')', color: '#f59e0b', deltaKey: 'tasaPresup' },
-    { number: String(stats.ganadosCount), label: 'Cerrados ganados', color: '#10b981', deltaKey: 'ganadosCount' },
-    { number: stats.tasaCierre + '%', label: 'Tasa de cierre (' + stats.ganadosCount + ' de ' + stats.totalLeads + ')', color: '#8b5cf6', deltaKey: 'tasaCierre' },
+  const cards: {
+    label: string;
+    value: string;
+    accent: string;
+    icon: React.ReactNode;
+    key: keyof ReturnType<typeof computeStats>;
+  }[] = [
+    { label: 'Total leads', value: String(stats.totalLeads), accent: '#0ea5e9', icon: <Users size={14} strokeWidth={2} />, key: 'totalLeads' },
+    { label: 'Tasa de presupuesto', value: stats.tasaPresup + '%', accent: '#f59e0b', icon: <FileSignature size={14} strokeWidth={2} />, key: 'tasaPresup' },
+    { label: 'Cerrados ganados', value: String(stats.ganadosCount), accent: '#10b981', icon: <Trophy size={14} strokeWidth={2} />, key: 'ganadosCount' },
+    { label: 'Tasa de cierre', value: stats.tasaCierre + '%', accent: '#8b5cf6', icon: <Target size={14} strokeWidth={2} />, key: 'tasaCierre' },
   ];
 
   return (
     <div className="grid grid-cols-4 gap-4 mb-6">
       {cards.map((card) => {
-        const delta = prevStats ? computeDelta(stats[card.deltaKey] as number, prevStats[card.deltaKey] as number) : null;
+        const delta = prevStats ? computeDelta(stats[card.key] as number, prevStats[card.key] as number) : null;
         return (
-          <div
+          <MetricCard
             key={card.label}
-            className="bg-white rounded-[10px] py-5 px-6 shadow-[0_1px_4px_rgba(0,0,0,0.06)] relative overflow-hidden transition-transform hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)]"
-          >
-            <div
-              className="absolute top-0 left-0 w-1 h-full rounded-l-[10px]"
-              style={{ background: card.color }}
-            />
-            <div className="text-[28px] font-black text-[#2a2a2a] leading-none">
-              {card.number}
-            </div>
-            <div className="text-xs text-[#888] font-semibold uppercase tracking-wide mt-1.5">
-              {card.label}
-            </div>
-            {prevStats && <DeltaBadge delta={delta} />}
-          </div>
+            label={card.label}
+            value={card.value}
+            accent={card.accent}
+            icon={card.icon}
+            delta={delta}
+          />
         );
       })}
     </div>

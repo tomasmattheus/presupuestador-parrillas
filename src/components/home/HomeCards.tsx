@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
-import { Workflow, FileText, Users, ShoppingCart, TrendingUp, Settings } from 'lucide-react';
+import { Workflow, FileText, Users, ShoppingCart, TrendingUp, Settings, Hammer } from 'lucide-react';
 import { useLeads } from '../../hooks/useLeads';
 import { usePresupuestos } from '../../hooks/usePresupuestos';
 import { useVentas } from '../../hooks/useVentas';
 import { formatPrice } from '../../lib/formatters';
+import { parseGoogleDate } from '../../lib/dates';
 import { cn } from '../../lib/utils';
 import type { TabId } from '../../types';
 
@@ -27,9 +28,8 @@ export default function HomeCards({ onNavigate }: HomeCardsProps) {
     const thisMonth = now.getMonth();
     const thisYear = now.getFullYear();
     return budgetsFlat.filter((b) => {
-      const ts = parseInt(b.id);
-      if (isNaN(ts)) return false;
-      const d = new Date(ts);
+      const d = parseGoogleDate(b.fecha);
+      if (!d || isNaN(d.getTime())) return false;
       return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
     }).length;
   }, [budgetsFlat]);
@@ -38,6 +38,14 @@ export default function HomeCards({ onNavigate }: HomeCardsProps) {
     () => leads.filter((l) => l.stage === 'Cerrado Ganado'),
     [leads]
   );
+
+  const enProduccion = useMemo(() => {
+    return ganados.filter((lead) => {
+      const key = lead.nombre + '|' + lead.whatsapp;
+      const estado = ventasMap[key]?.estadoEntrega || 'Pendiente fabricacion';
+      return estado !== 'Entregado e instalado';
+    }).length;
+  }, [ganados, ventasMap]);
 
   const facturacionTotal = useMemo(() => {
     let total = 0;
@@ -66,6 +74,7 @@ export default function HomeCards({ onNavigate }: HomeCardsProps) {
   }[] = [
     { id: 'pipeline', label: 'Pipeline activo', value: loading ? '…' : String(activeLeads), color: '#0ea5e9', icon: Workflow },
     { id: 'presupuestos', label: 'Presupuestos del mes', value: loading ? '…' : String(budgetsThisMonth), color: '#f59e0b', icon: FileText },
+    { id: 'produccion', label: 'En producción', value: loading ? '…' : String(enProduccion), color: '#06b6d4', icon: Hammer },
     { id: 'contactos', label: 'Contactos', value: loading ? '…' : String(leads.length), color: '#8b5cf6', icon: Users },
     { id: 'ventas', label: 'Facturación', value: loading ? '…' : facDisplay, color: '#10b981', icon: ShoppingCart },
     { id: 'estadisticas', label: 'Tasa de cierre', value: loading ? '…' : `${tasaCierre}%`, color: '#ef4444', icon: TrendingUp },
@@ -73,7 +82,7 @@ export default function HomeCards({ onNavigate }: HomeCardsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-6 gap-3 mb-5">
+    <div className="grid grid-cols-7 gap-3 mb-5">
       {cards.map((card) => {
         const Icon = card.icon;
         return (

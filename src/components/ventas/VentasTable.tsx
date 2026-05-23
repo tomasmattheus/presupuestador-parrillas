@@ -1,8 +1,10 @@
 import { useRef, useCallback, useContext } from 'react';
+import { Pencil, Trash2 } from 'lucide-react';
 import type { Lead, VentaStore } from '../../types';
 import { parseGoogleDate } from '../../lib/dates';
 import { formatPrice, parsePriceInput } from '../../lib/formatters';
 import { ModalContext } from '../../contexts/ModalContext';
+import { Select } from '../ui/select';
 
 function toISODate(raw: string | null | undefined): string {
   if (!raw) return '';
@@ -43,10 +45,10 @@ function getVentaKey(lead: Lead): string {
 
 function getMedidas(lead: Lead): string {
   const parts: string[] = [];
-  if (lead.ancho && lead.ancho !== '-' && lead.ancho !== '--') parts.push('A: ' + lead.ancho);
-  if (lead.alto && lead.alto !== '-' && lead.alto !== '--') parts.push('H: ' + lead.alto);
-  if (lead.boca && lead.boca !== '-' && lead.boca !== '--') parts.push('B: ' + lead.boca);
-  return parts.length > 0 ? parts.join(' | ') : '-';
+  if (lead.ancho && lead.ancho !== '-' && lead.ancho !== '--') parts.push(lead.ancho);
+  if (lead.alto && lead.alto !== '-' && lead.alto !== '--') parts.push(lead.alto);
+  if (lead.boca && lead.boca !== '-' && lead.boca !== '--') parts.push(lead.boca);
+  return parts.length > 0 ? parts.join('×') : '-';
 }
 
 function InlineInput({
@@ -121,17 +123,13 @@ function InlineSelect({
   onChange: (val: string) => void;
 }) {
   return (
-    <select
-      defaultValue={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="bg-white border border-[#ddd] py-1 px-1.5 text-xs font-sans text-[#2a2a2a] rounded cursor-pointer hover:border-[#bbb] focus:border-brand outline-none transition-all"
-    >
-      {options.map((opt) => (
-        <option key={opt} value={opt} className="bg-white text-[#2a2a2a]">
-          {opt || '-- Seleccionar --'}
-        </option>
-      ))}
-    </select>
+    <Select
+      size="sm"
+      value={value}
+      onChange={onChange}
+      placeholder="-- Seleccionar --"
+      options={options.filter((o) => o).map((opt) => ({ value: opt, label: opt }))}
+    />
   );
 }
 
@@ -151,11 +149,11 @@ export default function VentasTable({
   const allChecked = ganados.length > 0 && selectedIds.size === ganados.length;
 
   return (
-    <div className="flex-1 overflow-auto bg-white rounded-[10px] shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
-      <table className="w-full border-collapse text-[13px]">
+    <div className="flex-1 overflow-auto bg-white rounded-xl border border-border shadow-[var(--shadow-card)]">
+      <table className="w-full border-collapse text-[13px] table-fixed">
         <thead>
           <tr>
-            <th className="sticky top-0 bg-[#fafafa] py-2.5 px-3 text-left text-[11px] font-bold text-[#888] uppercase tracking-wide border-b-2 border-[#eee] z-10 w-[30px]">
+            <th className="sticky top-0 bg-white py-3 px-3 text-left text-[10px] font-bold text-[#888] uppercase tracking-[0.8px] border-b border-[#eee] z-10 w-[36px]">
               <input
                 type="checkbox"
                 checked={allChecked}
@@ -163,24 +161,24 @@ export default function VentasTable({
                 className="cursor-pointer"
               />
             </th>
-            <th className="sticky top-0 bg-[#fafafa] py-2.5 px-3 text-left text-[11px] font-bold text-[#888] uppercase tracking-wide border-b-2 border-[#eee] z-10 whitespace-nowrap">Cliente</th>
-            <th className="sticky top-0 bg-[#fafafa] py-2.5 px-3 text-left text-[11px] font-bold text-[#888] uppercase tracking-wide border-b-2 border-[#eee] z-10 whitespace-nowrap">Ciudad</th>
-            <th className="sticky top-0 bg-[#fafafa] py-2.5 px-3 text-left text-[11px] font-bold text-[#888] uppercase tracking-wide border-b-2 border-[#eee] z-10 whitespace-nowrap">
+            <th className="sticky top-0 bg-white py-3 px-3 text-left text-[10px] font-bold text-[#888] uppercase tracking-[0.8px] border-b border-[#eee] z-10 whitespace-nowrap w-[160px]">Cliente</th>
+            <th className="sticky top-0 bg-white py-3 px-3 text-left text-[10px] font-bold text-[#888] uppercase tracking-[0.8px] border-b border-[#eee] z-10 whitespace-nowrap w-[110px]">Ciudad</th>
+            <th className="sticky top-0 bg-white py-3 px-3 text-left text-[10px] font-bold text-[#888] uppercase tracking-[0.8px] border-b border-[#eee] z-10 whitespace-nowrap w-[155px]">
               Fecha cierre
               <span className="ml-1.5 bg-[#ef4444] text-white text-[8px] font-black px-1 py-0.5 rounded leading-none tracking-wider align-middle">NUEVO</span>
             </th>
-            <th className="sticky top-0 bg-[#fafafa] py-2.5 px-3 text-left text-[11px] font-bold text-[#888] uppercase tracking-wide border-b-2 border-[#eee] z-10 whitespace-nowrap">
+            <th className="sticky top-0 bg-white py-3 px-3 text-left text-[10px] font-bold text-[#888] uppercase tracking-[0.8px] border-b border-[#eee] z-10 whitespace-nowrap w-[155px]">
               Fecha entrega
               <span className="ml-1.5 bg-[#ef4444] text-white text-[8px] font-black px-1 py-0.5 rounded leading-none tracking-wider align-middle">NUEVO</span>
             </th>
-            <th className="sticky top-0 bg-[#fafafa] py-2.5 px-3 text-left text-[11px] font-bold text-[#888] uppercase tracking-wide border-b-2 border-[#eee] z-10 whitespace-nowrap">Sistema</th>
-            <th className="sticky top-0 bg-[#fafafa] py-2.5 px-3 text-left text-[11px] font-bold text-[#888] uppercase tracking-wide border-b-2 border-[#eee] z-10 whitespace-nowrap">Material</th>
-            <th className="sticky top-0 bg-[#fafafa] py-2.5 px-3 text-left text-[11px] font-bold text-[#888] uppercase tracking-wide border-b-2 border-[#eee] z-10 whitespace-nowrap">Medidas</th>
-            <th className="sticky top-0 bg-[#fafafa] py-2.5 px-3 text-left text-[11px] font-bold text-[#888] uppercase tracking-wide border-b-2 border-[#eee] z-10 whitespace-nowrap">Monto</th>
-            <th className="sticky top-0 bg-[#fafafa] py-2.5 px-3 text-left text-[11px] font-bold text-[#888] uppercase tracking-wide border-b-2 border-[#eee] z-10 whitespace-nowrap">Forma pago</th>
-            <th className="sticky top-0 bg-[#fafafa] py-2.5 px-3 text-left text-[11px] font-bold text-[#888] uppercase tracking-wide border-b-2 border-[#eee] z-10 whitespace-nowrap">Estado entrega</th>
-            <th className="sticky top-0 bg-[#fafafa] py-2.5 px-3 text-left text-[11px] font-bold text-[#888] uppercase tracking-wide border-b-2 border-[#eee] z-10 whitespace-nowrap">Notas</th>
-            <th className="sticky top-0 bg-[#fafafa] py-2.5 px-3 text-left text-[11px] font-bold text-[#888] uppercase tracking-wide border-b-2 border-[#eee] z-10 whitespace-nowrap">Acciones</th>
+            <th className="sticky top-0 bg-white py-3 px-3 text-left text-[10px] font-bold text-[#888] uppercase tracking-[0.8px] border-b border-[#eee] z-10 whitespace-nowrap w-[110px]">Sistema</th>
+            <th className="sticky top-0 bg-white py-3 px-3 text-left text-[10px] font-bold text-[#888] uppercase tracking-[0.8px] border-b border-[#eee] z-10 whitespace-nowrap w-[110px]">Material</th>
+            <th className="sticky top-0 bg-white py-3 px-3 text-left text-[10px] font-bold text-[#888] uppercase tracking-[0.8px] border-b border-[#eee] z-10 whitespace-nowrap w-[110px]">Medidas</th>
+            <th className="sticky top-0 bg-white py-3 px-3 text-left text-[10px] font-bold text-[#888] uppercase tracking-[0.8px] border-b border-[#eee] z-10 whitespace-nowrap w-[150px]">Monto</th>
+            <th className="sticky top-0 bg-white py-3 px-3 text-left text-[10px] font-bold text-[#888] uppercase tracking-[0.8px] border-b border-[#eee] z-10 whitespace-nowrap w-[150px]">Forma pago</th>
+            <th className="sticky top-0 bg-white py-3 px-3 text-left text-[10px] font-bold text-[#888] uppercase tracking-[0.8px] border-b border-[#eee] z-10 whitespace-nowrap w-[180px]">Estado entrega</th>
+            <th className="sticky top-0 bg-white py-3 px-3 text-left text-[10px] font-bold text-[#888] uppercase tracking-[0.8px] border-b border-[#eee] z-10 whitespace-nowrap w-[160px]">Notas</th>
+            <th className="sticky top-0 bg-white py-3 px-3 text-left text-[10px] font-bold text-[#888] uppercase tracking-[0.8px] border-b border-[#eee] z-10 whitespace-nowrap w-[90px]">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -190,9 +188,9 @@ export default function VentasTable({
             return (
               <tr
                 key={lead.rowIndex}
-                className="transition-colors hover:bg-[#f0f7ff] even:bg-[#fafafa] even:hover:bg-[#f0f7ff]"
+                className="h-[56px] transition-colors hover:bg-[#f8fafc]"
               >
-                <td className="py-2 px-3 border-b border-[#eee] align-middle">
+                <td className="py-3 px-3 border-b border-[#f0f0f0] align-middle">
                   <input
                     type="checkbox"
                     checked={selectedIds.has(lead.rowIndex)}
@@ -200,39 +198,39 @@ export default function VentasTable({
                     className="cursor-pointer"
                   />
                 </td>
-                <td className="py-2 px-3 border-b border-[#eee] align-middle font-bold">
+                <td className="py-3 px-3 border-b border-[#f0f0f0] align-middle font-bold whitespace-nowrap">
                   <button
                     onClick={() => openLeadModal(lead)}
-                    className="text-brand hover:underline cursor-pointer bg-transparent border-none font-bold text-[13px] font-sans p-0"
+                    className="text-brand hover:underline cursor-pointer bg-transparent border-none font-bold text-[13px] font-sans p-0 truncate max-w-full block text-left"
                   >
                     {lead.nombre}
                   </button>
                 </td>
-                <td className="py-2 px-3 border-b border-[#eee] align-middle text-[#888]">
+                <td className="py-3 px-3 border-b border-[#f0f0f0] align-middle text-text-muted whitespace-nowrap truncate">
                   {lead.ciudad || '-'}
                 </td>
-                <td className="py-2 px-3 border-b border-[#eee] align-middle">
+                <td className="py-3 px-3 border-b border-[#f0f0f0] align-middle">
                   <InlineDate
                     value={vdata.fechaCierre || lead.fecha || ''}
                     onSave={(val) => onSaveField(key, 'fechaCierre', val)}
                   />
                 </td>
-                <td className="py-2 px-3 border-b border-[#eee] align-middle">
+                <td className="py-3 px-3 border-b border-[#f0f0f0] align-middle">
                   <InlineDate
                     value={vdata.fechaEntrega || ''}
                     onSave={(val) => onSaveField(key, 'fechaEntrega', val)}
                   />
                 </td>
-                <td className="py-2 px-3 border-b border-[#eee] align-middle text-[#888]">
+                <td className="py-3 px-3 border-b border-[#f0f0f0] align-middle text-text-muted whitespace-nowrap truncate">
                   {lead.sistema || '-'}
                 </td>
-                <td className="py-2 px-3 border-b border-[#eee] align-middle text-[#888]">
+                <td className="py-3 px-3 border-b border-[#f0f0f0] align-middle text-text-muted whitespace-nowrap truncate">
                   {lead.material || '-'}
                 </td>
-                <td className="py-2 px-3 border-b border-[#eee] align-middle text-[#888]">
+                <td className="py-3 px-3 border-b border-[#f0f0f0] align-middle text-text-muted whitespace-nowrap truncate text-[12px]">
                   {getMedidas(lead)}
                 </td>
-                <td className="py-2 px-3 border-b border-[#eee] align-middle">
+                <td className="py-3 px-3 border-b border-[#f0f0f0] align-middle">
                   <InlineInput
                     value={String(vdata.monto || 0)}
                     placeholder="$ 0"
@@ -241,21 +239,21 @@ export default function VentasTable({
                     onSave={(val) => onSaveField(key, 'monto', Number(val))}
                   />
                 </td>
-                <td className="py-2 px-3 border-b border-[#eee] align-middle">
+                <td className="py-3 px-3 border-b border-[#f0f0f0] align-middle">
                   <InlineSelect
                     value={vdata.formaPago || ''}
                     options={PAGO_OPTIONS}
                     onChange={(val) => onSaveField(key, 'formaPago', val)}
                   />
                 </td>
-                <td className="py-2 px-3 border-b border-[#eee] align-middle">
+                <td className="py-3 px-3 border-b border-[#f0f0f0] align-middle">
                   <InlineSelect
                     value={vdata.estadoEntrega || ''}
                     options={ENTREGA_OPTIONS}
                     onChange={(val) => onSaveField(key, 'estadoEntrega', val)}
                   />
                 </td>
-                <td className="py-2 px-3 border-b border-[#eee] align-middle">
+                <td className="py-3 px-3 border-b border-[#f0f0f0] align-middle">
                   <InlineInput
                     value={vdata.notas || ''}
                     placeholder="Agregar nota..."
@@ -263,20 +261,20 @@ export default function VentasTable({
                     onSave={(val) => onSaveField(key, 'notas', val)}
                   />
                 </td>
-                <td className="py-2 px-3 border-b border-[#eee] align-middle whitespace-nowrap">
+                <td className="py-3 px-3 border-b border-[#f0f0f0] align-middle whitespace-nowrap">
                   <button
                     onClick={() => onEdit(key)}
                     title="Editar venta"
-                    className="bg-transparent border border-[#ddd] text-[#888] rounded w-7 h-7 text-sm cursor-pointer hover:border-brand hover:text-brand transition-colors mr-1"
+                    className="bg-transparent border border-border text-text-muted rounded-md w-7 h-7 inline-flex items-center justify-center cursor-pointer hover:border-brand hover:text-brand hover:bg-brand-soft transition-colors mr-1"
                   >
-                    &#9998;
+                    <Pencil size={12} strokeWidth={2} />
                   </button>
                   <button
                     onClick={() => onDelete(lead)}
                     title="Eliminar venta"
-                    className="bg-transparent border border-[#ddd] text-[#888] rounded w-7 h-7 text-sm cursor-pointer hover:border-danger hover:text-danger transition-colors"
+                    className="bg-transparent border border-border text-text-muted rounded-md w-7 h-7 inline-flex items-center justify-center cursor-pointer hover:border-danger hover:text-danger hover:bg-danger-soft transition-colors"
                   >
-                    &#10007;
+                    <Trash2 size={12} strokeWidth={2} />
                   </button>
                 </td>
               </tr>

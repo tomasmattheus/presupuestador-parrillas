@@ -1,4 +1,6 @@
+import { ShoppingCart, DollarSign, Receipt } from 'lucide-react';
 import { formatPrice } from '../../lib/formatters';
+import { MetricCard } from '../ui/card';
 
 interface Metrics {
   totalMonto: number;
@@ -11,55 +13,46 @@ interface Props {
   prev?: Metrics | null;
 }
 
-const CARDS = [
-  { key: 'count' as const, label: 'Ventas cerradas', format: false },
-  { key: 'totalMonto' as const, label: 'Facturacion total', format: true },
-  { key: 'ticketPromedio' as const, label: 'Ticket promedio', format: true },
-];
-
-function computeDelta(current: number, previous: number): { pct: number; sign: 'up' | 'down' | 'flat' } | null {
+function computeDelta(current: number, previous: number): { value: string; sign: 'up' | 'down' | 'flat' } | null {
   if (previous === 0) {
-    if (current === 0) return { pct: 0, sign: 'flat' };
+    if (current === 0) return { value: '0%', sign: 'flat' };
     return null;
   }
   const pct = Math.round(((current - previous) / previous) * 100);
   if (Math.abs(pct) > 500) return null;
-  if (pct === 0) return { pct: 0, sign: 'flat' };
-  return { pct, sign: pct > 0 ? 'up' : 'down' };
-}
-
-function DeltaBadge({ delta }: { delta: ReturnType<typeof computeDelta> }) {
-  if (!delta) return null;
-  const color = delta.sign === 'up' ? 'text-[#10b981]' : delta.sign === 'down' ? 'text-[#ef4444]' : 'text-[#888]';
-  const arrow = delta.sign === 'up' ? '▲' : delta.sign === 'down' ? '▼' : '–';
-  return (
-    <div className={`text-[11px] font-semibold mt-1.5 ${color}`}>
-      {arrow} {Math.abs(delta.pct)}% vs período anterior
-    </div>
-  );
+  if (pct === 0) return { value: '0%', sign: 'flat' };
+  return { value: Math.abs(pct) + '%', sign: pct > 0 ? 'up' : 'down' };
 }
 
 export default function VentasMetrics({ metrics, prev }: Props) {
+  const cards: {
+    key: keyof Metrics;
+    label: string;
+    accent: string;
+    icon: React.ReactNode;
+    format: boolean;
+  }[] = [
+    { key: 'count', label: 'Ventas cerradas', accent: '#0ea5e9', icon: <ShoppingCart size={14} strokeWidth={2} />, format: false },
+    { key: 'totalMonto', label: 'Facturación total', accent: '#10b981', icon: <DollarSign size={14} strokeWidth={2} />, format: true },
+    { key: 'ticketPromedio', label: 'Ticket promedio', accent: '#f59e0b', icon: <Receipt size={14} strokeWidth={2} />, format: true },
+  ];
+
   return (
     <div className="grid grid-cols-3 gap-4 mb-6">
-      {CARDS.map((card) => {
+      {cards.map((card) => {
         const value = metrics[card.key] ?? 0;
         const prevValue = prev?.[card.key] ?? 0;
         const delta = prev ? computeDelta(value, prevValue) : null;
+        const displayValue = card.format ? formatPrice(Math.round(value)) : String(value);
         return (
-          <div
+          <MetricCard
             key={card.key}
-            className="bg-white rounded-[10px] py-5 px-6 shadow-[0_1px_4px_rgba(0,0,0,0.06)] relative overflow-hidden"
-          >
-            <div className="absolute top-0 left-0 w-1 h-full bg-success rounded-l-[10px]" />
-            <div className="text-[28px] font-black text-[#2a2a2a] leading-none">
-              {card.format ? formatPrice(Math.round(value)) : value}
-            </div>
-            <div className="text-xs text-[#888] font-semibold uppercase tracking-wide mt-1.5">
-              {card.label}
-            </div>
-            {prev && <DeltaBadge delta={delta} />}
-          </div>
+            label={card.label}
+            value={displayValue}
+            accent={card.accent}
+            icon={card.icon}
+            delta={delta}
+          />
         );
       })}
     </div>
