@@ -2,6 +2,7 @@ import { useState, useContext, type DragEvent, type MouseEvent } from 'react';
 import type { Lead, VentaStore } from '../../types';
 import { formatDateAR, parseGoogleDate } from '../../lib/dates';
 import { formatPrice } from '../../lib/formatters';
+import { getStageEntryDate } from '../../lib/stageTimer';
 import { ModalContext } from '../../contexts/ModalContext';
 
 interface Props {
@@ -29,7 +30,8 @@ export default function ProduccionCard({ lead, venta, onDragStart }: Props) {
   const [dragging, setDragging] = useState(false);
   const { openLeadModal } = useContext(ModalContext);
 
-  const fechaCierre = venta?.fechaCierre || lead.fecha || '';
+  const stageEntryISO = getStageEntryDate(lead.rowIndex, 'Cerrado Ganado');
+  const fechaCierre = venta?.fechaCierre || stageEntryISO || '';
   const fechaEntrega = venta?.fechaEntrega || '';
   const monto = venta?.monto || 0;
 

@@ -4,6 +4,7 @@ import KanbanColumn from './KanbanColumn';
 interface KanbanBoardProps {
   stages: PipelineStage[];
   leads: Lead[];
+  searchTerm?: string;
   onDrop: (stageName: string) => void;
   onDragStart: (lead: Lead) => void;
   onOpenModal: (lead: Lead) => void;
@@ -15,6 +16,7 @@ interface KanbanBoardProps {
 export default function KanbanBoard({
   stages,
   leads,
+  searchTerm = '',
   onDrop,
   onDragStart,
   onOpenModal,
@@ -29,6 +31,7 @@ export default function KanbanBoard({
           key={stage.name}
           stage={stage}
           leads={leads.filter((l) => l.stage === stage.name)}
+          searchTerm={searchTerm}
           onDrop={onDrop}
           onDragStart={onDragStart}
           onOpenModal={onOpenModal}

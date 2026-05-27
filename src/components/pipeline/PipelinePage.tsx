@@ -5,6 +5,7 @@ import { usePresupuestos } from '../../hooks/usePresupuestos';
 import { usePipelineStages } from '../../hooks/usePipelineStages';
 import { usePipelineDragDrop } from '../../hooks/usePipelineDragDrop';
 import { useDataRefresh } from '../../hooks/useDataRefresh';
+import { usePipelineFilters } from '../../hooks/usePipelineFilters';
 import { updateLeadField, deleteLead } from '../../services/leads.service';
 import { recordStageEntry, initStageTimestamps, getDaysInStage } from '../../lib/stageTimer';
 import { sendPurchaseEvent } from '../../services/meta-capi';
@@ -13,6 +14,7 @@ import type { Lead } from '../../types';
 import KanbanBoard from './KanbanBoard';
 import CerradosSection from './CerradosSection';
 import StaleLeadsPanel from './StaleLeadsPanel';
+import PipelineFilters from './PipelineFilters';
 import LoadingOverlay from '../common/LoadingOverlay';
 import NuevaVentaModal from '../ventas/NuevaVentaModal';
 
@@ -136,7 +138,7 @@ export default function PipelinePage() {
     [updateStageOptimistic]
   );
 
-  const filteredLeads = useMemo(() => {
+  const archiveFilteredLeads = useMemo(() => {
     if (!hideArchived) return leads;
     return leads.filter((l) => {
       if (l.stage === 'Cerrado Ganado' || l.stage === 'Cerrado Perdido') return true;
@@ -150,16 +152,21 @@ export default function PipelinePage() {
     ).length;
   }, [leads]);
 
+  const {
+    filters,
+    filteredLeads,
+    hasActiveFilters,
+    update: updateFilter,
+    reset: resetFilters,
+  } = usePipelineFilters(archiveFilteredLeads);
+
   if (isLoading || (isFetching && leads.length === 0)) return <div className="flex-1 flex items-center justify-center"><LoadingOverlay /></div>;
 
   return (
     <div className="flex flex-1 h-full overflow-hidden">
       <div className="flex flex-col flex-1 h-full bg-bg overflow-x-auto overflow-y-auto p-8">
-        <div className="flex items-center justify-between gap-3 mb-6 shrink-0">
-          <div>
-            <h1 className="text-[24px] font-bold tracking-tight text-text m-0 leading-tight">Pipeline</h1>
-            <div className="text-[13px] text-text-muted mt-1">{filteredLeads.length} de {leads.length} leads</div>
-          </div>
+        <div className="flex items-center justify-between gap-3 mb-5 shrink-0">
+          <h1 className="text-[24px] font-bold tracking-tight text-text m-0 leading-tight">Pipeline</h1>
           {archivedCount > 0 && (
             <label className="flex items-center gap-2 text-[12px] text-text-muted cursor-pointer">
               <input type="checkbox" checked={hideArchived} onChange={() => setHideArchived(!hideArchived)} className="accent-brand" />
@@ -168,9 +175,20 @@ export default function PipelinePage() {
           )}
         </div>
 
+        <PipelineFilters
+          leads={archiveFilteredLeads}
+          filters={filters}
+          update={updateFilter}
+          reset={resetFilters}
+          hasActiveFilters={hasActiveFilters}
+          totalShown={filteredLeads.length}
+          totalAll={leads.length}
+        />
+
         <KanbanBoard
           stages={activeStages}
           leads={filteredLeads}
+          searchTerm={filters.search}
           onDrop={onDrop}
           onDragStart={onDragStart}
           onOpenModal={openLeadModal}

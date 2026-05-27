@@ -6,6 +6,7 @@ import { useLeadActivityDate } from '../../hooks/useLeadActivityDates';
 
 interface KanbanCardProps {
   lead: Lead;
+  searchTerm?: string;
   onDragStart: (lead: Lead) => void;
   onOpenModal: (lead: Lead) => void;
   onMarkWon: (lead: Lead) => void;
@@ -13,8 +14,24 @@ interface KanbanCardProps {
   onDelete: (lead: Lead) => void;
 }
 
+function Highlight({ text, term }: { text: string; term: string }) {
+  if (!term) return <>{text}</>;
+  const lowerText = text.toLowerCase();
+  const lowerTerm = term.toLowerCase();
+  const idx = lowerText.indexOf(lowerTerm);
+  if (idx < 0) return <>{text}</>;
+  return (
+    <>
+      {text.slice(0, idx)}
+      <span className="bg-[#fef08a] text-[#713f12] rounded-sm">{text.slice(idx, idx + term.length)}</span>
+      {text.slice(idx + term.length)}
+    </>
+  );
+}
+
 export default function KanbanCard({
   lead,
+  searchTerm = '',
   onDragStart,
   onOpenModal,
   onMarkWon,
@@ -136,12 +153,14 @@ export default function KanbanCard({
           className={`w-2 h-2 rounded-full shrink-0 ${dotClass}`}
           title={lead.hasMeasures ? 'Tiene medidas cargadas' : 'Sin medidas'}
         />
-        {lead.nombre}
+        <Highlight text={lead.nombre} term={searchTerm} />
         {(() => { const ph = String(lead.whatsapp || '').replace(/\D/g, '').slice(-4); return ph ? <span className="text-[10px] text-[#bbb] font-normal">...{ph}</span> : null; })()}
       </div>
 
       {lead.ciudad && (
-        <div className="text-xs text-[#666] mb-0.5">{lead.ciudad}</div>
+        <div className="text-xs text-[#666] mb-0.5">
+          <Highlight text={lead.ciudad} term={searchTerm} />
+        </div>
       )}
 
       {detailText && (

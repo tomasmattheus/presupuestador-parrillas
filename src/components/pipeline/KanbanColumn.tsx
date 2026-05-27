@@ -5,6 +5,7 @@ import KanbanCard from './KanbanCard';
 interface KanbanColumnProps {
   stage: PipelineStage;
   leads: Lead[];
+  searchTerm?: string;
   onDrop: (stageName: string) => void;
   onDragStart: (lead: Lead) => void;
   onOpenModal: (lead: Lead) => void;
@@ -16,6 +17,7 @@ interface KanbanColumnProps {
 export default function KanbanColumn({
   stage,
   leads,
+  searchTerm = '',
   onDrop,
   onDragStart,
   onOpenModal,
@@ -79,6 +81,7 @@ export default function KanbanColumn({
             <KanbanCard
               key={lead.rowIndex}
               lead={lead}
+              searchTerm={searchTerm}
               onDragStart={onDragStart}
               onOpenModal={onOpenModal}
               onMarkWon={onMarkWon}
