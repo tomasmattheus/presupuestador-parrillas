@@ -20,7 +20,7 @@ export function getMonto(lead: Lead, ventasMap: Record<string, VentaStore>): num
 
 export function getCierreYmd(lead: Lead, ventasMap: Record<string, VentaStore>): string {
   const venta = ventasMap[ventaKey(lead)];
-  const iso = venta?.fechaCierre || getStageEntryDate(lead.rowIndex, WON_STAGE) || '';
+  const iso = venta?.fechaCierre || getStageEntryDate(lead.rowIndex, WON_STAGE) || lead.fecha || '';
   return toYmd(iso);
 }
 

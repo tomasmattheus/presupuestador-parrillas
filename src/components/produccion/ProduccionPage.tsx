@@ -5,14 +5,11 @@ import { useVentas } from '../../hooks/useVentas';
 import { saveVenta } from '../../services/ventas.service';
 import { ModalContext } from '../../contexts/ModalContext';
 import type { Lead, VentaStore } from '../../types';
+import { isRealSale, ventaKey } from '../../lib/salesMetrics';
 import ProduccionBoard from './ProduccionBoard';
 import LoadingOverlay from '../common/LoadingOverlay';
 
 const ALL_STAGES = ['Pendiente fabricacion', 'En fabricacion', 'Listo para entregar', 'Entregado e instalado'];
-
-function ventaKey(lead: Lead): string {
-  return (lead.nombre || '') + '|' + (lead.whatsapp || '');
-}
 
 export default function ProduccionPage() {
   const { data: leads = [], isLoading } = useLeads();
@@ -22,8 +19,8 @@ export default function ProduccionPage() {
   const [showEntregados, setShowEntregados] = useState(false);
 
   const ganados = useMemo(
-    () => leads.filter((l) => l.stage === 'Cerrado Ganado'),
-    [leads]
+    () => leads.filter((l) => isRealSale(l, ventasMap)),
+    [leads, ventasMap]
   );
 
   const groupedLeads = useMemo(() => {

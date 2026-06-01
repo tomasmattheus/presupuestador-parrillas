@@ -35,23 +35,18 @@ export default function HomeCards({ onNavigate }: HomeCardsProps) {
     }).length;
   }, [budgetsFlat]);
 
-  const ganados = useMemo(
-    () => leads.filter((l) => l.stage === 'Cerrado Ganado'),
-    [leads]
-  );
-
-  const enProduccion = useMemo(() => {
-    return ganados.filter((lead) => {
-      const key = lead.nombre + '|' + lead.whatsapp;
-      const estado = ventasMap[key]?.estadoEntrega || 'Pendiente fabricacion';
-      return estado !== 'Entregado e instalado';
-    }).length;
-  }, [ganados, ventasMap]);
-
   const realSales = useMemo(
     () => leads.filter((l) => isRealSale(l, ventasMap)),
     [leads, ventasMap]
   );
+
+  const enProduccion = useMemo(() => {
+    return realSales.filter((lead) => {
+      const key = lead.nombre + '|' + lead.whatsapp;
+      const estado = ventasMap[key]?.estadoEntrega || 'Pendiente fabricacion';
+      return estado !== 'Entregado e instalado';
+    }).length;
+  }, [realSales, ventasMap]);
 
   const facturacionTotal = useMemo(() => {
     let total = 0;
