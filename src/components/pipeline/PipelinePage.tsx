@@ -74,17 +74,6 @@ export default function PipelinePage() {
     [queryClient, showToast]
   );
 
-  const handleStageDrop = useCallback(
-    (lead: Lead, newStage: string) => {
-      if (lead.stage !== newStage) {
-        updateStageOptimistic(lead, newStage);
-      }
-    },
-    [updateStageOptimistic]
-  );
-
-  const { onDragStart, onDrop } = usePipelineDragDrop(handleStageDrop);
-
   const handleMarkWon = useCallback(
     (lead: Lead) => {
       updateStageOptimistic(lead, 'Cerrado Ganado');
@@ -106,6 +95,20 @@ export default function PipelinePage() {
     },
     [updateStageOptimistic, budgetsFlat]
   );
+
+  const handleStageDrop = useCallback(
+    (lead: Lead, newStage: string) => {
+      if (lead.stage === newStage) return;
+      if (newStage === 'Cerrado Ganado') {
+        handleMarkWon(lead);
+        return;
+      }
+      updateStageOptimistic(lead, newStage);
+    },
+    [updateStageOptimistic, handleMarkWon]
+  );
+
+  const { onDragStart, onDrop } = usePipelineDragDrop(handleStageDrop);
 
   const handleMarkLost = useCallback(
     (lead: Lead) => updateStageOptimistic(lead, 'Cerrado Perdido'),

@@ -58,8 +58,12 @@ export default function EditVentaModal({ isOpen, onClose, ventaKey, ventaData }:
   }
 
   async function handleSubmit() {
-    setSubmitting(true);
     const montoNum = parsePriceInput(monto);
+    if (montoNum <= 0) {
+      showToast('El monto debe ser mayor a 0', 'error');
+      return;
+    }
+    setSubmitting(true);
     try {
       await saveVenta(ventaKey, {
         monto: montoNum,

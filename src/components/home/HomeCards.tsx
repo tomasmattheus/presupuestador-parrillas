@@ -5,6 +5,7 @@ import { usePresupuestos } from '../../hooks/usePresupuestos';
 import { useVentas } from '../../hooks/useVentas';
 import { formatPrice } from '../../lib/formatters';
 import { parseGoogleDate } from '../../lib/dates';
+import { isRealSale } from '../../lib/salesMetrics';
 import { cn } from '../../lib/utils';
 import type { TabId } from '../../types';
 
@@ -47,22 +48,26 @@ export default function HomeCards({ onNavigate }: HomeCardsProps) {
     }).length;
   }, [ganados, ventasMap]);
 
+  const realSales = useMemo(
+    () => leads.filter((l) => isRealSale(l, ventasMap)),
+    [leads, ventasMap]
+  );
+
   const facturacionTotal = useMemo(() => {
     let total = 0;
-    ganados.forEach((lead) => {
+    realSales.forEach((lead) => {
       const key = lead.nombre + '|' + lead.whatsapp;
-      const vdata = ventasMap[key];
-      if (vdata?.monto) total += vdata.monto;
+      total += ventasMap[key]?.monto || 0;
     });
     return total;
-  }, [ganados, ventasMap]);
+  }, [realSales, ventasMap]);
 
   const facDisplay = facturacionTotal >= 1000000
     ? `$ ${(facturacionTotal / 1000000).toFixed(1)}M`
     : formatPrice(facturacionTotal);
 
   const tasaCierre = leads.length > 0
-    ? Math.round((ganados.length / leads.length) * 100)
+    ? Math.round((realSales.length / leads.length) * 100)
     : 0;
 
   const cards: {

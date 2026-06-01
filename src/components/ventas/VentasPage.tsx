@@ -7,7 +7,8 @@ import { useBulkSelect } from '../../hooks/useBulkSelect';
 import { saveVenta, deleteVenta } from '../../services/ventas.service';
 import { updateLeadField } from '../../services/leads.service';
 import { exportVentasCSV, exportVentasExcel } from '../../services/export.service';
-import { useDateFilter, filterItemsByDate } from '../../hooks/useDateFilter';
+import { useDateFilter } from '../../hooks/useDateFilter';
+import { selectSales, computeSalesMetrics, ventaKey as getVentaKey } from '../../lib/salesMetrics';
 import { ModalContext } from '../../contexts/ModalContext';
 import type { Lead, VentaStore } from '../../types';
 import PeriodFilter from '../common/PeriodFilter';
@@ -18,22 +19,6 @@ import NuevaVentaModal from './NuevaVentaModal';
 import EditVentaModal from './EditVentaModal';
 import LoadingOverlay from '../common/LoadingOverlay';
 import { Button } from '../ui/button';
-
-function getVentaKey(lead: Lead): string {
-  return (lead.nombre || '') + '|' + (lead.whatsapp || '');
-}
-
-function computeMetrics(leads: Lead[], ventasMap: Record<string, VentaStore>) {
-  let totalMonto = 0;
-  leads.forEach((lead) => {
-    const key = getVentaKey(lead);
-    const vdata = ventasMap[key];
-    if (vdata?.monto) totalMonto += vdata.monto;
-  });
-  const count = leads.length;
-  const ticketPromedio = count > 0 ? totalMonto / count : 0;
-  return { totalMonto, count, ticketPromedio };
-}
 
 export default function VentasPage() {
   const { data: leads = [] } = useLeads();
@@ -47,29 +32,19 @@ export default function VentasPage() {
   const [editKey, setEditKey] = useState('');
   const [editOpen, setEditOpen] = useState(false);
 
-  const ganados = useMemo(
-    () => leads.filter((l) => l.stage === 'Cerrado Ganado'),
-    [leads]
-  );
-
-  const getVentaFecha = useCallback(
-    (l: Lead) => ventasMap[getVentaKey(l)]?.fechaCierre || l.fecha,
-    [ventasMap]
-  );
-
   const filtered = useMemo(
-    () => filterItemsByDate(ganados, getVentaFecha, dateFilter.dateFrom, dateFilter.dateTo),
-    [ganados, getVentaFecha, dateFilter.dateFrom, dateFilter.dateTo]
+    () => selectSales(leads, ventasMap, dateFilter.dateFrom, dateFilter.dateTo),
+    [leads, ventasMap, dateFilter.dateFrom, dateFilter.dateTo]
   );
 
   const filteredPrev = useMemo(
-    () => filterItemsByDate(ganados, getVentaFecha, dateFilter.prevFrom, dateFilter.prevTo),
-    [ganados, getVentaFecha, dateFilter.prevFrom, dateFilter.prevTo]
+    () => (dateFilter.prevFrom ? selectSales(leads, ventasMap, dateFilter.prevFrom, dateFilter.prevTo) : []),
+    [leads, ventasMap, dateFilter.prevFrom, dateFilter.prevTo]
   );
 
-  const metrics = useMemo(() => computeMetrics(filtered, ventasMap), [filtered, ventasMap]);
+  const metrics = useMemo(() => computeSalesMetrics(filtered, ventasMap), [filtered, ventasMap]);
   const prevMetrics = useMemo(
-    () => (dateFilter.prevFrom ? computeMetrics(filteredPrev, ventasMap) : null),
+    () => (dateFilter.prevFrom ? computeSalesMetrics(filteredPrev, ventasMap) : null),
     [filteredPrev, ventasMap, dateFilter.prevFrom]
   );
 

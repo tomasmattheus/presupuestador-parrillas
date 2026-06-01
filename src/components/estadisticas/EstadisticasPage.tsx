@@ -1,18 +1,20 @@
 import { useCallback, useContext, useMemo } from 'react';
 import { Download } from 'lucide-react';
 import { useLeads } from '../../hooks/useLeads';
+import { useVentas } from '../../hooks/useVentas';
 import { usePipelineStages } from '../../hooks/usePipelineStages';
 import { exportStatsExcel } from '../../services/export.service';
 import { useDateFilter, filterItemsByDate } from '../../hooks/useDateFilter';
 import { ModalContext } from '../../contexts/ModalContext';
 import PeriodFilter from '../common/PeriodFilter';
-import StatsCards from './StatsCards';
+import HealthDashboard from './HealthDashboard';
 import StatsCharts from './StatsCharts';
 import LoadingOverlay from '../common/LoadingOverlay';
 import { Button } from '../ui/button';
 
 export default function EstadisticasPage() {
   const { data: leads = [], isLoading } = useLeads();
+  const { ventasMap = {} } = useVentas();
   const { stages = [] } = usePipelineStages();
   const { showToast } = useContext(ModalContext);
 
@@ -63,7 +65,17 @@ export default function EstadisticasPage() {
         />
       </div>
 
-      <StatsCards leads={filtered} ganados={ganados} prevLeads={filteredPrev} />
+      <HealthDashboard
+        leadsAll={leads}
+        leadsPeriod={filtered}
+        leadsPrevPeriod={filteredPrev}
+        ventasMap={ventasMap}
+        dateFrom={dateFilter.dateFrom}
+        dateTo={dateFilter.dateTo}
+        prevFrom={dateFilter.prevFrom}
+        prevTo={dateFilter.prevTo}
+      />
+
       <StatsCharts leads={filtered} stages={stages} />
     </div>
   );
