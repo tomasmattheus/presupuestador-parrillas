@@ -6,7 +6,6 @@ import { useBulkSelect } from '../../hooks/useBulkSelect';
 import { usePipelineStages } from '../../hooks/usePipelineStages';
 import { ModalContext } from '../../contexts/ModalContext';
 import { updateLeadField, deleteLead } from '../../services/leads.service';
-import { exportContactosExcel } from '../../services/export.service';
 import { normalizeCiudad } from '../../lib/text';
 import type { Lead } from '../../types';
 import { useDateFilter, filterItemsByDate } from '../../hooks/useDateFilter';
@@ -112,11 +111,6 @@ export default function ContactosPage() {
     });
   }, [showConfirm, selectedIds, count, queryClient, clear, showToast]);
 
-  const handleExport = useCallback(() => {
-    exportContactosExcel(leads);
-    showToast('Excel exportado', 'success');
-  }, [leads, showToast]);
-
   const metrics = useMemo(() => {
     const total = leads.length;
     const nuevosSemana = leads.filter((l) => {
@@ -172,12 +166,6 @@ export default function ContactosPage() {
           onClick={() => setShowNuevo(true)}
         >
           + Nuevo contacto
-        </button>
-        <button
-          className="bg-[#10b981] text-white border-none py-2 px-[18px] rounded-md cursor-pointer text-sm font-bold font-sans transition-colors duration-200 hover:bg-[#059669]"
-          onClick={handleExport}
-        >
-          Exportar Excel
         </button>
       </div>
 

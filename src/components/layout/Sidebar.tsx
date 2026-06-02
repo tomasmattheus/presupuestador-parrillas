@@ -9,7 +9,6 @@ import {
   BarChart3,
   Settings,
   RotateCw,
-  Sheet,
   HelpCircle,
   LogOut,
 } from 'lucide-react';
@@ -129,17 +128,6 @@ export default function Sidebar({ activeTab, onTabChange, onRefresh, onLogout, o
           <RotateCw size={14} strokeWidth={1.8} />
           Refrescar
         </button>
-
-        <a
-          href="https://docs.google.com/spreadsheets/d/19SEgflKP6oQY0zQmUqArbhQaQPf57oX0x4GGrfwmjYg/edit"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-md text-[12px] font-medium text-text-muted no-underline hover:text-brand hover:bg-brand-soft transition-all"
-          title="Abrir Google Sheet"
-        >
-          <Sheet size={14} strokeWidth={1.8} />
-          Google Sheet
-        </a>
 
         <button
           onClick={onHelp}
