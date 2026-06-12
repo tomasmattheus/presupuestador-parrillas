@@ -22,8 +22,10 @@ function computeRange(preset: PeriodPreset, monthKey?: string): { from: string; 
       mon.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
       return { from: fmt(mon), to: todayStr };
     }
-    case 'este-mes':
-      return rangeForMonth(today.getFullYear(), today.getMonth());
+    case 'este-mes': {
+      const first = new Date(today.getFullYear(), today.getMonth(), 1);
+      return { from: fmt(first), to: todayStr };
+    }
     case 'mes-pasado':
       return rangeForMonth(today.getFullYear(), today.getMonth() - 1);
     case 'mes-especifico': {
@@ -55,7 +57,13 @@ function previousRange(preset: PeriodPreset, dateFrom: string, dateTo: string, m
   }
   if (preset === 'este-mes') {
     const today = new Date();
-    return rangeForMonth(today.getFullYear(), today.getMonth() - 1);
+    const y = today.getFullYear();
+    const m = today.getMonth();
+    const prevFirst = new Date(y, m - 1, 1);
+    const prevLastDay = new Date(y, m, 0).getDate();
+    const day = Math.min(today.getDate(), prevLastDay);
+    const prevSameDay = new Date(y, m - 1, day);
+    return { from: fmt(prevFirst), to: fmt(prevSameDay) };
   }
   if (preset === 'mes-pasado') {
     const today = new Date();
