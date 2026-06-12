@@ -71,8 +71,10 @@ export default function PdfPage3Payment({
         </div>
 
         <div className="pay-card recommended">
-          <span className="pc-badge">Recomendado</span>
-          <div className="pc-header">50% anticipo + entrega</div>
+          <div className="pc-header">
+            <span className="pc-header-text">50% anticipo + entrega</span>
+            <span className="pc-badge">Recomendado</span>
+          </div>
           <div className="pc-body">
             <div className="pc-price">{formatPrice(totalConIva)}</div>
             <div className="pc-detail">

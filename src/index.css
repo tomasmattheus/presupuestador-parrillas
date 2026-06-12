@@ -158,9 +158,10 @@ body {
 .pay-cards { display: flex; gap: 12px; margin: 0 32px; }
 .pay-card { flex: 1; border: 1.5px solid #ddd; border-radius: 8px; overflow: hidden; position: relative; }
 .pay-card.recommended { border-color: #1DA1F2; }
-.pay-card .pc-badge { position: absolute; top: 8px; right: 8px; background: #1DA1F2; color: #fff; font-size: 6.5pt; font-weight: 700; padding: 2px 8px; border-radius: 10px; text-transform: uppercase; }
-.pay-card .pc-header { background: #f7f7f7; padding: 8px 12px; font-size: 8pt; font-weight: 700; text-transform: uppercase; color: #555; letter-spacing: 0.5px; }
-.pay-card.recommended .pc-header { background: #e8f5fd; color: #1DA1F2; }
+.pay-card .pc-badge { flex-shrink: 0; background: #1DA1F2; color: #fff; font-size: 6pt; font-weight: 700; padding: 2px 7px; border-radius: 10px; text-transform: uppercase; white-space: nowrap; letter-spacing: 0.3px; }
+.pay-card .pc-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; box-sizing: border-box; min-height: 40px; background: #f7f7f7; padding: 8px 12px; font-size: 8pt; font-weight: 700; text-transform: uppercase; color: #555; letter-spacing: 0.5px; line-height: 1.2; }
+.pay-card .pc-header-text { min-width: 0; }
+.pay-card.recommended .pc-header { background: #e8f5fd; color: #1DA1F2; letter-spacing: 0.2px; }
 .pay-card .pc-body { padding: 14px 16px; }
 .pay-card .pc-price { font-size: 18pt; font-weight: 900; color: #2a2a2a; }
 .pay-card .pc-detail { font-size: 8pt; color: #777; margin-top: 4px; line-height: 1.4; }
